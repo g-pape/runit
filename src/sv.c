@@ -27,6 +27,7 @@
 #define RUN     "run: "
 #define FINISH  "finish: "
 #define DOWN    "down: "
+#define WAIT    "wait: "
 #define TIMEOUT "timeout: "
 #define KILL    "kill: "
 
@@ -135,9 +136,10 @@ unsigned int svstatus_print(char *m) {
   case 0: outs(DOWN); break;
   case 1: outs(RUN); break;
   case 2: outs(FINISH); break;
+  case 3: outs(WAIT); break;
   }
   outs(m); outs(": ");
-  if (svstatus[19]) {
+  if (pid) {
     outs("(pid "); sulong[fmt_ulong(sulong, pid)] =0;
     outs(sulong); outs(") ");
   }
@@ -149,6 +151,7 @@ unsigned int svstatus_print(char *m) {
   if (pid && svstatus[16]) outs(", paused");
   if (!pid && (svstatus[17] == 'u')) outs(", want up");
   if (pid && (svstatus[17] == 'd')) outs(", want down");
+  if (svstatus[19] == 3) outs(", want exit");
   if (pid && svstatus[18]) outs(", got TERM");
   return(pid ? 1 : 2);
 }

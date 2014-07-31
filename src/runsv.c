@@ -31,6 +31,7 @@ int selfpipe[2];
 #define S_DOWN 0
 #define S_RUN 1
 #define S_FINISH 2
+#define S_WAIT 3
 /* ctrl */
 #define C_NOOP 0
 #define C_TERM 1
@@ -149,18 +150,20 @@ void update_status(struct svdir *s) {
   case S_FINISH:
     buffer_puts(&b, "finish");
     break;
+  case S_WAIT:
+    buffer_puts(&b, "wait");
+    break;
   }
   if (s->ctrl & C_PAUSE) buffer_puts(&b, ", paused");
   if (s->ctrl & C_TERM) buffer_puts(&b, ", got TERM");
-  if (s->state != S_DOWN)
-    switch(s->want) {
-    case W_DOWN:
-      buffer_puts(&b, ", want down");
-      break;
-    case W_EXIT:
-      buffer_puts(&b, ", want exit");
-      break;
-    }
+  switch(s->want) {
+  case W_DOWN:
+    if (s->state != S_DOWN) buffer_puts(&b, ", want down");
+    break;
+  case W_EXIT:
+    buffer_puts(&b, ", want exit");
+    break;
+  }
   buffer_puts(&b, "\n");
   buffer_flush(&b);
   close(fd);
@@ -182,6 +185,7 @@ void update_status(struct svdir *s) {
     status[17] ='u';
   else
     status[17] ='d';
+  if (!s->pid) if (s->state == S_WAIT) status[17] ='x';
   if (s->ctrl & C_TERM)
     status[18] =1;
   else
@@ -586,22 +590,24 @@ int main(int argc, char **argv) {
         }
       }
     }
-    if (read(svd[0].fdcontrol, &ch, 1) == 1) ctrl(&svd[0], ch);
+    if (read(svd[0].fdcontrol, &ch, 1) == 1)
+      if (svd[0].state != S_WAIT) ctrl(&svd[0], ch);
     if (haslog)
       if (read(svd[1].fdcontrol, &ch, 1) == 1) ctrl(&svd[1], ch);
 
     if (sigterm) { ctrl(&svd[0], 'x'); sigterm =0; }
 
-    if ((svd[0].want == W_EXIT) && (svd[0].state == S_DOWN)) {
-      if (svd[1].pid == 0) _exit(0);
-      if (svd[1].want != W_EXIT) {
+    if (! svd[0].pid && (svd[0].want == W_EXIT))
+      if (svd[0].state != S_WAIT) {
+        svd[0].state =S_WAIT;
+        update_status(&svd[0]);
         svd[1].want =W_EXIT;
-        /* stopservice(&svd[1]); */
         update_status(&svd[1]);
-        if (close(logpipe[1]) == -1) warn("unable to close logpipe[1]");
-        if (close(logpipe[0]) == -1) warn("unable to close logpipe[0]");
+        if (close(logpipe[1]) == -1)
+          if (errno != EBADF) warn("unable to close logpipe[1]");
       }
-    }
+
+    if (svd[0].state == S_WAIT) if (svd[1].pid == 0) _exit(0);
   }
   _exit(0);
 }
