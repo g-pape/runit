@@ -80,9 +80,9 @@ void out(char *p, char *m1) {
   buffer_puts(buffer_1, "\n");
   buffer_flush(buffer_1);
 }
-void fail(char *m1) { ++rc; out(FAIL, m1); }
+void fail(char *m1) { if (rc != 111) if (rc < 99) ++rc; out(FAIL, m1); }
 void failx(char *m1) { errno =0; fail(m1); }
-void warn(char *m1) { ++rc; out(WARN, m1); }
+void warn(char *m1) { if (rc != 111) if (rc < 99) ++rc; out(WARN, m1); }
 void warnx(char *m1) { errno =0; warn(m1); }
 void ok(char *m1) { errno =0; out(OK, m1); }
 
@@ -231,7 +231,12 @@ int check(char *a) {
       if (!checkscript()) return(0);
       break;
     case 'd': if (pid || svstatus[19] != 0) return(0); break;
-    case 'C': if (pid) if (!checkscript()) return(0); break;
+    case 'C':
+      if (!pid) if (svstatus[17] == 'u') return(check("u"));
+      if (!pid) if (svstatus[19] == 3) { acts ="x"; return(check("x")); }
+      if (pid) if (svstatus[17] == 'd') return(check("d"));
+      if (pid) if (!checkscript()) return(0);
+      break;
     case 't':
     case 'k':
       if (!pid && svstatus[17] == 'd') break;
@@ -393,7 +398,7 @@ int main(int argc, char **argv) {
         if (*service) { if (cbk(acts) != 0) *service =0; else done =0; }
         if (*service && taia_approx(&tdiff) > wait) {
           kll ? outs(KILL) : outs(TIMEOUT);
-          if (svstatus_get() > 0) { svstatus_print(*service); ++rc; }
+          if (svstatus_get() > 0) { svstatus_print(*service); rc =111; }
           flush("\n");
           if (kll) control("k");
           *service =0;
@@ -405,5 +410,5 @@ int main(int argc, char **argv) {
       sleep_microseconds(420000);
       taia_now(&tnow);
     }
-  return(rc > 99 ? 99 : rc);
+  return(rc);
 }

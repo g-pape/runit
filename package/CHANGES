@@ -1,3 +1,6 @@
+  * sv.c, man/sv.8: exit 111 on timeout for one or more services when
+    waiting for the command to take effect; on command check properly
+    wait for the requested state up, down, or exit.
   * runsv.c, sv.c: on exit, properly wait for log service to terminate.
   * man/runsv.8, man/sv.8: adapt.
   * utmpset.c: check length of line argument to match struct utmp; properly

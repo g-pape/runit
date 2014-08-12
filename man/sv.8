@@ -201,7 +201,8 @@ Then report the status or timeout.
 .SS Additional Commands
 .TP
 .B check
-Check for the service to be in the state that's been requested.
+Check for the service to be in the state that's been requested (up,
+down, or exit).
 Wait up to 7 seconds for the service to reach the requested state, then
 report the status or timeout.
 If the requested state of the service is
@@ -247,18 +248,26 @@ was successfully sent to all
 .IR services ,
 and, if it was told to wait, the
 .I command
-has taken effect to all services.
+has taken effect to all
+.IR services .
 .P
 For each
 .I service
 that caused an error (e.g. the directory is not controlled by a
 .BR runsv (8)
-process, or
-.B sv
-timed out while waiting),
+process)
 .B sv
 increases the exit code by one and exits non zero.
 The maximum is 99.
+.P
+If
+.B sv
+runs into a timeout while waiting for the
+.I command
+to take effect to one or more
+.IR services ,
+it exits 111.
+.P
 .B sv
 exits 100 on error.
 .P
