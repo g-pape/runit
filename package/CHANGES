@@ -1,3 +1,4 @@
+  * hasshsgr.h?, warn-shsgr: remove; obsolete.
   * runit.c: don't leak SIGCONT SIG_IGN into all child processes (thx Leah
     Neukirchen).
   * doc/index.html: fix link to Void Linux (thx R.G.).
