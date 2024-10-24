@@ -1,3 +1,4 @@
+  * doc/*.html: !DOCTYPE.
   * doc/index.html: add antiX Linux to the list of distributions (thx C.
     Jarry).
   * hasshsgr.h?, warn-shsgr: remove; obsolete.
