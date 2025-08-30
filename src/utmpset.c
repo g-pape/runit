@@ -27,6 +27,8 @@ int utmp_logout(const char *line) {
   time_t t;
   int ok =-1;
 
+  if (sizeof(ut.ut_line) < str_len(line))
+    strerr_die4x(111, FATAL, "unable to logout line ", line, " in utmp: name too long");
   if ((fd =open(UW_TMP_UFILE, O_RDWR, 0)) < 0)
     strerr_die4sys(111, FATAL, "unable to open ", UW_TMP_UFILE, ": ");
   if (lock_ex(fd) == -1)
