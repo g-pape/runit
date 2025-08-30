@@ -1,0 +1,67 @@
+name: make check
+
+on:
+  push:
+    branches:
+      - main
+      - next
+  pull_request:
+    branches:
+      - main
+      - next
+
+jobs:
+  make-check-on-ubuntu-latest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      run: cd src && make check
+  make-check-on-macos-latest:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      run: |
+        echo 'cc -Xlinker -x' > src/conf-ld
+        sed -i '' 's/ -static//' src/Makefile
+        cd src && make check
+  make-check-on-ubuntu-2404:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      run: cd src && make check
+  make-check-on-ubuntu-2204:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      run: cd src && make check
+  make-check-on-macos-15:
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      run: |
+        echo 'cc -Xlinker -x' > src/conf-ld
+        sed -i '' 's/ -static//' src/Makefile
+        cd src && make check
+  make-check-on-macos-14:
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      run: |
+        echo 'cc -Xlinker -x' > src/conf-ld
+        sed -i '' 's/ -static//' src/Makefile
+        cd src && make check
+  make-check-on-macos-13:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      run: |
+        echo 'cc -Xlinker -x' > src/conf-ld
+        sed -i '' 's/ -static//' src/Makefile
+        cd src && make check
