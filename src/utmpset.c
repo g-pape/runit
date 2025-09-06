@@ -23,19 +23,22 @@ void usage(void) { strerr_die4x(1, "usage: ", progname, USAGE, "\n"); }
 
 int utmp_logout(const char *line) {
   int fd;
+  unsigned int len;
   uw_tmp ut;
   time_t t;
   int ok =-1;
 
-  if (sizeof(ut.ut_line) < str_len(line))
-    strerr_die4x(111, FATAL, "unable to logout line ", line, " in utmp: name too long");
+  if ((len =str_len(line)) > sizeof(ut.ut_line))
+    strerr_die4x(111, FATAL,
+                 "unable to logout line ", line, " in utmp: name too long");
+  if (len < sizeof(ut.ut_line)) ++len;
   if ((fd =open(UW_TMP_UFILE, O_RDWR, 0)) < 0)
     strerr_die4sys(111, FATAL, "unable to open ", UW_TMP_UFILE, ": ");
   if (lock_ex(fd) == -1)
     strerr_die4sys(111, FATAL, "unable to lock: ", UW_TMP_UFILE, ": ");
 
   while (read(fd, &ut, sizeof(uw_tmp)) == sizeof(uw_tmp)) {
-    if (!ut.ut_name[0] || (str_diff(ut.ut_line, line) != 0)) continue;
+    if (!ut.ut_name[0] || (byte_diff(ut.ut_line, len, line) != 0)) continue;
     memset(ut.ut_name, 0, sizeof ut.ut_name);
     memset(ut.ut_host, 0, sizeof ut.ut_host);
     if (time(&t) == -1) break;
