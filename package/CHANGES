@@ -1,3 +1,5 @@
+  * doc/index.html: repair or remove broken links in list of distributions
+    using runit.
   * doc/*, man/*: switch all cr.yp.to http links to https.
   * doc/faq.html: fix link to LSB core specification.
   * doc/index.html: remove section "Related links".
