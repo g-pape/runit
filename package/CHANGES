@@ -1,3 +1,4 @@
+  * doc/*, man/*: switch all cr.yp.to http links to https.
   * doc/faq.html: fix link to LSB core specification.
   * doc/index.html: remove section "Related links".
   * doc/index.html, faq.html: update links to supervision mailing list and
