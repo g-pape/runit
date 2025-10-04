@@ -11,53 +11,20 @@ on:
       - next
 
 jobs:
-  make-check-on-ubuntu-latest:
-    runs-on: ubuntu-latest
+  make-check-on-ubuntu:
+    strategy:
+      matrix:
+        runners: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04]
+    runs-on: ${{ matrix.runners }}
     steps:
     - uses: actions/checkout@v4
     - name: make check
       run: cd src && make check
-  make-check-on-macos-latest:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: make check
-      run: |
-        echo 'cc -Xlinker -x' > src/conf-ld
-        sed -i '' 's/ -static//' src/Makefile
-        cd src && make check
-  make-check-on-ubuntu-2404:
-    runs-on: ubuntu-24.04
-    steps:
-    - uses: actions/checkout@v4
-    - name: make check
-      run: cd src && make check
-  make-check-on-ubuntu-2204:
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v4
-    - name: make check
-      run: cd src && make check
-  make-check-on-macos-15:
-    runs-on: macos-15
-    steps:
-    - uses: actions/checkout@v4
-    - name: make check
-      run: |
-        echo 'cc -Xlinker -x' > src/conf-ld
-        sed -i '' 's/ -static//' src/Makefile
-        cd src && make check
-  make-check-on-macos-14:
-    runs-on: macos-14
-    steps:
-    - uses: actions/checkout@v4
-    - name: make check
-      run: |
-        echo 'cc -Xlinker -x' > src/conf-ld
-        sed -i '' 's/ -static//' src/Makefile
-        cd src && make check
-  make-check-on-macos-13:
-    runs-on: macos-13
+  make-check-on-macos:
+    strategy:
+      matrix:
+        runners: [macos-latest, macos-15, macos-14, macos-13]
+    runs-on: ${{ matrix.runners }}
     steps:
     - uses: actions/checkout@v4
     - name: make check
