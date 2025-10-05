@@ -3,8 +3,8 @@
 #ifndef ALLOC_H
 #define ALLOC_H
 
-extern /*@null@*//*@out@*/char *alloc();
-extern void alloc_free();
-extern int alloc_re();
+extern /*@null@*//*@out@*/char *alloc(unsigned int);
+extern void alloc_free(char *);
+extern int alloc_re(char **,unsigned int,unsigned int);
 
 #endif
