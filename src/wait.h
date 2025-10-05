@@ -5,8 +5,6 @@
 
 extern int wait_pid(int *,int);
 extern int wait_nohang(int *);
-extern int wait_stop();
-extern int wait_stopnohang();
 
 #define wait_crashed(w) ((w) & 127)
 #define wait_exitcode(w) ((w) >> 8)
