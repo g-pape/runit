@@ -1,5 +1,7 @@
 #!/bin/sh
+test -r "$1".dist || exit 1
+test -r "$1".local || exit 1
 while read i; do
   read j 0<&7 || exit 1
   test "$i" = "$j" || exit 1
-done 7<$1.dist <$1.local
+done 7<"$1".dist <"$1".local

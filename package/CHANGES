@@ -1,3 +1,4 @@
+  * check-diff: check that files exist; quote properly.
   * utmpset.c: check length of line argument to match struct utmp; properly
     handle line argument with max length (thx github/Skyb0rg007).
   * doc/index.html: add reference to repository on github.com.
