@@ -5,13 +5,14 @@
 #include "strerr.h"
 #include "error.h"
 #include "buffer.h"
+#include "env.h"
 
 #define USAGE " dir"
-#define SVDIR "/etc/runit/runsvdir"
 
 #define VERSION "$Id$"
 
 char *progname;
+char *runsvdir ="/etc/runit/runsvdir";
 char *new;
 
 void usage () { strerr_die4x(1, "usage: ", progname, USAGE, "\n"); }
@@ -30,13 +31,15 @@ int main (int argc, char **argv) {
   struct stat s;
   int dev;
   int ino;
+  char *x;
 
   progname =*argv++;
   if (! argv || ! *argv) usage();
 
   new =*argv;
+  if ((x =env_get("RUNSVDIR"))) runsvdir =x;
   if (new[0] == '.') fatalx(new, ": must not start with a dot.");
-  if (chdir(SVDIR) == -1) fatal("unable to chdir: ", SVDIR);
+  if (chdir(runsvdir) == -1) fatal("unable to chdir: ", runsvdir);
 
   if (stat(new, &s) == -1) {
     if (errno == error_noent) fatal(new, 0);
