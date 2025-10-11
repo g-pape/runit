@@ -235,8 +235,11 @@ void rmoldest(struct logdir *ld) {
           warn2("unable to unlink processor leftover", f->d_name);
       }
       else {
-        ++n;
-        if (str_diff(f->d_name, oldest) < 0) byte_copy(oldest, 27, f->d_name);
+        ++n; /* count .s and .u files ... */
+        if (str_diff(f->d_name, oldest) < 0)
+          /* ... but don't unlink our pending .u if the clock is funny */
+          if ((ld->fnsave[26] != 'u') || str_diff(ld->fnsave, f->d_name))
+            byte_copy(oldest, 27, f->d_name);
       }
       errno =0;
     }
