@@ -1,3 +1,4 @@
+  * runit.c: really restart stage 2 if it crashed.
   * alloc.c, alloc_re.c, buffer_0.c, byte.h, byte_chr.c, byte_copy.c,
     byte_cr.c, byte_diff.c, byte_rchr.c, select.h2, wait.h, wait_nohang.c,
     wait_pid.c: C23: swap ANSI for remaining K&R-style declarations

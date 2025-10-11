@@ -177,7 +177,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
       }
 
       if (child == pid) {
-        if (wait_exitcode(wstat) != 0) {
+        if (wait_crashed(wstat) || wait_exitcode(wstat) != 0) {
           if (wait_crashed(wstat))
             strerr_warn3(WARNING, "child crashed: ", stage[st], 0);
           else
