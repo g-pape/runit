@@ -31,15 +31,15 @@ int selfpipe[2];
 int sigc =0;
 int sigi =0;
 
-void sig_cont_handler (void) {
+void sig_cont_handler (int unused) {
   sigc++;
   write(selfpipe[1], "", 1);
 }
-void sig_int_handler (void) {
+void sig_int_handler (int unused) {
   sigi++;
   write(selfpipe[1], "", 1);
 }
-void sig_child_handler (void) { write(selfpipe[1], "", 1); }
+void sig_child_handler (int unused) { write(selfpipe[1], "", 1); }
 
 void sync_if_needed() {
   struct stat s;

@@ -1,3 +1,13 @@
+  * alloc.c, alloc_re.c, buffer_0.c, byte.h, byte_chr.c, byte_copy.c,
+    byte_cr.c, byte_diff.c, byte_rchr.c, select.h2, wait.h, wait_nohang.c,
+    wait_pid.c: C23: swap ANSI for remaining K&R-style declarations
+    (github/andy-bower).
+  * alloc.h, buffer.c, buffer.h, buffer_get.c, buffer_put.c, buffer_write.c,
+    byte.h, pathexec_env.c, runit.c, runsv.c, runsvdir.c, select.h1,
+    select.h2, sig.c, sig.h, sig_catch.c, svlogd.c, svlogd.dist, wait.h:
+    fix build with gcc15: in C23 f() means f(void), consequently signal
+    handler functions now are f(int), alloc_free() parameter needs cast,
+    buffer_unixwrite() removes "const" from parameter.
   * doc/index.html: repair or remove broken links in list of distributions
     using runit, add Debian GNU/Hurd.
   * doc/*, man/*: switch all cr.yp.to http links to https.

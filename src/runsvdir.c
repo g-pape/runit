@@ -51,8 +51,8 @@ void warn(char *m1, char *m2) {
 void warn3x(char *m1, char *m2, char *m3) {
   strerr_warn6("runsvdir ", svdir, ": warning: ", m1, m2, m3, 0);
 } 
-void s_term() { exitsoon =1; }
-void s_hangup() { exitsoon =2; }
+void s_term(int unused) { exitsoon =1; }
+void s_hangup(int unused) { exitsoon =2; }
 
 void runsv(int no, char *name) {
   int pid;

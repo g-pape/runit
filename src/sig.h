@@ -11,10 +11,10 @@ extern int sig_int;
 extern int sig_pipe;
 extern int sig_term;
 
-extern void (*sig_defaulthandler)();
-extern void (*sig_ignorehandler)();
+extern void (*sig_defaulthandler)(int);
+extern void (*sig_ignorehandler)(int);
 
-extern void sig_catch(int,void (*)());
+extern void sig_catch(int,void (*)(int));
 #define sig_ignore(s) (sig_catch((s),sig_ignorehandler))
 #define sig_uncatch(s) (sig_catch((s),sig_defaulthandler))
 

@@ -4,7 +4,7 @@
 #include "byte.h"
 #include "error.h"
 
-static int oneread(int (*op)(),int fd,char *buf,unsigned int len)
+static int oneread(int (*op)(int,char *,unsigned int),int fd,char *buf,unsigned int len)
 {
   int r;
 

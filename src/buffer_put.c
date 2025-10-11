@@ -5,7 +5,7 @@
 #include "byte.h"
 #include "error.h"
 
-static int allwrite(int (*op)(),int fd,const char *buf,unsigned int len)
+static int allwrite(int (*op)(int,char *,unsigned int),int fd,const char *buf,unsigned int len)
 {
   int w;
 

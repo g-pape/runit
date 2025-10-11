@@ -2,7 +2,7 @@
 
 #include "buffer.h"
 
-int buffer_0_read(fd,buf,len) int fd; char *buf; int len;
+int buffer_0_read(int fd, char *buf, unsigned int len)
 {
   if (buffer_flush(buffer_1) == -1) return -1;
   return buffer_unixread(fd,buf,len);
