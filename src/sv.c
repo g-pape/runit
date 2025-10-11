@@ -168,7 +168,7 @@ int status(char *unused) {
   }
   else {
     outs("; ");
-    if (svstatus_get()) { rc =svstatus_print("log"); outs("\n"); }
+    if (svstatus_get()) { svstatus_print("log"); outs("\n"); }
   }
   islog =0;
   flush("");
