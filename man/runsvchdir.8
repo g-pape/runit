@@ -10,13 +10,15 @@ is a services directory for the use with
 .BR runsvdir (8).
 If
 .I dir
-does not start with a slash, it is searched in /etc/runit/runsvdir/.
+does not start with a slash, it is searched in
+.B runsvchdir 's
+working directory, by default
+.IR /etc/runit/runsvdir/.
 .I dir
 must not start with a dot.
 .P
 .B runsvchdir
-switches to the directory
-.IR /etc/runit/runsvdir/ ,
+switches to its working directory,
 copies
 .I current
 to
@@ -34,6 +36,11 @@ and
 .BR runsvdir (8)
 is running
 .IR /service/ .
+.SH ENVIRONMENT
+.TP
+.B RUNSVDIR
+The environment variable $RUNSVDIR overrides the default working directory
+.IR /etc/runit/runsvdir/ .
 .SH EXIT CODES
 .B runsvchdir
 prints an error message and exits 111 on error.

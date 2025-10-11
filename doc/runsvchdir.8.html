@@ -16,26 +16,33 @@ runsvchdir - change services directory of <i>runsvdir(8)</i>
 <i>dir</i> 
 <h2><a name='sect2'>Description</a></h2>
 <i>dir</i> is a services directory for the use with <i><b>runsvdir</b>(8)</i>.
-If <i>dir</i> does not start with a slash, it is searched in /etc/runit/runsvdir/.
+If <i>dir</i> does not start with a slash, it is searched in <b>runsvchdir</b>&rsquo;s
+working directory, by default <i>/etc/runit/runsvdir/</i>.
 <i>dir</i> must not start with a dot. <p>
-<b>runsvchdir</b> switches to the directory <i>/etc/runit/runsvdir/</i>,
+<b>runsvchdir</b> switches to its working directory,
 copies <i>current</i> to <i>previous</i>, and replaces <i>current</i> with a symlink pointing
 to <i>dir</i>. <p>
 Normally  <i>/service</i> is a symlink to <i>current</i>, and <i><b>runsvdir</b>(8)</i> is running
 <i>/service/</i>. 
-<h2><a name='sect3'>Exit Codes</a></h2>
+<h2><a name='sect3'>Environment</a></h2>
+<dl>
+
+<dt><b>RUNSVDIR</b> </dt>
+<dd>The environment variable
+$RUNSVDIR overrides the default working directory <i>/etc/runit/runsvdir/</i>. </dd>
+<h2><a name='sect4'>Exit Codes</a></h2>
 <b>runsvchdir</b> prints an error message and exits 111 on
 error. <b>runsvchdir</b> exits 0 on success. 
-<h2><a name='sect4'>Files</a></h2>
+<h2><a name='sect5'>Files</a></h2>
  /etc/runit/runsvdir/previous<br>
   /etc/runit/runsvdir/current<br>
   /etc/runit/runsvdir/current.new<br>
  
-<h2><a name='sect5'>See Also</a></h2>
+<h2><a name='sect6'>See Also</a></h2>
 <i>runsvdir(8)</i>, <i>runit(8)</i>, <i>runit-init(8)</i>, <i>sv(8)</i>, <i>runsv(8)</i> <p>
 <i>https://smarden.org/runit/</i>
 
-<h2><a name='sect6'>Author</a></h2>
+<h2><a name='sect7'>Author</a></h2>
 Gerrit Pape &lt;pape@smarden.org&gt; <p>
 
 <hr><p>
@@ -44,10 +51,11 @@ Gerrit Pape &lt;pape@smarden.org&gt; <p>
 <li><a name='toc0' href='#sect0'>Name</a></li>
 <li><a name='toc1' href='#sect1'>Synopsis</a></li>
 <li><a name='toc2' href='#sect2'>Description</a></li>
-<li><a name='toc3' href='#sect3'>Exit Codes</a></li>
-<li><a name='toc4' href='#sect4'>Files</a></li>
-<li><a name='toc5' href='#sect5'>See Also</a></li>
-<li><a name='toc6' href='#sect6'>Author</a></li>
+<li><a name='toc3' href='#sect3'>Environment</a></li>
+<li><a name='toc4' href='#sect4'>Exit Codes</a></li>
+<li><a name='toc5' href='#sect5'>Files</a></li>
+<li><a name='toc6' href='#sect6'>See Also</a></li>
+<li><a name='toc7' href='#sect7'>Author</a></li>
 </ul>
 </body>
 </html>
