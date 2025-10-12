@@ -213,22 +213,24 @@ int checkscript() {
 
 int check(char *a) {
   unsigned int pid;
+  char c;
 
   if ((r =svstatus_get()) == -1) return(-1);
   while (*a) {
     if (r == 0) { if (*a == 'x') return(1); return(-1); }
+    if ((c =*a) == 'C')
+      if (svstatus[17] == 'd') c ='d'; else c ='u';
     pid =(unsigned char)svstatus[15];
     pid <<=8; pid +=(unsigned char)svstatus[14];
     pid <<=8; pid +=(unsigned char)svstatus[13];
     pid <<=8; pid +=(unsigned char)svstatus[12];
-    switch (*a) {
+    switch (c) {
     case 'x': return(0);
     case 'u':
       if (!pid || svstatus[19] != 1) return(0);
       if (!checkscript()) return(0);
       break;
     case 'd': if (pid || svstatus[19] != 0) return(0); break;
-    case 'C': if (pid) if (!checkscript()) return(0); break;
     case 't':
     case 'k':
       if (!pid && svstatus[17] == 'd') break;

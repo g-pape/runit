@@ -1,3 +1,5 @@
+  * sv.c, man/sv.8: fix "sv check" to behave as documented (thx Buck Evan,
+    James Byrne).
   * alloc.c, alloc_re.c, buffer_0.c, byte.h, byte_chr.c, byte_copy.c,
     byte_cr.c, byte_diff.c, byte_rchr.c, select.h2, wait.h, wait_nohang.c,
     wait_pid.c: C23: swap ANSI for remaining K&R-style declarations
