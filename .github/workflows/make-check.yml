@@ -32,3 +32,57 @@ jobs:
         echo 'cc -Xlinker -x' > src/conf-ld
         sed -i '' 's/ -static//' src/Makefile
         cd src && make check
+
+#  make-check-freebsd:
+#    runs-on: ubuntu-latest
+#    name: make check freebsd
+#    steps:
+#    - uses: actions/checkout@v4
+#    - name: make check
+#      uses: vmactions/freebsd-vm@v1
+#      with:
+#        usesh: true
+#        run: |
+#          echo 'cc -O2 -Wall' > src/conf-cc
+#          echo 'cc -s' > src/conf-ld
+#          cd src && make check
+
+  make-check-openbsd:
+    runs-on: ubuntu-latest
+    name: make check openbsd
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      uses: vmactions/openbsd-vm@v1
+      with:
+        usesh: true
+        run: |
+          echo 'cc -O2 -Wall' > src/conf-cc
+          echo 'cc -s' > src/conf-ld
+          cd src && make check
+
+  make-check-netbsd:
+    runs-on: ubuntu-latest
+    name: make check netbsd
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      uses: vmactions/netbsd-vm@v1
+      with:
+        usesh: true
+        run: cd src && make check
+
+  make-check-solaris:
+    runs-on: ubuntu-latest
+    name: make check solaris
+    steps:
+    - uses: actions/checkout@v4
+    - name: make check
+      uses: vmactions/solaris-vm@v1
+      with:
+        release: "11.4-gcc"
+        usesh: true
+        run: |
+          cp src/Makefile src/Makefile.old
+          sed -e 's/ -static//' <src/Makefile.old >src/Makefile
+          cd src && make check
