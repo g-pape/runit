@@ -1,3 +1,4 @@
+  * hasflock.h1: add #include <unistd.h>.
   * doc/dependencies.html: rewrite; new initial terse version.
   * doc/index.html: replace broken link to sysvinit.
   * doc/runscripts.html: remove broken links and reference to mailing list.
