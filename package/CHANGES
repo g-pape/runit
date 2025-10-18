@@ -1,3 +1,12 @@
+  * doc/dependencies.html: rewrite; new initial terse version.
+  * doc/index.html: replace broken link to sysvinit.
+  * doc/runscripts.html: remove broken links and reference to mailing list.
+  * doc/replaceinit.html: switch http links to https.
+  * svlogd.c: never prune the in-progress .u (thx Mike Pomraning for the
+    draft patch).
+  * sv.c: fix regression introduced with 5fe1bc7: exit code of sv status in
+    "lsb" mode is not 3 in all cases when the service is "down" (thx Fabian
+    Ruff, David Mountney for the patch).
   * runsvchdir.c, man/runsvchdir.8: the environment variable $RUNSVDIR
     now overrides the default working directory /etc/runit/runsvdir/
     (github/plorenzo19).

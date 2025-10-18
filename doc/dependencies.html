@@ -9,25 +9,60 @@
 <hr>
 <h1>runit - service dependencies</h1>
 <hr>
-<i>runit</i>'s service supervision resolves dependencies for service daemons
-designed to be run by a supervisor process automatically.
-The service daemon (or the corresponding <tt>run</tt> scripts) should behave
-as follows:
-<ul>
-  <li>before providing the service, check if all services it depends on are
-  available.
-  If not, exit with an error, the supervisor will then try again.
-  <li>write all logs through <i>runit</i>'s logging facility.
-  The <a href="runsv.8.html">runsv</a> program takes care that all logs for
-  the service are written safely to disk.
-  Therefore there's no need to depend on a system logging service.
-  <li>optionally when the service is told to become down, take down other
-  services that depend on this one after disabling the service.
-</ul>
-If you want to run service daemons that do not support service supervision
-as described above, please refer to
-<a href="https://smarden.org/pape/djb/daemontools/noinit.html">this page</a>
-about service dependencies I wrote some time ago.
+<i>runit</i>&rsquo;s service supervision resolves dependencies automatically
+for many or even most service daemons, those that exit if another service
+they need to function properly is not or no longer available.
+The <a href="https://smarden.org/runit/runsv.8.html">runsv</a> supervisor
+will then start them again, until everything is in shape.
+<hr>
+For service daemons with different behavior, or to arrange services more
+structurally, the <a href="https://smarden.org/runit/sv.8.html">sv</a>
+program can help.  A few examples:
+<p>
+For the service daemon <i>floyd</i>, that needs the <i>pinkd</i> service up
+and running, add <tt>sv start pinkd</tt> to <i>floyd</i>&rsquo;s
+<tt>run</tt> script, right after <tt>set -e</tt>.
+<pre>
+ #!/bin/sh
+ set -e
+ sv start pinkd
+ exec floyd
+</pre>
+<p>
+When the <i>pinkd</i> service daemon crashes or is restarted for other
+reasons and the <i>floyd</i> daemon is unable to handle this, add <tt>sv hup
+floyd</tt> (or whatever the <i>floyd</i> daemon understands) to
+<i>pinkd</i>&rsquo;s <tt>finish</tt> script to force its reload or restart.
+<pre>
+ #!/bin/sh
+ sv hup floyd
+</pre>
+<p>
+If the <i>pinkd</i> service shall be stopped when the <i>floyd</i> service
+is stopped gracefully, add <tt>test "$1" != 0 || sv down pinkd</tt> to
+<i>floyd</i>&rsquo;s <tt>finish</tt> script.
+<pre>
+ #!/bin/sh
+ test "$1" != 0 || sv down pinkd
+</pre>
+Or vice versa.
+<p>
+Explore the <a href="https://smarden.org/runit/sv.8.html">sv</a> program for
+more options.
+<hr>
+For service daemons that do not make their service available immediately
+after starting, a <tt>check</tt> script can be added.
+The <a href="https://smarden.org/runit/sv.8.html">sv</a> program will use
+this <tt>check</tt> script to better evaluate whether a service is fully
+started and available, for example:
+<p>
+For a mail service listening on localhost:25, this <tt>check</tt> script
+could be used
+<pre>
+ #!/bin/sh
+ set -e
+ exec nc -z localhost 25
+</pre>
 <hr>
 <address><a href="mailto:pape@smarden.org">
 Gerrit Pape &lt;pape@smarden.org&gt;
