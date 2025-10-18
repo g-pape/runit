@@ -1,3 +1,6 @@
+  * runsvchdir.c, man/runsvchdir.8: the environment variable $RUNSVDIR
+    now overrides the default working directory /etc/runit/runsvdir/
+    (github/plorenzo19).
   * runit.c: really restart stage 2 if it crashed.
   * alloc.c, alloc_re.c, buffer_0.c, byte.h, byte_chr.c, byte_copy.c,
     byte_cr.c, byte_diff.c, byte_rchr.c, select.h2, wait.h, wait_nohang.c,
