@@ -1,3 +1,4 @@
+  * runsv.c: fix typo in pathname (thx github/plorenzo19).
   * doc/dependencies.html: rewrite; new initial terse version.
   * doc/index.html: replace broken link to sysvinit.
   * doc/runscripts.html: remove broken links and reference to mailing list.

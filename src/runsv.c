@@ -492,7 +492,7 @@ int main(int argc, char **argv) {
   update_status(&svd[0]);
   if (haslog) {
     fifo_make("log/supervise/control", 0600);
-    if (stat("supervise/control", &s) == -1)
+    if (stat("log/supervise/control", &s) == -1)
       fatal("unable to stat log/supervise/control");
     if (!S_ISFIFO(s.st_mode))
       fatalx("log/supervise/control exists but is not a fifo", "");
