@@ -1,3 +1,5 @@
+  * sv.c, man/sv.8: fix "sv check" to behave as documented (thx Buck Evan,
+    James Byrne).
   * hasflock.h1: add #include <unistd.h>.
   * doc/dependencies.html: rewrite; new initial terse version.
   * doc/index.html: replace broken link to sysvinit.
