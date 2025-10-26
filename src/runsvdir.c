@@ -5,6 +5,7 @@
 #include "direntry.h"
 #include "strerr.h"
 #include "error.h"
+#include "sgetopt.h"
 #include "wait.h"
 #include "env.h"
 #include "open.h"
@@ -16,7 +17,7 @@
 #include "sig.h"
 #include "ndelay.h"
 
-#define USAGE " [-P] dir"
+#define USAGE " [-P] [-L fifo] dir [log]"
 #define VERSION "$Id$"
 
 #define MAXSERVICES 1000
@@ -35,7 +36,9 @@ int svnum =0;
 int check =1;
 char *rplog =0;
 int rploglen;
-int logpipe[2];
+int logpipe[2] ={-1};
+char *fifolog =0;
+int fifo[2] ={-1};
 iopause_fd io[1];
 struct taia stamplog;
 int exitsoon =0;
@@ -68,6 +71,7 @@ void runsv(int no, char *name) {
     prog[0] ="runsv";
     prog[1] =name;
     prog[2] =0;
+    sig_uncatch(sig_pipe);
     sig_uncatch(sig_hangup);
     sig_uncatch(sig_term);
     if (pgrp) setsid();
@@ -136,11 +140,25 @@ void runsvdir() {
   }
 }
 
-int setup_log() {
-  if ((rploglen =str_len(rplog)) < 7) {
-    warn3x("log must have at least seven characters.", 0, 0);
+int setup_fifo() {
+  if ((fifo[1] =open_read(fifolog)) == -1) {
+    warn("unable to open fifo: ", fifolog);
+    fifo[0] =-1;
     return(0);
   }
+  if ((fifo[0] =open_write(fifolog)) == -1) {
+    warn("unable to open fifo for writing: ", fifolog);
+    close(fifo[1]);
+    return(0);
+  }
+  coe(fifo[1]);
+  coe(fifo[0]);
+  ndelay_on(fifo[1]);
+  ndelay_on(fifo[0]);
+  return(1);
+}
+
+int setup_log() {
   if (pipe(logpipe) == -1) {
     warn3x("unable to create pipe for log.", 0, 0);
     return(-1);
@@ -149,7 +167,7 @@ int setup_log() {
   coe(logpipe[0]);
   ndelay_on(logpipe[0]);
   ndelay_on(logpipe[1]);
-  if (fd_copy(2, logpipe[1]) == -1) {
+  if (fd_move(2, logpipe[1]) == -1) {
     warn3x("unable to set filedescriptor for log.", 0, 0);
     return(-1);
   }
@@ -171,27 +189,34 @@ int main(int argc, char **argv) {
   char ch;
   int i;
 
-  progname =*argv++;
-  if (! argv || ! *argv) usage();
-  if (**argv == '-') {
-    switch (*(*argv +1)) {
-    case 'P': pgrp =1;
-    case '-': ++argv;
+  progname =*argv;
+  while ((i =getopt(argc, (char* const*)argv, "PL:")) != opteof) {
+    switch(i) {
+    case 'L': fifolog =(char*)optarg; break;
+    case 'P': pgrp =1; break;
+    case '?': usage();
     }
-    if (! argv || ! *argv) usage();
   }
+  argv +=optind;
+  if (! argv || ! *argv) usage();
 
   sig_catch(sig_term, s_term);
   sig_catch(sig_hangup, s_hangup);
   svdir =*argv++;
   if (argv && *argv) {
     rplog =*argv;
-    if (setup_log() != 1) {
+    if ((rploglen =str_len(rplog)) < 7) {
+      warn3x("log argument too short: ", "readproctitle log disabled.", 0);
       rplog =0;
-      warn3x("log service disabled.", 0, 0);
     }
   }
-  if ((curdir =open_read(".")) == -1) 
+  if (rplog || fifolog)
+    if (setup_log() != 1) {
+      warn3x("log service disabled.", 0, 0);
+      rplog =fifolog =0;
+    }
+  if (fifolog) { sig_ignore(sig_pipe); setup_fifo(); }
+  if ((curdir =open_read(".")) == -1)
     fatal("unable to open current directory", 0);
   coe(curdir);
 
@@ -251,7 +276,8 @@ int main(int argc, char **argv) {
 
     if (rplog)
       if (taia_less(&now, &stamplog) == 0) {
-        write(logpipe[1], ".", 1);
+        for (i =6; i < rploglen; i++) rplog[i -1] =rplog[i];
+        rplog[rploglen -1] ='.';
         taia_uint(&deadline, 900);
         taia_add(&stamplog, &now, &deadline);
       }
@@ -259,19 +285,27 @@ int main(int argc, char **argv) {
     taia_add(&deadline, &now, &deadline);
 
     sig_block(sig_child);
-    if (rplog)
+    if (logpipe[0] > -1)
       iopause(io, 1, &deadline, &now);
     else
       iopause(0, 0, &deadline, &now);
     sig_unblock(sig_child);
 
-    if (rplog && (io[0].revents | IOPAUSE_READ))
-      while (read(logpipe[0], &ch, 1) > 0)
-        if (ch) {
-          for (i =6; i < rploglen; i++)
-            rplog[i -1] =rplog[i];
+    if ((logpipe[0] > -1) && (io[0].revents | IOPAUSE_READ)) {
+      if (fifolog && (fifo[0] == -1))
+        if (setup_fifo())
+          write(fifo[0], "runsvdir: warning: logs are incomplete\n", 39);
+      while ((read(logpipe[0], &ch, 1) > 0) && ch) {
+        if (rplog) {
+          for (i =6; i < rploglen; i++) rplog[i -1] =rplog[i];
           rplog[rploglen -1] =ch;
         }
+        if (fifo[0] > -1)
+          if ((write(fifo[0], &ch, 1) == -1) && (errno == EAGAIN)) {
+            close(fifo[1]); close(fifo[0]); fifo[0] =-1;
+          }
+      }
+    }
 
     switch(exitsoon) {
     case 1:
