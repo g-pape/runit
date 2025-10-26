@@ -17,20 +17,8 @@ runsv: load runsv.o unix.a byte.a time.a
 runsvdir: load runsvdir.o unix.a byte.a time.a
 	./load runsvdir unix.a byte.a time.a
 
-runsvstat: load runsvstat.o unix.a byte.a time.a
-	./load runsvstat unix.a byte.a time.a
-
-runsvctrl: load runsvctrl.o unix.a byte.a
-	./load runsvctrl unix.a byte.a
-
 sv: load sv.o unix.a byte.a time.a
 	./load sv unix.a byte.a time.a
-
-svwaitup: load svwaitup.o unix.a byte.a time.a
-	./load svwaitup unix.a byte.a time.a
-
-svwaitdown: load svwaitdown.o unix.a byte.a time.a
-	./load svwaitdown unix.a byte.a time.a
 
 utmpset: load utmpset.o unix.a byte.a
 	./load utmpset unix.a byte.a
@@ -57,20 +45,8 @@ runsv.o: compile sysdeps runsv.c
 runsvdir.o: compile sysdeps runsvdir.c
 	./compile runsvdir.c
 
-runsvstat.o: compile sysdeps runsvstat.c
-	./compile runsvstat.c
-
-runsvctrl.o: compile runsvctrl.c
-	./compile runsvctrl.c
-
 sv.o: compile sysdeps sv.c
 	./compile sv.c
-
-svwaitup.o: compile sysdeps svwaitup.c
-	./compile svwaitup.c
-
-svwaitdown.o: compile sysdeps svwaitdown.c
-	./compile svwaitdown.c
 
 utmpset.o: compile sysdeps utmpset.c
 	./compile utmpset.c
