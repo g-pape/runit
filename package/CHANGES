@@ -1,3 +1,4 @@
+  * TARGETS: remove hasshsgr.h.
   * runsvctrl.*, runsvstat.*, svwaitdown.*, svwaitup.*: remove, obsolete;
     Makefile, TARGETS: remove runsvctrl, runsvstat, svwaitup, svwaitdown.
   * runsv.c: fix typo in pathname (thx github/plorenzo19).
