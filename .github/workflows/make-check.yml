@@ -23,7 +23,7 @@ jobs:
   make-check-on-macos:
     strategy:
       matrix:
-        runners: [macos-latest, macos-15, macos-14, macos-13]
+        runners: [macos-latest, macos-15, macos-14]
     runs-on: ${{ matrix.runners }}
     steps:
     - uses: actions/checkout@v4
