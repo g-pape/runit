@@ -9,6 +9,14 @@
 <hr>
 <h1>runit - upgrading from previous versions</h1>
 <hr>
+<h3>2.2.0 to 2.3.0</h3>
+The <a href="sv.8.html#sect5">sv check</a> command changes long-standing
+inaccurate behaviour and now checks for the two possible requested states,
+either <tt>up</tt> or <tt>down</tt>, to match the current state
+respectively.
+The <a href="runit.8.html">runit</a> program also behaves more accurately
+and restarts <tt>stage 2</tt> if it exits due to an uncaught signal, instead
+of starting <tt>stage 3</tt>.
 <h3>2.1.x to 2.2.0</h3>
 The <a href="chpst.8.html">chpst</a> program learned a new option -C to run
 a program in a sepcific working directory, and the
