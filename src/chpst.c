@@ -279,6 +279,7 @@ void slimit() {
 #ifdef HASUNSHARE
 void sig_handler(int sig) { kill(pid, sig); }
 void sig_handler_pid1(int sig) { kill(-1, sig); }
+void sig_quit_handler(int unused) { kill(pid, SIGKILL); }
 void newpid1() {
   int i;
   DIR *dir;
@@ -289,6 +290,7 @@ void newpid1() {
 #ifdef SIGRTMIN
   for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler);
 #endif
+  sig_catch(SIGQUIT, sig_quit_handler);
   if (unshare(CLONE_NEWPID | CLONE_NEWNS) == -1) fatal ("unshare()");
   if ((pid =fork()) == -1) fatal("fork(1)");
   if (pid) { /* parent, signal relay */

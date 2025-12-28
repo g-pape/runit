@@ -1,3 +1,4 @@
+  * chpst.c: -F, -I: on QUIT signal send KILL to new pid 1.
   * chpst.c: add new option -F: fghack using unshare(); chpst.c: add new
     option -I: run another init using unshare().
   * Makefile, TARGETS: add test for unshare() system call (_GNU_SOURCE).
