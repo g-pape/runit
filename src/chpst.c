@@ -64,6 +64,7 @@ unsigned int nostdout =0;
 unsigned int nostderr =0;
 #ifdef HASUNSHARE
 unsigned int newpidns =0;
+unsigned int aspid1 =0;
 #endif
 long limitd =-2;
 long limits =-2;
@@ -299,39 +300,41 @@ void newpid1() {
   if (verbose) warn("pid1: start");
   if (mount("none", "/proc", NULL, MS_PRIVATE|MS_REC, NULL) == -1)
     fatal("pid1: mount none /proc");
-  if (mount("proc", "/proc", "proc", MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL) != 0)
-    fatal("pid1: mount proc /proc");
-  for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
+  if (!aspid1) {
+    if (mount("proc", "/proc", "proc", MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL) != 0)
+      fatal("pid1: mount proc /proc");
+    for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
 #ifdef SIGRTMIN
-  for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
+    for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
 #endif
-  if ((pid =fork()) == -1) fatal("pid1: fork(2)");
-  if (pid) /* parent, zombies, amialone */
-    for (;;) {
-      pid_t p;
-      if ((p =wait_pid(&i, -1)) == -1) {
-        strerr_warn2(WARNING, "pid1: wait_pid(): ", &strerr_sys);
-      } else
-        if (verbose) {
-          bufnum[fmt_ulong(bufnum, p)] =0;
-          strerr_warn4(WARNING, "pid1: pid ", bufnum, ": exit", 0);
+    if ((pid =fork()) == -1) fatal("pid1: fork(2)");
+    if (pid) /* parent, zombies, amialone */
+      for (;;) {
+        pid_t p;
+        if ((p =wait_pid(&i, -1)) == -1) {
+          strerr_warn2(WARNING, "pid1: wait_pid(): ", &strerr_sys);
+        } else
+          if (verbose) {
+            bufnum[fmt_ulong(bufnum, p)] =0;
+            strerr_warn4(WARNING, "pid1: pid ", bufnum, ": exit", 0);
+          }
+        if (!(dir =opendir("/proc")))
+          fatal("pid1: unable to open directory: /proc");
+        for (pids =0; pids <= 1;) {
+          errno =0;
+          if (!(d =readdir(dir))) {
+            if (errno) fatal("pid1: unable to read directory: /proc");
+            break;
+          }
+          if (('0' < d->d_name[0]) && (d->d_name[0] <= '9')) ++pids;
         }
-      if (!(dir =opendir("/proc")))
-        fatal("pid1: unable to open directory: /proc");
-      for (pids =0; pids <= 1;) {
-        errno =0;
-        if (!(d =readdir(dir))) {
-          if (errno) fatal("pid1: unable to read directory: /proc");
-          break;
-        }
-        if (('0' < d->d_name[0]) && (d->d_name[0] <= '9')) ++pids;
+        if (closedir(dir) == -1)
+          fatal("pid1: unable to close directory: /proc");
+        if (pids <= 1)
+          _exit(wait_crashed(i) ? 128 + WTERMSIG(i) : wait_exitcode(i));
       }
-      if (closedir(dir) == -1)
-        fatal("pid1: unable to close directory: /proc");
-      if (pids <= 1)
-        _exit(wait_crashed(i) ? 128 + WTERMSIG(i) : wait_exitcode(i));
-    }
-  /* pid 2 */
+    /* pid 2 */
+  }
   for (i =0; i < 32; ++i) sig_uncatch(i);
 #ifdef SIGRTMIN
   for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_uncatch(i);
@@ -369,7 +372,7 @@ int main(int argc, char **argv) {
   if (str_equal(progname, "softlimit")) softlimit(argc, argv);
 
 #ifdef HASUNSHARE
-  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012FV"))
+  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012FIV"))
 #else
   while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012V"))
 #endif
@@ -414,6 +417,7 @@ int main(int argc, char **argv) {
     case '1': nostdout =1; break;
     case '2': nostderr =1; break;
 #ifdef HASUNSHARE
+    case 'I': aspid1 =1;
     case 'F': newpidns =1; break;
 #endif
     case 'V': strerr_warn1("$Id$", 0);

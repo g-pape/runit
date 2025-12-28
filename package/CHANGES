@@ -1,4 +1,5 @@
-  * chpst.c: add new option -F: fghack using unshare().
+  * chpst.c: add new option -F: fghack using unshare(); chpst.c: add new
+    option -I: run another init using unshare().
   * Makefile, TARGETS: add test for unshare() system call (_GNU_SOURCE).
   * hasunshare.h1, hasunshare.h2, tryunshare.c: new.
   * sv.c: always write to control pipe, do not look at the status.
