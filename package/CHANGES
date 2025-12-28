@@ -1,3 +1,5 @@
+  * Makefile, TARGETS: add test for unshare() system call (_GNU_SOURCE).
+  * hasunshare.h1, hasunshare.h2, tryunshare.c: new.
   * sv.c: always write to control pipe, do not look at the status.
   * svlogd.c: fix uninitialized pointer read with -v and log directory
     mode r--.
