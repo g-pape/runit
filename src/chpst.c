@@ -1,3 +1,14 @@
+#include "hasunshare.h"
+#ifdef HASUNSHARE
+#define _GNU_SOURCE
+#include <sched.h>
+#include <sys/mount.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include "sig.h"
+#include "wait.h"
+#endif
+
 #include <sys/types.h>
 #include <time.h>
 #include <sys/time.h>
@@ -26,6 +37,10 @@
 
 const char *progname;
 static stralloc sa;
+char bufnum[FMT_ULONG];
+#ifdef HASUNSHARE
+pid_t pid;
+#endif
 
 void fatal(const char *m) { strerr_die3sys(111, FATAL, m, ": "); }
 void fatal2(const char *m0, const char *m1) {
@@ -47,6 +62,9 @@ unsigned int pgrp =0;
 unsigned int nostdin =0;
 unsigned int nostdout =0;
 unsigned int nostderr =0;
+#ifdef HASUNSHARE
+unsigned int newpidns =0;
+#endif
 long limitd =-2;
 long limits =-2;
 long limitl =-2;
@@ -85,7 +103,6 @@ void suidgid(char *user, unsigned int ext) {
 
 void euidgid(char *user, unsigned int ext) {
   struct uidgid ugid;
-  char bufnum[FMT_ULONG];
 
   if (ext) {
     if (! uidgids_get(&ugid, user)) {
@@ -258,6 +275,70 @@ void slimit() {
   }
 }
 
+#ifdef HASUNSHARE
+void sig_handler(int sig) { kill(pid, sig); }
+void sig_handler_pid1(int sig) { kill(-1, sig); }
+void newpid1() {
+  int i;
+  DIR *dir;
+  direntry *d;
+  unsigned int pids =0;
+
+  for (i =0; i < 32; ++i) sig_catch(i, sig_handler);
+#ifdef SIGRTMIN
+  for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler);
+#endif
+  if (unshare(CLONE_NEWPID | CLONE_NEWNS) == -1) fatal ("unshare()");
+  if ((pid =fork()) == -1) fatal("fork(1)");
+  if (pid) { /* parent, signal relay */
+    wait_pid(&i, pid);
+    if (verbose) warn("pid1: done");
+    _exit(wait_crashed(i) ? 128 + WTERMSIG(i) : wait_exitcode(i));
+  }
+  /* new pid 1 */
+  if (verbose) warn("pid1: start");
+  if (mount("none", "/proc", NULL, MS_PRIVATE|MS_REC, NULL) == -1)
+    fatal("pid1: mount none /proc");
+  if (mount("proc", "/proc", "proc", MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL) != 0)
+    fatal("pid1: mount proc /proc");
+  for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
+#ifdef SIGRTMIN
+  for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
+#endif
+  if ((pid =fork()) == -1) fatal("pid1: fork(2)");
+  if (pid) /* parent, zombies, amialone */
+    for (;;) {
+      pid_t p;
+      if ((p =wait_pid(&i, -1)) == -1) {
+        strerr_warn2(WARNING, "pid1: wait_pid(): ", &strerr_sys);
+      } else
+        if (verbose) {
+          bufnum[fmt_ulong(bufnum, p)] =0;
+          strerr_warn4(WARNING, "pid1: pid ", bufnum, ": exit", 0);
+        }
+      if (!(dir =opendir("/proc")))
+        fatal("pid1: unable to open directory: /proc");
+      for (pids =0; pids <= 1;) {
+        errno =0;
+        if (!(d =readdir(dir))) {
+          if (errno) fatal("pid1: unable to read directory: /proc");
+          break;
+        }
+        if (('0' < d->d_name[0]) && (d->d_name[0] <= '9')) ++pids;
+      }
+      if (closedir(dir) == -1)
+        fatal("pid1: unable to close directory: /proc");
+      if (pids <= 1)
+        _exit(wait_crashed(i) ? 128 + WTERMSIG(i) : wait_exitcode(i));
+    }
+  /* pid 2 */
+  for (i =0; i < 32; ++i) sig_uncatch(i);
+#ifdef SIGRTMIN
+  for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_uncatch(i);
+#endif
+}
+#endif
+
 /* argv[0] */
 void setuidgid(int, char *const *);
 void envuidgid(int, char *const *);
@@ -287,7 +368,11 @@ int main(int argc, char **argv) {
   if (str_equal(progname, "setlock")) setlock(argc, argv);
   if (str_equal(progname, "softlimit")) softlimit(argc, argv);
 
+#ifdef HASUNSHARE
+  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012FV"))
+#else
   while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012V"))
+#endif
          != opteof)
     switch(opt) {
     case 'u': set_user =(char*)optarg; break;
@@ -328,6 +413,9 @@ int main(int argc, char **argv) {
     case '0': nostdin =1; break;
     case '1': nostdout =1; break;
     case '2': nostderr =1; break;
+#ifdef HASUNSHARE
+    case 'F': newpidns =1; break;
+#endif
     case 'V': strerr_warn1("$Id$", 0);
     case '?': usage();
     }
@@ -347,6 +435,9 @@ int main(int argc, char **argv) {
     errno =0;
     if (nice(nicelvl) == -1) if (errno) fatal("unable to set nice level");
   }
+#ifdef HASUNSHARE
+  if (newpidns) newpid1();
+#endif
   if (env_user) euidgid(env_user, 1);
   if (set_user) suidgid(set_user, 1);
   if (lock) slock(lock, lockdelay, 0);
