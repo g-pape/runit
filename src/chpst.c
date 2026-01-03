@@ -282,9 +282,6 @@ void sig_handler_pid1(int sig) { kill(-1, sig); }
 void sig_quit_handler(int unused) { kill(pid, SIGKILL); }
 void newpid1() {
   int i, w =0;
-  DIR *dir;
-  direntry *d;
-  unsigned int pids =0;
 
   for (i =0; i < 32; ++i) sig_catch(i, sig_handler);
 #ifdef SIGRTMIN
@@ -294,7 +291,7 @@ void newpid1() {
   if (unshare(CLONE_NEWPID | CLONE_NEWNS) == -1) fatal ("unshare()");
   if ((pid =fork()) == -1) fatal("fork(1)");
   if (pid) { /* parent, signal relay */
-    wait_pid(&i, pid);
+    if (wait_pid(&i, pid) == -1) fatal("unable to wait for new pid 1");
     if (verbose) warn("pid1: done");
     _exit(wait_crashed(i) ? 128 + WTERMSIG(i) : wait_exitcode(i));
   }
@@ -305,8 +302,6 @@ void newpid1() {
   if (umount2("/proc", MNT_DETACH) == -1)
     if (errno != EINVAL) fatal("pid1: unable to umount /proc");
   if (!aspid1) {
-    if (mount("proc", "/proc", "proc", MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL) != 0)
-      fatal("pid1: unable to mount /proc");
     for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
 #ifdef SIGRTMIN
     for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
@@ -317,31 +312,9 @@ void newpid1() {
       for (;;) {
         pid_t p;
         if ((p =wait_pid(&i, -1)) == -1) {
-          if (errno == ECHILD) { /* iamalone? */
-            if (!(dir =opendir("/proc")))
-              fatal("pid1: unable to open directory: /proc");
-            for (pids =0;;) {
-              errno =0;
-              if (!(d =readdir(dir))) {
-                if (errno) fatal("pid1: unable to read directory: /proc");
-                break;
-              }
-              if (('0' < d->d_name[0]) && (d->d_name[0] <= '9')) ++pids;
-            }
-            if (closedir(dir) == -1)
-              fatal("pid1: unable to close directory: /proc");
-            if (pids > 1) {
-              bufnum[fmt_ulong(bufnum, --pids)] =0;
-              strerr_warn5(WARNING, "pid1: no more zombies, but ", bufnum,
-                           pids == 1 ? " ghost" : " ghosts", ": waiting", 0);
-              sleep(7);
-              strerr_warn3(WARNING, "pid1: ignoring",
-                           pids == 1 ? " ghost" : " ghosts", 0);
-            }
-            _exit(wait_crashed(w) ? 128 + WTERMSIG(w) : wait_exitcode(w));
-          }
-          else
+          if (errno != ECHILD)
             strerr_warn2(WARNING, "pid1: wait_pid(): ", &strerr_sys);
+          _exit(wait_crashed(w) ? 128 + WTERMSIG(w) : wait_exitcode(w));
         } else {
           w =i;
           if (verbose) {
