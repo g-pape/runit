@@ -309,6 +309,7 @@ void newpid1() {
 #ifdef SIGRTMIN
     for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
 #endif
+    sig_uncatch(sig_child);
     if ((pid =fork()) == -1) fatal("pid1: fork(2)");
     if (pid) /* parent, zombies, amialone */
       for (;;) {
