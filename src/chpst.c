@@ -300,11 +300,13 @@ void newpid1() {
   }
   /* new pid 1 */
   if (verbose) warn("pid1: start");
-  if (mount("none", "/proc", NULL, MS_PRIVATE|MS_REC, NULL) == -1)
-    fatal("pid1: mount none /proc");
+  if (mount(NULL, "/", NULL, MS_PRIVATE|MS_REC, NULL) == -1)
+    if (!root) fatal("pid1: unable to set root mount propagation");
+  if (umount2("/proc", MNT_DETACH) == -1)
+    if (errno != EINVAL) fatal("pid1: unable to umount /proc");
   if (!aspid1) {
     if (mount("proc", "/proc", "proc", MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL) != 0)
-      fatal("pid1: mount proc /proc");
+      fatal("pid1: unable to mount /proc");
     for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
 #ifdef SIGRTMIN
     for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
