@@ -61,8 +61,7 @@ unsigned int pgrp =0;
 unsigned int nostdin =0;
 unsigned int nostdout =0;
 unsigned int nostderr =0;
-unsigned int newpidns =0;
-unsigned int aspid1 =0;
+unsigned int newpids =0;
 long limitd =-2;
 long limits =-2;
 long limitl =-2;
@@ -299,7 +298,7 @@ void newpid1() {
     if (!root) fatal("pid1: unable to set root mount propagation");
   if (umount2("/proc", MNT_DETACH) == -1)
     if (errno != EINVAL) fatal("pid1: unable to umount /proc");
-  if (!aspid1) {
+  if (newpids > 1) {
     for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
 #ifdef SIGRTMIN
     for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
@@ -402,8 +401,8 @@ int main(int argc, char **argv) {
     case '0': nostdin =1; break;
     case '1': nostdout =1; break;
     case '2': nostderr =1; break;
-    case 'I': aspid1 =1;
-    case 'F': newpidns =1; break;
+    case 'F': newpids =2; break;
+    case 'I': if (!newpids) newpids =1; break;
     case 'V': strerr_warn1("$Id$", 0);
     case '?': usage();
     }
@@ -423,7 +422,7 @@ int main(int argc, char **argv) {
     errno =0;
     if (nice(nicelvl) == -1) if (errno) fatal("unable to set nice level");
   }
-  if (newpidns) newpid1();
+  if (newpids) newpid1();
   if (env_user) euidgid(env_user, 1);
   if (set_user) suidgid(set_user, 1);
   if (lock) slock(lock, lockdelay, 0);
