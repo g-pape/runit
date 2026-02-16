@@ -22,7 +22,7 @@ void strerr_warn(const char *x1,const char *x2,const char *x3,const char *x4,con
     se = se->who;
   }
  
-  buffer_puts(buffer_2,"\n");
+  buffer_puts(buffer_2,"\r\n");
   buffer_flush(buffer_2);
 }
 
