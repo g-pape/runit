@@ -33,7 +33,7 @@
 #include "ndelay.h"
 #include "iopause.h"
 
-#define USAGE " [-ttv] [-r c] [-R abc] [-l len] [-b buflen] dir ..."
+#define USAGE " [-tttvL] [-r c] [-R abc] [-l len] [-b buflen] dir ..."
 #define VERSION "$Id$"
 
 #define FATAL "svlogd: fatal: "
@@ -47,6 +47,7 @@ unsigned int verbose =0;
 unsigned int timestamp =0;
 unsigned long linemax =1000;
 unsigned long buflen =1024;
+unsigned int lossy =0;
 unsigned long linelen;
 
 const char *replace ="";
@@ -356,7 +357,13 @@ int buffer_pwrite(int n, char *s, unsigned int len) {
             pause1("unable to change to initial working directory");
         }
     }
-    if (errno) pause2("unable to write to current", (dir +n)->name);
+    if (errno) {
+      if ((errno == ENOSPC) && lossy) {
+        if (lossy > 1) warn2("data loss", (dir +n)->name);
+        return(len);
+      }
+      pause2("unable to write to current", (dir +n)->name);
+    }
   }
 
   (dir +n)->size +=i;
@@ -671,7 +678,7 @@ int main(int argc, char **argv) {
 
   progname =*argv;
 
-  while ((opt =getopt(argc, argv, "R:r:l:b:tvV")) != opteof) {
+  while ((opt =getopt(argc, argv, "R:r:l:b:tvLV")) != opteof) {
     switch(opt) {
     case 'R':
       replace =optarg;
@@ -694,6 +701,9 @@ int main(int argc, char **argv) {
       break;
     case 'v':
       ++verbose;
+      break;
+    case 'L':
+      ++lossy;
       break;
     case 'V': strerr_warn1(VERSION, 0);
     case '?': usage();

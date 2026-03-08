@@ -6,4 +6,3 @@ src/runsvchdir.c	ident
 src/runsvdir.c	ident
 src/sv.c	ident
 src/svlogd.c	ident
-src/utmpset.c	ident

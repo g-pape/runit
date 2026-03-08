@@ -8,6 +8,25 @@
     option -I: run another init using unshare().
   * Makefile, TARGETS: add test for unshare() system call (_GNU_SOURCE).
   * hasunshare.h1, hasunshare.h2, tryunshare.c: new.
+  * doc/runscripts.html: clarify outdated status of the collection.
+  * doc/*.html, man/*.8: replace; converted from markdown source.
+  * svlogd.c, man/svlogd.8: -LL: print warning on data loss.
+  * svlogd.c, man/svlogd.8: add option -L, lossy (thx github/teslamotors).
+  * package/upgrade: remove utmpset program on upgrade.
+  * doc/replaceinit.html: remove getty finish scripts that use utmpset;
+    etc/debian/getty-tty5/finish, etc/freebsd/getty-ttyv4/finish,
+    etc/openbsd/getty-ttyC4/finish: remove, obsolete.
+  * doc/index.html, man/runit-init.8, man/runit.8, man/runsv.8,
+    man/runsvdir.8: remove reference to utmpset program.
+  * utmpset.c, utmpset.check, utmpset.dist, man/utmpset.8, tryuwtmp.c,
+    tryuwtmpx.c, uw_tmp.h?: remove, obsolete.
+  * Makefile, package/commands, src/Makefile, TARGETS: remove utmpset and
+    utmpx sysdep.
+
+runit 2.3.1
+Sat, 07 Feb 2026 11:11:01 +0100
+  * doc/dependencies.html: wording; cruft.
+  * runsv.c, man/runsv.8: run control/? with service process id as argument.
   * sv.c: always write to control pipe, do not look at the status.
   * svlogd.c: fix uninitialized pointer read with -v and log directory
     mode r--.

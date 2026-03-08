@@ -1,219 +1,213 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-
-
+<!DOCTYPE html>
 <html>
 <head>
-<title>sv(8) manual page</title>
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<title>sv(8)</title>
 </head>
-<body bgcolor='white'>
-<a href='https://smarden.org/pape/'>G. Pape</a><br><a href='index.html'>runit</A><hr><p>
-
-<h2><a name='sect0'>Name</a></h2>
-sv - control and manage services monitored by <i><b>runsv</b>(8)</i> 
-<h2><a name='sect1'>Synopsis</a></h2>
-<b>sv</b> [-v]
-[-w <i>sec</i>] <i>command</i> <i>services</i> <p>
-<b>/etc/init.d/</b><i>service</i> [-w <i>sec</i>] <i>command</i> 
-<h2><a name='sect2'>Description</a></h2>
-The
-<b>sv</b> program reports the current status and controls the state of services
-monitored by the <i><b>runsv</b>(8)</i> supervisor. <p>
-<i>services</i> consists of one or more arguments,
-each argument naming a directory <i>service</i> used by <i><b>runsv</b>(8)</i>. If <i>service</i> doesn&rsquo;t
-start with a dot or slash and doesn&rsquo;t end with a slash, it is searched in
-the default services directory <i>/service/</i>, otherwise relative to the current
-directory. <p>
-<i>command</i> is one of up, down, status, once, pause, cont, hup, alarm,
-interrupt, 1, 2, term, kill, or exit, or start, stop, restart, shutdown,
-force-stop, force-reload, force-restart, force-shutdown. <p>
-The <b>sv</b> program can
-be sym-linked to <i>/etc/init.d/</i> to provide an LSB init script interface. The
-<i>service</i> to be controlled then is specified by the base name of the &lsquo;&lsquo;init
-script&rsquo;&rsquo;. 
-<h2><a name='sect3'>Commands</a></h2>
-
+<body>
+<p><a href="https://smarden.org/pape/">G. Pape</a><br />
+<a href="index.html">runit</a></p>
+<hr />
+<h3 id="name">NAME</h3>
+<p>sv - control and manage services monitored by
+<strong>runsv</strong>(8)</p>
+<h3 id="synopsis">SYNOPSIS</h3>
+<p><strong>sv</strong> [-v] [-w <em>sec</em>] <em>command</em>
+<em>services</em></p>
+<p><strong>/etc/init.d/</strong><em>service</em> [-w <em>sec</em>]
+<em>command</em></p>
+<h3 id="description">DESCRIPTION</h3>
+<p>The <strong>sv</strong> program reports the current status and
+controls the state of services monitored by the
+<strong>runsv</strong>(8) supervisor.</p>
+<p><em>services</em> consists of one or more arguments, each argument
+naming a directory <em>service</em> used by <strong>runsv</strong>(8).
+If <em>service</em> doesn't start with a dot or slash and doesn't end
+with a slash, it is searched in the default services directory
+<em>/service/</em>, otherwise relative to the current directory.</p>
+<p><em>command</em> is one of up, down, status, once, pause, cont, hup,
+alarm, interrupt, 1, 2, term, kill, or exit, or start, stop, restart,
+shutdown, force-stop, force-reload, force-restart, force-shutdown.</p>
+<p>The <strong>sv</strong> program can be sym-linked to
+<em>/etc/init.d/</em> to provide an LSB init script interface. The
+<em>service</em> to be controlled then is specified by the base name of
+the “init script”.</p>
+<h3 id="commands">COMMANDS</h3>
 <dl>
-
-<dt><b>status</b> </dt>
-<dd>Report the current status of the service, and the
-appendant log service if available, to standard output. </dd>
-
-<dt><b>up</b> </dt>
-<dd>If the service
-is not running, start it. If the service stops, restart it. </dd>
-
-<dt><b>down</b> </dt>
-<dd>If the service
-is running, send it the TERM signal, and the CONT signal. If ./run exits,
-start ./finish if it exists. After it stops, do not restart service. </dd>
-
-<dt><b>once</b>
-</dt>
-<dd>If the service is not running, start it. Do not restart it if it stops. </dd>
-
-<dt><b>pause
-cont hup alarm interrupt quit 1 2 term kill</b> </dt>
-<dd>If the service is running,
-send it the STOP, CONT, HUP, ALRM, INT, QUIT, USR1, USR2, TERM, or KILL
-signal respectively. </dd>
-
-<dt><b>exit</b> </dt>
-<dd>If the service is running, send it the TERM signal,
-and the CONT signal. Do not restart the service. If the service is down,
-and no log service exists, <i><b>runsv</b>(8)</i> exits. If the service is down and a
-log service exists, <i><b>runsv</b>(8)</i> closes the standard input of the log service
-and waits for it to terminate. If the log service is down, <i><b>runsv</b>(8)</i> exits.
-This command is ignored if it is given to an appendant log service. </dd>
-</dl>
-<p>
-<b>sv</b> actually
-looks only at the first character of these <i>command</i>s. 
-<h3><a name='sect4'>Commands compatible
-to LSB init script actions</a></h3>
-
-<dl>
-
-<dt><b>status</b> </dt>
-<dd>Same as <i>status</i>. </dd>
-
-<dt><b>start</b> </dt>
-<dd>Same as <i>up</i>, but wait
-up to 7 seconds for the command to take effect. Then report the status or
-timeout. If the script <i>./check</i> exists in the service directory, <b>sv</b> runs this
-script to check whether the service is up and available; it&rsquo;s considered
-to be available if <i>./check</i> exits with 0. </dd>
-
-<dt><b>stop</b> </dt>
-<dd>Same as <i>down</i>, but wait up to
-7 seconds for the service to become down. Then report the status or timeout.
+<dt><strong>status</strong></dt>
+<dd>
+Report the current status of the service, and the appendant log service
+if available, to standard output.
 </dd>
-
-<dt><b>reload</b> </dt>
-<dd>Same as <i>hup</i>, and additionally report the status afterwards. </dd>
-
-<dt><b>restart</b>
-</dt>
-<dd>Send the commands <i>term</i>, <i>cont</i>, and <i>up</i> to the service, and wait up to 7 seconds
-for the service to restart. Then report the status or timeout. If the script
-<i>./check</i> exists in the service directory, <b>sv</b> runs this script to check whether
-the service is up and available again; it&rsquo;s considered to be available if
-<i>./check</i> exits with 0. </dd>
-
-<dt><b>shutdown</b> </dt>
-<dd>Same as <i>exit</i>, but wait up to 7 seconds for
-the <i><b>runsv</b>(8)</i> process to terminate. Then report the status or timeout. </dd>
-
-<dt><b>force-stop</b>
-</dt>
-<dd>Same as <i>down</i>, but wait up to 7 seconds for the service to become down. Then
-report the status, and on timeout send the service the <i>kill</i> command. </dd>
-
-<dt><b>force-reload</b>
-</dt>
-<dd>Send the service the <i>term</i> and <i>cont</i> commands, and wait up to 7 seconds for
-the service to restart. Then report the status, and on timeout send the
-service the <i>kill</i> command. </dd>
-
-<dt><b>force-restart</b> </dt>
-<dd>Send the service the <i>term</i>, <i>cont</i> and
-<i>up</i> commands, and wait up to 7 seconds for the service to restart. Then report
-the status, and on timeout send the service the <i>kill</i> command. If the script
-<i>./check</i> exists in the service directory, <b>sv</b> runs this script to check whether
-the service is up and available again; it&rsquo;s considered to be available if
-<i>./check</i> exits with 0. </dd>
-
-<dt><b>force-shutdown</b> </dt>
-<dd>Same as <i>exit</i>, but wait up to 7 seconds
-for the <i><b>runsv</b>(8)</i> process to terminate. Then report the status, and on timeout
-send the service the <i>kill</i> command. </dd>
-
-<dt><b>try-restart</b> </dt>
-<dd>if the service is running,
-send it the <i>term</i> and <i>cont</i> commands, and wait up to 7 seconds for the service
-to restart. Then report the status or timeout. 
-<p> </dd>
+<dt><strong>up</strong></dt>
+<dd>
+If the service is not running, start it. If the service stops, restart
+it.
+</dd>
+<dt><strong>down</strong></dt>
+<dd>
+If the service is running, send it the TERM signal, and the CONT signal.
+If ./run exits, start ./finish if it exists. After it stops, do not
+restart service.
+</dd>
+<dt><strong>once</strong></dt>
+<dd>
+If the service is not running, start it. Do not restart it if it stops.
+</dd>
+<dt><strong>pause cont hup alarm interrupt quit 1 2 term
+kill</strong></dt>
+<dd>
+If the service is running, send it the STOP, CONT, HUP, ALRM, INT, QUIT,
+USR1, USR2, TERM, or KILL signal respectively.
+</dd>
+<dt><strong>exit</strong></dt>
+<dd>
+If the service is running, send it the TERM signal, and the CONT signal.
+Do not restart the service. If the service is down, and no log service
+exists, <strong>runsv</strong>(8) exits. If the service is down and a
+log service exists, <strong>runsv</strong>(8) closes the standard input
+of the log service and waits for it to terminate. If the log service is
+down, <strong>runsv</strong>(8) exits. This command is ignored if it is
+given to an appendant log service.
+</dd>
 </dl>
-
-<h3><a name='sect5'>Additional Commands</a></h3>
-
+<p><strong>sv</strong> actually looks only at the first character of
+these <em>command</em>s.</p>
+<h4 id="commands-compatible-to-lsb-init-script-actions">Commands
+compatible to LSB init script actions</h4>
 <dl>
-
-<dt><b>check</b>
-</dt>
-<dd>Check for the service to be in the state that&rsquo;s been requested (up or down). Wait up to
-7 seconds for the service to reach the requested state, then report the
-status or timeout. If the requested state of the service is <i>up</i>, and the
-script <i>./check</i> exists in the service directory, <b>sv</b> runs this script to check
-whether the service is up and running; it&rsquo;s considered to be up if <i>./check</i>
-exits with 0. </dd>
+<dt><strong>status</strong></dt>
+<dd>
+Same as <em>status</em>.
+</dd>
+<dt><strong>start</strong></dt>
+<dd>
+Same as <em>up</em>, but wait up to 7 seconds for the command to take
+effect. Then report the status or timeout. If the script
+<em>./check</em> exists in the service directory, <strong>sv</strong>
+runs this script to check whether the service is up and available; it's
+considered to be available if <em>./check</em> exits with 0.
+</dd>
+<dt><strong>stop</strong></dt>
+<dd>
+Same as <em>down</em>, but wait up to 7 seconds for the service to
+become down. Then report the status or timeout.
+</dd>
+<dt><strong>reload</strong></dt>
+<dd>
+Same as <em>hup</em>, and additionally report the status afterwards.
+</dd>
+<dt><strong>restart</strong></dt>
+<dd>
+Send the commands <em>term</em>, <em>cont</em>, and <em>up</em> to the
+service, and wait up to 7 seconds for the service to restart. Then
+report the status or timeout. If the script <em>./check</em> exists in
+the service directory, <strong>sv</strong> runs this script to check
+whether the service is up and available again; it's considered to be
+available if <em>./check</em> exits with 0.
+</dd>
+<dt><strong>shutdown</strong></dt>
+<dd>
+Same as <em>exit</em>, but wait up to 7 seconds for the
+<strong>runsv</strong>(8) process to terminate. Then report the status
+or timeout.
+</dd>
+<dt><strong>force-stop</strong></dt>
+<dd>
+Same as <em>down</em>, but wait up to 7 seconds for the service to
+become down. Then report the status, and on timeout send the service the
+<em>kill</em> command.
+</dd>
+<dt><strong>force-reload</strong></dt>
+<dd>
+Send the service the <em>term</em> and <em>cont</em> commands, and wait
+up to 7 seconds for the service to restart. Then report the status, and
+on timeout send the service the <em>kill</em> command.
+</dd>
+<dt><strong>force-restart</strong></dt>
+<dd>
+Send the service the <em>term</em>, <em>cont</em> and <em>up</em>
+commands, and wait up to 7 seconds for the service to restart. Then
+report the status, and on timeout send the service the <em>kill</em>
+command. If the script <em>./check</em> exists in the service directory,
+<strong>sv</strong> runs this script to check whether the service is up
+and available again; it's considered to be available if <em>./check</em>
+exits with 0.
+</dd>
+<dt><strong>force-shutdown</strong></dt>
+<dd>
+Same as <em>exit</em>, but wait up to 7 seconds for the
+<strong>runsv</strong>(8) process to terminate. Then report the status,
+and on timeout send the service the <em>kill</em> command.
+</dd>
+<dt><strong>try-restart</strong></dt>
+<dd>
+if the service is running, send it the <em>term</em> and <em>cont</em>
+commands, and wait up to 7 seconds for the service to restart. Then
+report the status or timeout.
+</dd>
 </dl>
-
-<h2><a name='sect6'>Options</a></h2>
-
+<h4 id="additional-commands">Additional Commands</h4>
 <dl>
-
-<dt><b>-v</b> </dt>
-<dd>If the <i>command</i> is up, down, term, once, cont, or
-exit, then wait up to 7 seconds for the command to take effect. Then report
-the status or timeout. </dd>
-
-<dt><b>-w <i>sec</b> </i></dt>
-<dd>Override the default timeout of 7 seconds with
-<i>sec</i> seconds. This option implies <i>-v</i>. </dd>
+<dt><strong>check</strong></dt>
+<dd>
+Check for the service to be in the state that's been requested (up or
+down). Wait up to 7 seconds for the service to reach the requested
+state, then report the status or timeout. If the requested state of the
+service is <em>up</em>, and the script <em>./check</em> exists in the
+service directory, <strong>sv</strong> runs this script to check whether
+the service is up and running; it's considered to be up if
+<em>./check</em> exits with 0.
+</dd>
 </dl>
-
-<h2><a name='sect7'>Environment</a></h2>
-
+<h3 id="options">OPTIONS</h3>
 <dl>
-
-<dt><b>SVDIR</b> </dt>
-<dd>The environment variable
-$SVDIR overrides the default services directory <i>/service/</i>. </dd>
-
-<dt><b>SVWAIT</b> </dt>
-<dd>The environment
-variable $SVWAIT overrides the default 7 seconds to wait for a command
-to take effect. It is overridden by the -w option. </dd>
+<dt><strong>-v</strong></dt>
+<dd>
+If the <em>command</em> is up, down, term, once, cont, or exit, then
+wait up to 7 seconds for the command to take effect. Then report the
+status or timeout.
+</dd>
+<dt><strong>-w</strong> <em>sec</em></dt>
+<dd>
+Override the default timeout of 7 seconds with <em>sec</em> seconds.
+This option implies <em>-v</em>.
+</dd>
 </dl>
-
-<h2><a name='sect8'>Exit Codes</a></h2>
-<b>sv</b> exits 0, if
-the <i>command</i> was successfully sent to all <i>services</i>, and, if it was told
-to wait, the <i>command</i> has taken effect to all services. <p>
-For each <i>service</i>
-that caused an error (e.g. the directory is not controlled by a <i><b>runsv</b>(8)</i>
-process, or <b>sv</b> timed out while waiting), <b>sv</b> increases the exit code by
-one and exits non zero. The maximum is 99. <b>sv</b> exits 100 on error. <p>
-If <b>sv</b> is
-called with a base name other than <b>sv</b>: it exits 1 on timeout or trouble
-sending the command; if the <i>command</i> is <b>status</b>, it exits 3 if the service
-is down, and 4 if the status is unknown; it exits 2 on wrong usage, and
-151 on error. 
-<h2><a name='sect9'>See Also</a></h2>
-<i>runsv(8)</i>, <i>chpst(8)</i>, <i>svlogd(8)</i>, <i>runsvdir(8)</i>, <i>runsvchdir(8)</i>,
-<i>runit(8)</i>, <i>runit-init(8)</i> <p>
-<i>https://smarden.org/runit/</i>
-<h2><a name='sect10'>Author</a></h2>
-Gerrit Pape &lt;pape@smarden.org&gt;
-<p>
-
-<hr><p>
-<a name='toc'><b>Table of Contents</b></a><p>
-<ul>
-<li><a name='toc0' href='#sect0'>Name</a></li>
-<li><a name='toc1' href='#sect1'>Synopsis</a></li>
-<li><a name='toc2' href='#sect2'>Description</a></li>
-<li><a name='toc3' href='#sect3'>Commands</a></li>
-<ul>
-<li><a name='toc4' href='#sect4'>Commands compatible to LSB init script actions</a></li>
-<li><a name='toc5' href='#sect5'>Additional Commands</a></li>
-</ul>
-<li><a name='toc6' href='#sect6'>Options</a></li>
-<li><a name='toc7' href='#sect7'>Environment</a></li>
-<li><a name='toc8' href='#sect8'>Exit Codes</a></li>
-<li><a name='toc9' href='#sect9'>See Also</a></li>
-<li><a name='toc10' href='#sect10'>Author</a></li>
-</ul>
+<h3 id="environment">ENVIRONMENT</h3>
+<dl>
+<dt><strong>SVDIR</strong></dt>
+<dd>
+The environment variable $SVDIR overrides the default services directory
+<em>/service/</em>.
+</dd>
+<dt><strong>SVWAIT</strong></dt>
+<dd>
+The environment variable $SVWAIT overrides the default 7 seconds to wait
+for a command to take effect. It is overridden by the -w option.
+</dd>
+</dl>
+<h3 id="exit-codes">EXIT CODES</h3>
+<p><strong>sv</strong> exits 0, if the <em>command</em> was successfully
+sent to all <em>services</em>, and, if it was told to wait, the
+<em>command</em> has taken effect to all services.</p>
+<p>For each <em>service</em> that caused an error (e.g. the directory is
+not controlled by a <strong>runsv</strong>(8) process, or
+<strong>sv</strong> timed out while waiting), <strong>sv</strong>
+increases the exit code by one and exits non zero. The maximum is 99.
+<strong>sv</strong> exits 100 on error.</p>
+<p>If <strong>sv</strong> is called with a base name other than
+<strong>sv</strong>: it exits 1 on timeout or trouble sending the
+command; if the <em>command</em> is <strong>status</strong>, it exits 3
+if the service is down, and 4 if the status is unknown; it exits 2 on
+wrong usage, and 151 on error.</p>
+<h3 id="see-also">SEE ALSO</h3>
+<p>runsv(8), chpst(8), svlogd(8), runsvdir(8), runsvchdir(8), runit(8),
+runit-init(8)</p>
+<p>https://smarden.org/runit/</p>
+<h3 id="author">AUTHOR</h3>
+<p>Gerrit Pape &lt;pape@smarden.org&gt;</p>
 </body>
 </html>

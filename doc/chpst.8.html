@@ -1,164 +1,175 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-
-
+<!DOCTYPE html>
 <html>
 <head>
-<title>chpst(8) manual page</title>
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<title>chpst(8)</title>
 </head>
-<body bgcolor='white'>
-<a href='https://smarden.org/pape/'>G. Pape</a><br><a href='index.html'>runit</A><hr><p>
-
-<h2><a name='sect0'>Name</a></h2>
-chpst - runs a program with a changed process state 
-<h2><a name='sect1'>Synopsis</a></h2>
-<b>chpst</b> [-vVP012]
-[-u <i>user</i>] [-U <i>user</i>] [-b <i>argv0</i>] [-e <i>dir</i>] [-/ <i>root</i>] [-C <i>pwd</i>] [-n <i>inc</i>] [-l|-L <i>lock</i>] [-m <i>bytes</i>] [-d <i>bytes</i>]
-[-o <i>n</i>] [-p <i>n</i>] [-f <i>bytes</i>] [-c <i>bytes</i>] [-t <i>seconds</i>] <i>prog</i>
-<h2><a name='sect2'>Description</a></h2>
-<i>prog</i> consists of one or
-more arguments. <p>
-<b>chpst</b> changes the process state according to the given options,
-and runs <i>prog</i>. 
-<h2><a name='sect3'>Options</a></h2>
-
+<body>
+<p><a href="https://smarden.org/pape/">G. Pape</a><br />
+<a href="index.html">runit</a></p>
+<hr />
+<h3 id="name">NAME</h3>
+<p>chpst - runs a program with a changed process state</p>
+<h3 id="synopsis">SYNOPSIS</h3>
+<p><strong>chpst</strong> [-vVP012] [-u <em>user</em>] [-U
+<em>user</em>] [-b <em>argv0</em>] [-e <em>dir</em>] [-/ <em>root</em>]
+[-C <em>pwd</em>] [-n <em>inc</em>] [-l|-L <em>lock</em>] [-m
+<em>bytes</em>] [-d <em>bytes</em>] [-o <em>n</em>] [-p <em>n</em>] [-f
+<em>bytes</em>] [-c <em>bytes</em>] [-t <em>seconds</em>]
+<em>prog</em></p>
+<h3 id="description">DESCRIPTION</h3>
+<p><em>prog</em> consists of one or more arguments.</p>
+<p><strong>chpst</strong> changes the process state according to the
+given options, and runs <em>prog</em>.</p>
+<h3 id="options">OPTIONS</h3>
 <dl>
-
-<dt><b>-u <i>[:]user[:group]</b> </i></dt>
-<dd>setuidgid. Set uid and gid to the
-<i>user</i>&rsquo;s uid and gid, as found in <i>/etc/passwd</i>. If <i>user</i> is followed by a colon
-and a <i>group</i>, set the gid to <i>group</i>&rsquo;s gid, as found in <i>/etc/group</i>, instead
-of <i>user</i>&rsquo;s gid. If <i>group</i> consists of a colon-separated list of group names,
-<b>chpst</b> sets the group ids of all listed groups. If <i>user</i> is prefixed with
-a colon, the <i>user</i> and all <i>group</i> arguments are interpreted as uid and gids
-respectively, and not looked up in the password or group file. All initial
-supplementary groups are removed. </dd>
-
-<dt><b>-U <i>[:]user[:group]</b> </i></dt>
-<dd>envuidgid. Set the environment
-variables $UID and $GID to the <i>user</i>&rsquo;s uid and gid, as found in <i>/etc/passwd</i>.
-If <i>user</i> is followed by a colon and a <i>group</i>, set $GID to the <i>group</i>&rsquo;s gid,
-as found in <i>/etc/group</i>, instead of <i>user</i>&rsquo;s gid. If <i>user</i> is prefixed with a
-colon, the <i>user</i> and <i>group</i> arguments are interpreted as uid and gid respectively,
-and not looked up in the password or group file. </dd>
-
-<dt><b>-b <i>argv0</b> </i></dt>
-<dd>argv0. Run <i>prog</i>
-with <i>argv0</i> as the 0th argument. </dd>
-
-<dt><b>-e <i>dir</b> </i></dt>
-<dd>envdir. Set various
-environment variables as specified by files in the directory <i>dir</i>: If <i>dir</i>
-contains a file named <i>k</i> whose first line is <i>v</i>, <b>chpst</b> removes the environment
-variable <i>k</i> if it exists, and then adds the environment variable <i>k</i> with
-the value <i>v</i>. The name <i>k</i> must not contain =. Spaces and tabs at the end of
-<i>v</i> are removed, and nulls in <i>v</i> are changed to newlines. If the file <i>k</i> is
-empty (0 bytes long), <b>chpst</b> removes the environment variable <i>k</i> if it exists,
-without adding a new variable. </dd>
-
-<dt><b>-/ <i>root</b> </i></dt>
-<dd>chroot. Change the root directory to
-<i>root</i> before starting <i>prog</i>. </dd>
-
-<dt><b>-C <i>pwd</b> </i></dt>
-<dd>chdir. Change the working directory to
-<i>pwd</i> before starting <i>prog</i>.
-When combined with -/, the working directory is changed after the chroot. </dd>
-
-<dt><b>-n <i>inc</b> </i></dt>
-<dd>nice. Add <i>inc</i> to the <i><b>nice</b>(2)</i> value before
-starting <i>prog</i>. <i>inc</i> must be an integer, and may start with a minus or plus.
+<dt><strong>-u</strong> <em>[:]user[:group]</em></dt>
+<dd>
+setuidgid. Set uid and gid to the <em>user</em>'s uid and gid, as found
+in <em>/etc/passwd</em>. If <em>user</em> is followed by a colon and a
+<em>group</em>, set the gid to <em>group</em>'s gid, as found in
+<em>/etc/group</em>, instead of <em>user</em>'s gid. If <em>group</em>
+consists of a colon-separated list of group names,
+<strong>chpst</strong> sets the group ids of all listed groups. If
+<em>user</em> is prefixed with a colon, the <em>user</em> and all
+<em>group</em> arguments are interpreted as uid and gids respectively,
+and not looked up in the password or group file. All initial
+supplementary groups are removed.
 </dd>
-
-<dt><b>-l <i>lock</b> </i></dt>
-<dd>lock. Open the file <i>lock</i> for writing, and obtain an exclusive lock
-on it. <i>lock</i> will be created if it does not exist. If <i>lock</i> is locked by another
-process, wait until a new lock can be obtained. </dd>
-
-<dt><b>-L <i>lock</b> </i></dt>
-<dd>The same as -l, but
-fail immediately if <i>lock</i> is locked by another process. </dd>
-
-<dt><b>-m <i>bytes</b> </i></dt>
-<dd>limit memory.
-Limit the data segment, stack segment, locked physical pages, and total
-of all segment per process to <i>bytes</i> bytes each. </dd>
-
-<dt><b>-d <i>bytes</b> </i></dt>
-<dd>limit data segment.
-Limit the data segment per process to <i>bytes</i> bytes. </dd>
-
-<dt><b>-o <i>n</b> </i></dt>
-<dd>limit open files.
-Limit the number of open file descriptors per process to <i>n</i>. </dd>
-
-<dt><b>-p <i>n</b> </i></dt>
-<dd>limit processes.
-Limit the number of processes per uid to <i>n</i>. </dd>
-
-<dt><b>-f <i>bytes</b> </i></dt>
-<dd>limit output size. Limit
-the output file size to <i>bytes</i> bytes. </dd>
-
-<dt><b>-c <i>bytes</b> </i></dt>
-<dd>limit core size. Limit the core
-file size to <i>bytes</i> bytes. </dd>
-
-<dt><b>-t <i>seconds</b> </i></dt>
-<dd>limit CPU time. Limit CPU time to <i>seconds</i> seconds, delivering a SIGXCPU thereafter.</dd>
-
-<dt><b>-v</b> </dt>
-<dd>verbose. Print verbose messages to standard error.
-This includes warnings about limits unsupported by the system. </dd>
-
-<dt><b>-V</b> </dt>
-<dd>version string. Print a version string to standard error. </dd>
-
-<dt><b>-P</b> </dt>
-<dd>pgrphack.
-Run <i>prog</i> in a new process group. </dd>
-
-<dt><b>-0</b> </dt>
-<dd>Close standard input before starting
-<i>prog</i>. </dd>
-
-<dt><b>-1</b> </dt>
-<dd>Close standard output before starting <i>prog</i>. </dd>
-
-<dt><b>-2</b> </dt>
-<dd>Close standard error
-before starting <i>prog</i>. </dd>
+<dt><strong>-U</strong> <em>[:]user[:group]</em></dt>
+<dd>
+envuidgid. Set the environment variables $UID and $GID to the
+<em>user</em>'s uid and gid, as found in <em>/etc/passwd</em>. If
+<em>user</em> is followed by a colon and a <em>group</em>, set $GID to
+the <em>group</em>'s gid, as found in <em>/etc/group</em>, instead of
+<em>user</em>'s gid. If <em>user</em> is prefixed with a colon, the
+<em>user</em> and <em>group</em> arguments are interpreted as uid and
+gid respectively, and not looked up in the password or group file.
+</dd>
+<dt><strong>-b</strong> <em>argv0</em></dt>
+<dd>
+argv0. Run <em>prog</em> with <em>argv0</em> as the 0th argument.
+</dd>
+<dt><strong>-e</strong> <em>dir</em></dt>
+<dd>
+envdir. Set various environment variables as specified by files in the
+directory <em>dir</em>: If <em>dir</em> contains a file named <em>k</em>
+whose first line is <em>v</em>, <strong>chpst</strong> removes the
+environment variable <em>k</em> if it exists, and then adds the
+environment variable <em>k</em> with the value <em>v</em>. The name
+<em>k</em> must not contain =. Spaces and tabs at the end of <em>v</em>
+are removed, and nulls in <em>v</em> are changed to newlines. If the
+file <em>k</em> is empty (0 bytes long), <strong>chpst</strong> removes
+the environment variable <em>k</em> if it exists, without adding a new
+variable.
+</dd>
+<dt><strong>-/</strong> <em>root</em></dt>
+<dd>
+chroot. Change the root directory to <em>root</em> before starting
+<em>prog</em>.
+</dd>
+<dt><strong>-C</strong> <em>pwd</em></dt>
+<dd>
+chdir. Change the working directory to <em>pwd</em> before starting
+<em>prog</em>. When combined with -/, the working directory is changed
+after the chroot.
+</dd>
+<dt><strong>-n</strong> <em>inc</em></dt>
+<dd>
+nice. Add <em>inc</em> to the <strong>nice</strong>(2) value before
+starting <em>prog</em>. <em>inc</em> must be an integer, and may start
+with a minus or plus.
+</dd>
+<dt><strong>-l</strong> <em>lock</em></dt>
+<dd>
+lock. Open the file <em>lock</em> for writing, and obtain an exclusive
+lock on it. <em>lock</em> will be created if it does not exist. If
+<em>lock</em> is locked by another process, wait until a new lock can be
+obtained.
+</dd>
+<dt><strong>-L</strong> <em>lock</em></dt>
+<dd>
+The same as -l, but fail immediately if <em>lock</em> is locked by
+another process.
+</dd>
+<dt><strong>-m</strong> <em>bytes</em></dt>
+<dd>
+limit memory. Limit the data segment, stack segment, locked physical
+pages, and total of all segment per process to <em>bytes</em> bytes
+each.
+</dd>
+<dt><strong>-d</strong> <em>bytes</em></dt>
+<dd>
+limit data segment. Limit the data segment per process to <em>bytes</em>
+bytes.
+</dd>
+<dt><strong>-o</strong> <em>n</em></dt>
+<dd>
+limit open files. Limit the number of open file descriptors per process
+to <em>n</em>.
+</dd>
+<dt><strong>-p</strong> <em>n</em></dt>
+<dd>
+limit processes. Limit the number of processes per uid to <em>n</em>.
+</dd>
+<dt><strong>-f</strong> <em>bytes</em></dt>
+<dd>
+limit output size. Limit the output file size to <em>bytes</em> bytes.
+</dd>
+<dt><strong>-c</strong> <em>bytes</em></dt>
+<dd>
+limit core size. Limit the core file size to <em>bytes</em> bytes.
+</dd>
+<dt><strong>-t</strong> <em>seconds</em></dt>
+<dd>
+limit CPU time. Limit CPU time to <em>seconds</em> seconds, delivering a
+SIGXCPU thereafter.
+</dd>
+<dt><strong>-v</strong></dt>
+<dd>
+verbose. Print verbose messages to standard error. This includes
+warnings about limits unsupported by the system.
+</dd>
+<dt><strong>-V</strong></dt>
+<dd>
+version string. Print a version string to standard error.
+</dd>
+<dt><strong>-P</strong></dt>
+<dd>
+pgrphack. Run <em>prog</em> in a new process group.
+</dd>
+<dt><strong>-0</strong></dt>
+<dd>
+Close standard input before starting <em>prog</em>.
+</dd>
+<dt><strong>-1</strong></dt>
+<dd>
+Close standard output before starting <em>prog</em>.
+</dd>
+<dt><strong>-2</strong></dt>
+<dd>
+Close standard error before starting <em>prog</em>.
+</dd>
 </dl>
-
-<h2><a name='sect4'>Exit Codes</a></h2>
-<b>chpst</b> exits 100 when called with wrong options.
-It prints an error message and exits 111 if it has trouble changing the
-process state. Otherwise its exit code is the same as that of <i>prog</i>. 
-<h2><a name='sect5'>Emulation</a></h2>
-If
-<b>chpst</b> is called as <b>envdir</b>, <b>envuidgid</b>, <b>pgrphack</b>, <b>setlock</b>, <b>setuidgid</b>, or
-<b>softlimit</b>, it emulates the functionality of these programs from the daemontools
-package respectively. 
-<h2><a name='sect6'>See Also</a></h2>
-<i>sv(8)</i>, <i>runsv(8)</i>, <i>setsid(2)</i>, <i>runit(8)</i>, <i>runit-init(8)</i>,
-<i>runsvdir(8)</i>, <i>runsvchdir(8)</i> <p>
- <i>https://smarden.org/runit/</i><br>
-  <i>https://cr.yp.to/daemontools.html</i><br>
- 
-<h2><a name='sect7'>Author</a></h2>
-Gerrit Pape &lt;pape@smarden.org&gt; <p>
-
-<hr><p>
-<a name='toc'><b>Table of Contents</b></a><p>
-<ul>
-<li><a name='toc0' href='#sect0'>Name</a></li>
-<li><a name='toc1' href='#sect1'>Synopsis</a></li>
-<li><a name='toc2' href='#sect2'>Description</a></li>
-<li><a name='toc3' href='#sect3'>Options</a></li>
-<li><a name='toc4' href='#sect4'>Exit Codes</a></li>
-<li><a name='toc5' href='#sect5'>Emulation</a></li>
-<li><a name='toc6' href='#sect6'>See Also</a></li>
-<li><a name='toc7' href='#sect7'>Author</a></li>
-</ul>
+<h3 id="exit-codes">EXIT CODES</h3>
+<p><strong>chpst</strong> exits 100 when called with wrong options. It
+prints an error message and exits 111 if it has trouble changing the
+process state. Otherwise its exit code is the same as that of
+<em>prog</em>.</p>
+<h3 id="emulation">EMULATION</h3>
+<p>If <strong>chpst</strong> is called as <strong>envdir</strong>,
+<strong>envuidgid</strong>, <strong>pgrphack</strong>,
+<strong>setlock</strong>, <strong>setuidgid</strong>, or
+<strong>softlimit</strong>, it emulates the functionality of these
+programs from the daemontools package respectively.</p>
+<h3 id="see-also">SEE ALSO</h3>
+<p>sv(8), runsv(8), setsid(2), runit(8), runit-init(8), runsvdir(8),
+runsvchdir(8)</p>
+<p>https://smarden.org/runit/<br />
+https://cr.yp.to/daemontools.html</p>
+<h3 id="author">AUTHOR</h3>
+<p>Gerrit Pape &lt;pape@smarden.org&gt;</p>
 </body>
 </html>

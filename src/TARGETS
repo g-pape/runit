@@ -8,8 +8,6 @@ runsvdir
 runsvdir.o
 sv
 sv.o
-utmpset
-utmpset.o
 runsvchdir
 runsvchdir.o
 svlogd
@@ -20,7 +18,6 @@ pmatch.o
 fmt_ptime.o
 uidgid.o
 reboot_system.h
-uw_tmp.h
 socket.lib
 trysocketlib
 trysocketlib.o
@@ -126,4 +123,3 @@ runsvchdir.local
 runsvdir.local
 sv.local
 svlogd.local
-utmpset.local

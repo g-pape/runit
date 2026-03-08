@@ -1,4 +1,4 @@
-IT=chpst runit runit-init runsv runsvchdir runsvdir sv svlogd utmpset
+IT=chpst runit runit-init runsv runsvchdir runsvdir sv svlogd
 
 default: sysdeps $(IT)
 
@@ -19,9 +19,6 @@ runsvdir: load runsvdir.o unix.a byte.a time.a
 
 sv: load sv.o unix.a byte.a time.a
 	./load sv unix.a byte.a time.a
-
-utmpset: load utmpset.o unix.a byte.a
-	./load utmpset unix.a byte.a
 
 runsvchdir: load runsvchdir.o unix.a byte.a
 	./load runsvchdir unix.a byte.a
@@ -48,9 +45,6 @@ runsvdir.o: compile sysdeps runsvdir.c
 sv.o: compile sysdeps sv.c
 	./compile sv.c
 
-utmpset.o: compile sysdeps utmpset.c
-	./compile utmpset.c
-
 runsvchdir.o: compile runsvchdir.c
 	./compile runsvchdir.c
 
@@ -73,11 +67,6 @@ fmt_ptime.o: compile sysdeps fmt_ptime.c
 reboot_system.h: choose compile reboot_system.h1 reboot_system.h2
 	./choose c tryreboot reboot_system.h1 reboot_system.h2 > \
 	  reboot_system.h
-
-uw_tmp.h: compile uw_tmp.h1 uw_tmp.h2
-	( ./compile tryuwtmpx.c 2>/dev/null && cat uw_tmp.h2 >uw_tmp.h ) || \
-	( ./compile tryuwtmp.c 2>/dev/null && cat uw_tmp.h1 >uw_tmp.h )
-	rm -f tryuwtmp.o tryuwtmpx.o
 
 socket.lib: compile load trysocketlib.c
 	./compile trysocketlib.c
@@ -341,7 +330,7 @@ subgetopt.o: compile subgetopt.c subgetopt.h
 
 sysdeps: compile direntry.h hasflock.h hasmkffo.h hassgact.h \
 hassgprm.h hasunshare.h haswaitp.h iopause.h load select.h systype \
-uint64.h reboot_system.h uw_tmp.h socket.lib
+uint64.h reboot_system.h socket.lib
 	rm -f sysdeps
 	cat systype compile load socket.lib >>sysdeps
 	grep sysdep direntry.h >>sysdeps
@@ -354,7 +343,6 @@ uint64.h reboot_system.h uw_tmp.h socket.lib
 	grep sysdep hasmkffo.h >>sysdeps
 	grep sysdep hasflock.h >>sysdeps
 	grep sysdep reboot_system.h >>sysdeps
-	grep sysdep uw_tmp.h >>sysdeps
 	grep sysdep hasunshare.h >>sysdeps
 	cat sysdeps
 

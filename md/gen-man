@@ -1,0 +1,4 @@
+#!/bin/sh
+for i in *[0-9].md; do
+  pandoc -s -t man $i |sed 's/"" "" ""$//g' >${1:-.}/${i%.md}
+done

@@ -58,6 +58,7 @@ int sigterm =0;
 int haslog =0;
 int pidchanged =1;
 int logpipe[2];
+char bufnum[FMT_ULONG];
 char *dir;
 
 void usage () { strerr_die4x(1, "usage: ", progname, USAGE, "\n"); }
@@ -98,7 +99,6 @@ void update_status(struct svdir *s) {
 #ifndef RUNSV_STATUS_BINARYONLY
   char bspace[64];
   buffer b;
-  char spid[FMT_ULONG];
   char *fstat ="supervise/stat";
   char *fstatnew ="supervise/stat.new";
   char *fpid ="supervise/pid";
@@ -123,9 +123,9 @@ void update_status(struct svdir *s) {
       return;
     }
     buffer_init(&b, buffer_unixwrite, fd, bspace, sizeof bspace);
-    spid[fmt_ulong(spid, (unsigned long)s->pid)] =0;
+    bufnum[fmt_ulong(bufnum, (unsigned long)s->pid)] =0;
     if (s->pid) {
-      buffer_puts(&b, spid);
+      buffer_puts(&b, bufnum);
       buffer_puts(&b, "\n");
       buffer_flush(&b);
     }
@@ -215,7 +215,7 @@ unsigned int custom(struct svdir *s, char c) {
   int w;
   char a[10];
   struct stat st;
-  char *prog[2];
+  char *prog[3];
 
   if (s->islog) return(0);
   byte_copy(a, 10, "control/?");
@@ -230,7 +230,9 @@ unsigned int custom(struct svdir *s, char c) {
         if (haslog && fd_copy(1, logpipe[1]) == -1)
           warn2("unable to setup stdout for ", a);
         prog[0] =a;
-        prog[1] =0;
+        bufnum[fmt_ulong(bufnum, (unsigned long)s->pid)] =0;
+        prog[1] =s->pid ? bufnum : "";
+        prog[2] =0;
         execve(a, prog, environ);
         fatal("unable to run control/?");
       }
