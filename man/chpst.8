@@ -4,7 +4,7 @@
 .SH NAME
 chpst \- runs a program with a changed process state
 .SH SYNOPSIS
-\f[B]chpst\f[R] [\-vVP012] [\-u \f[I]user\f[R]] [\-U \f[I]user\f[R]]
+\f[B]chpst\f[R] [\-vVPFI012] [\-u \f[I]user\f[R]] [\-U \f[I]user\f[R]]
 [\-b \f[I]argv0\f[R]] [\-e \f[I]dir\f[R]] [\-/ \f[I]root\f[R]] [\-C
 \f[I]pwd\f[R]] [\-n \f[I]inc\f[R]] [\-l|\-L \f[I]lock\f[R]] [\-m
 \f[I]bytes\f[R]] [\-d \f[I]bytes\f[R]] [\-o \f[I]n\f[R]] [\-p
@@ -132,6 +132,32 @@ Print a version string to standard error.
 \f[B]\-P\f[R]
 pgrphack.
 Run \f[I]prog\f[R] in a new process group.
+.TP
+\f[B]\-F\f[R]
+fghack or follow.
+Run \f[I]prog\f[R] in new pid and mount namespaces as second process
+(pid 2), and wait for \f[I]prog\f[R] and all processes started by it to
+exit, no matter in which order.
+Then exit with the return code of the last process exited.
+The /proc filesystem is unmounted in \f[I]prog\f[R]\[aq]s namespace, and
+while waiting \f[B]chpst\f[R] relays most signals it receives to all
+processes in \f[I]prog\f[R]\[aq]s namespace.
+On QUIT signal \f[B]chpst\f[R] sends the KILL signal to pid 1 in the
+namespace to have it, \f[I]prog\f[R], and all its children exit
+immediately.
+Only works on systems that provide \f[B]unshare\f[R](2).
+.TP
+\f[B]\-I\f[R]
+init.
+Run \f[I]prog\f[R] in new pid and mount namespaces as process no 1 (pid
+1), and wait for it to exit.
+\f[I]prog\f[R] must be an init program.
+The /proc filesystem is unmounted in \f[I]prog\f[R]\[cq]s namespace, and
+while waiting \f[B]chpst\f[R] relays most signals it receives to
+\f[I]prog\f[R].
+On QUIT signal \f[B]chpst\f[R] sends the KILL signal to \f[I]prog\f[R]
+to have it and all its children exit immediately.
+Only works on systems that provide \f[B]unshare\f[R](2).
 .TP
 \f[B]\-0\f[R]
 Close standard input before starting \f[I]prog\f[R].

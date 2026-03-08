@@ -13,7 +13,7 @@
 <h3 id="name">NAME</h3>
 <p>chpst - runs a program with a changed process state</p>
 <h3 id="synopsis">SYNOPSIS</h3>
-<p><strong>chpst</strong> [-vVP012] [-u <em>user</em>] [-U
+<p><strong>chpst</strong> [-vVPFI012] [-u <em>user</em>] [-U
 <em>user</em>] [-b <em>argv0</em>] [-e <em>dir</em>] [-/ <em>root</em>]
 [-C <em>pwd</em>] [-n <em>inc</em>] [-l|-L <em>lock</em>] [-m
 <em>bytes</em>] [-d <em>bytes</em>] [-o <em>n</em>] [-p <em>n</em>] [-f
@@ -139,6 +139,30 @@ version string. Print a version string to standard error.
 <dt><strong>-P</strong></dt>
 <dd>
 pgrphack. Run <em>prog</em> in a new process group.
+</dd>
+<dt><strong>-F</strong></dt>
+<dd>
+fghack or follow. Run <em>prog</em> in new pid and mount namespaces as
+second process (pid 2), and wait for <em>prog</em> and all processes
+started by it to exit, no matter in which order. Then exit with the
+return code of the last process exited. The /proc filesystem is
+unmounted in <em>prog</em>'s namespace, and while waiting
+<strong>chpst</strong> relays most signals it receives to all processes
+in <em>prog</em>'s namespace. On QUIT signal <strong>chpst</strong>
+sends the KILL signal to pid 1 in the namespace to have it,
+<em>prog</em>, and all its children exit immediately. Only works on
+systems that provide <strong>unshare</strong>(2).
+</dd>
+<dt><strong>-I</strong></dt>
+<dd>
+init. Run <em>prog</em> in new pid and mount namespaces as process no 1
+(pid 1), and wait for it to exit. <em>prog</em> must be an init program.
+The /proc filesystem is unmounted in <em>prog</em>’s namespace, and
+while waiting <strong>chpst</strong> relays most signals it receives to
+<em>prog</em>. On QUIT signal <strong>chpst</strong> sends the KILL
+signal to <em>prog</em> to have it and all its children exit
+immediately. Only works on systems that provide
+<strong>unshare</strong>(2).
 </dd>
 <dt><strong>-0</strong></dt>
 <dd>

@@ -1,3 +1,4 @@
+  * man/chpst.8: document new -F and -I options.
   * chpst.c: -F option implies -I (thx github/andy-bower).
   * chpst.c: -F: pid1: do not mount and check /proc at all.
   * chpst.c: -F: pid1: only check /proc after getting ECHILD.
