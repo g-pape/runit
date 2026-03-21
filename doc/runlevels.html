@@ -22,16 +22,16 @@
 href="runit.8.html">runit</a> as process no 1 by following the <a
 href="replaceinit.html">instructions</a>.</p>
 <p>Create the following directories and symbolic links:</p>
-<pre><code> # mkdir -p /etc/runit/runsvdir/default
- # mkdir -p /etc/runit/runsvdir/single
- # ln -s /etc/sv/getty-5 /etc/runit/runsvdir/single/
- # ln -s default /etc/runit/runsvdir/current</code></pre>
+<pre><code> mkdir -p /etc/runit/runsvdir/default
+ mkdir -p /etc/runit/runsvdir/single
+ ln -s /etc/sv/getty-5 /etc/runit/runsvdir/single/
+ ln -s default /etc/runit/runsvdir/current</code></pre>
 <p>Copy the contents of <code>/service/</code> to
 <code>/etc/runit/runsvdir/current/</code> and replace
 <code>/service/</code> with a symbolic link:</p>
-<pre><code> # cp -pR /service/* /etc/runit/runsvdir/current/
- # mv -f /service /service.old &amp;&amp; \
-     ln -s /etc/runit/runsvdir/current /service</code></pre>
+<pre><code> cp -pR /service/* /etc/runit/runsvdir/current/
+ mv -f /service /service.old &amp;&amp; \
+   ln -s /etc/runit/runsvdir/current /service</code></pre>
 <p>You have now created two runlevels: <code>default</code> and
 <code>single</code>. The <code>current</code> runlevel is
 <code>default</code>. It is safe to remove <code>/service.old/</code> if
@@ -54,9 +54,9 @@ directory the <a href="runsvdir.8.html">runsvdir</a> program is running
 in. This is done by the <a href="runsvchdir.8.html">runsvchdir</a>
 program, e.g. to switch to the <code>single</code> user runlevel,
 do:</p>
-<pre><code> # runsvchdir single</code></pre>
+<pre><code> runsvchdir single</code></pre>
 <p>To switch back to the <code>default</code> runlevel, do:</p>
-<pre><code> # runsvchdir default</code></pre>
+<pre><code> runsvchdir default</code></pre>
 <p>See <a href="runsvdir.8.html">the runsvdir program</a> for a
 description of what happens when <em>runsvdir</em> sees the directory
 changed. Note that there is no guarantee that all services from the
@@ -73,15 +73,15 @@ SIGTERM and wait for them to terminate. You can check the status of the
 of the new runlevel. The name must not start with a dot and must not be
 <code>current</code>, <code>current.new</code>, or
 <code>previous</code>, e.g.:</p>
-<pre><code> # mkdir /etc/runit/runsvdir/maintenance</code></pre>
+<pre><code> mkdir /etc/runit/runsvdir/maintenance</code></pre>
 <p>Add the services you want to run in the runlevel
 <code>maintenance</code> to the newly created directory, e.g.:</p>
-<pre><code> # ln -s /etc/sv/getty-5 /etc/runit/runsvdir/maintenance/
- # ln -s /etc/sv/ssh /etc/runit/runsvdir/maintenance/
- # ln -s /etc/sv/dnscache /etc/runit/runsvdir/maintenance/</code></pre>
+<pre><code> ln -s /etc/sv/getty-5 /etc/runit/runsvdir/maintenance/
+ ln -s /etc/sv/ssh /etc/runit/runsvdir/maintenance/
+ ln -s /etc/sv/dnscache /etc/runit/runsvdir/maintenance/</code></pre>
 <p>If you want to switch to the runlevel <code>maintenance</code>,
 do:</p>
-<pre><code> # runsvchdir maintenance</code></pre>
+<pre><code> runsvchdir maintenance</code></pre>
 <hr />
 <p><a href="mailto:pape@smarden.org">Gerrit Pape
 &lt;pape@smarden.org&gt;</a></p>

@@ -32,18 +32,18 @@ step 6, <em>runit</em> is the default Unix process no 1 after step
 <em>booting</em>, <em>running</em> and <em>shutdown</em> in
 <code>/etc/runit/1</code>, <code>/etc/runit/2</code> and
 <code>/etc/runit/3</code>, create the files now:</p>
-<pre><code> # mkdir -p /etc/runit
- # cp -p /package/admin/runit/etc/debian/[123] /etc/runit/</code></pre>
+<pre><code> mkdir -p /etc/runit
+ cp -p /package/admin/runit/etc/debian/[123] /etc/runit/</code></pre>
 <p>Create also a getty service directory:</p>
-<pre><code> # mkdir -p /etc/sv/getty-5
- # cp -p /package/admin/runit/etc/debian/getty-tty5/run /etc/sv/getty-5/</code></pre>
+<pre><code> mkdir -p /etc/sv/getty-5
+ cp -p /package/admin/runit/etc/debian/getty-tty5/run /etc/sv/getty-5/</code></pre>
 <p>If you want <em>runit</em> to handle the ctrl-alt-del keyboard
 request, do:</p>
-<pre><code> # cp -p /package/admin/runit/etc/debian/ctrlaltdel /etc/runit/</code></pre>
+<pre><code> cp -p /package/admin/runit/etc/debian/ctrlaltdel /etc/runit/</code></pre>
 <h3 id="step-2-the-runit-programs">Step 2: The runit programs</h3>
 <p>The <em>runit</em> programs must reside on the root partition, copy
 them to <code>/sbin</code>:</p>
-<pre><code> # cp -p /package/admin/runit/command/runit* /sbin/</code></pre>
+<pre><code> cp -p /package/admin/runit/command/runit* /sbin/</code></pre>
 <h3 id="step-3-the-getties">Step 3: The getties</h3>
 <p>At least one getty must run in stage 2 so that you are able to login.
 Choose a free <code>tty</code>, say <code>tty5</code>, where
@@ -51,10 +51,10 @@ Choose a free <code>tty</code>, say <code>tty5</code>, where
 <code>/etc/inittab</code> and <code>kill -HUP 1</code> if needed), and
 tell <a href="runsvdir.8.html">runsvdir</a> about the getty-5
 <em>service</em>:</p>
-<pre><code> # mkdir -p /service
- # ln -s /etc/sv/getty-5 /service/</code></pre>
+<pre><code> mkdir -p /service
+ ln -s /etc/sv/getty-5 /service/</code></pre>
 <p>Start <em>runit</em>'s stage 2 for testing:</p>
-<pre><code> # /etc/runit/2 &amp;</code></pre>
+<pre><code> /etc/runit/2 &amp;</code></pre>
 <p>And check that the getty is running.</p>
 <h3 id="step-4-reboot-into-runit-for-testing">Step 4: Reboot into runit
 for testing</h3>
@@ -106,14 +106,14 @@ again at step 4.</p>
 <h3 id="step-6-replace-sbininit">Step 6: Replace /sbin/init</h3>
 <p>Now it is time to replace the <em>sysvinit</em>
 <code>/sbin/init</code> binary:</p>
-<pre><code> # mv /sbin/init /sbin/init.sysv
- # ln -s runit-init /sbin/init</code></pre>
+<pre><code> mv /sbin/init /sbin/init.sysv
+ ln -s runit-init /sbin/init</code></pre>
 <h3 id="step-7-final-reboot">Step 7: Final reboot</h3>
 <p>The last step is to do the final reboot to boot the system with the
 new default Unix process no 1 <em>runit</em>.</p>
-<pre><code> # init 6</code></pre>
+<pre><code> init 6</code></pre>
 <p>To report success:</p>
-<pre><code> # ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org</code></pre>
+<pre><code> ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org</code></pre>
 <hr />
 <p><span id="bsd"></span></p>
 <h2 id="replacing-init-bsd">Replacing init (*BSD)</h2>
@@ -126,41 +126,41 @@ href="https://www.freebsd.org/">FreeBSD 4.4</a>. The
 <em>booting</em>, <em>running</em> and <em>shutdown</em> in
 <code>/etc/runit/1</code>, <code>/etc/runit/2</code> and
 <code>/etc/runit/3</code> respectively. Create the scripts now:</p>
-<pre><code> # mkdir -p /etc/runit
+<pre><code> mkdir -p /etc/runit
 
 OpenBSD 2.9:
- # cp -p /package/admin/runit/etc/openbsd/[123] /etc/runit/
+ cp -p /package/admin/runit/etc/openbsd/[123] /etc/runit/
 
 FreeBSD 4.4:
- # cp -p /package/admin/runit/etc/freebsd/[123] /etc/runit/</code></pre>
+ cp -p /package/admin/runit/etc/freebsd/[123] /etc/runit/</code></pre>
 <p>Remove the <code>svscanboot</code> startup from
 <code>/etc/rc.local</code> by deleting the line
 <code>csh -cf '/command/svscanboot &amp;'</code> (this normally is the
 last one); <em>runit</em> will start <a
 href="runsvdir.8.html">runsvdir</a> in stage 2 after running
 <code>rc.local</code> in stage 1.</p>
-<pre><code> # vi /etc/rc.local</code></pre>
+<pre><code> vi /etc/rc.local</code></pre>
 <h3 id="step-2-the-runit-programs-1">Step 2: The runit programs</h3>
 <p>The <em>runit</em> programs must reside on the root partition,
 install them into <code>/sbin</code>:</p>
-<pre><code> # install -m0500 /package/admin/runit/command/runit* /sbin/</code></pre>
+<pre><code> install -m0500 /package/admin/runit/command/runit* /sbin/</code></pre>
 <h3 id="step-3-the-getties-1">Step 3: The getties</h3>
 <p>At least one getty must run in stage 2 so that you are able to login.
 To have it run on the virtual console no 5, create the getty-5 service
 directory:</p>
-<pre><code> # mkdir -p /etc/sv/getty-5
+<pre><code> mkdir -p /etc/sv/getty-5
 
 OpenBSD 2.9:
- # cp -p /package/admin/runit/etc/openbsd/getty-ttyC4/run /etc/sv/getty-5/
+ cp -p /package/admin/runit/etc/openbsd/getty-ttyC4/run /etc/sv/getty-5/
 
 FreeBSD 4.4:
- # cp -p /package/admin/runit/etc/freebsd/getty-ttyv4/run /etc/sv/getty-5/</code></pre>
+ cp -p /package/admin/runit/etc/freebsd/getty-ttyv4/run /etc/sv/getty-5/</code></pre>
 <p>and tell <a href="runsvdir.8.html">runsvdir</a> about the
 <code>getty-5</code> <em>service</em>:</p>
-<pre><code> # mkdir -p /service
- # ln -s /etc/sv/getty-5 /service/</code></pre>
+<pre><code> mkdir -p /service
+ ln -s /etc/sv/getty-5 /service/</code></pre>
 <p>Start <em>runit</em>'s stage 2 for testing:</p>
-<pre><code> # /etc/runit/2 &amp;</code></pre>
+<pre><code> /etc/runit/2 &amp;</code></pre>
 <p>And check that the getty is running.</p>
 <h3 id="step-4-replace-the-sbininit-binary">Step 4: Replace the
 <code>/sbin/init</code> binary</h3>
@@ -169,10 +169,10 @@ able to boot your system alternatively, e.g. with a boot floppy, to
 restore the former <code>/sbin/init</code> if anything goes wrong.</p>
 <p>Make a backup copy of the current <code>/sbin/init</code> program and
 replace it with <code>/sbin/runit-init</code>:</p>
-<pre><code> # cp -p /sbin/init /sbin/init.bsd
- # install /sbin/runit-init /sbin/init</code></pre>
+<pre><code> cp -p /sbin/init /sbin/init.bsd
+ install /sbin/runit-init /sbin/init</code></pre>
 <p>Boot your system with <em>runit</em> for the first time:</p>
-<pre><code> # reboot</code></pre>
+<pre><code> reboot</code></pre>
 <p>Watch the console output while <em>runit</em> boots up the system.
 Switch to the virtual console 5 (CTRL-ALT-F5) when stage 2 is reached, a
 getty should run there, you are able to login.</p>
@@ -181,7 +181,7 @@ halt a system that runs <em>runit</em>. This will cause <em>runit</em>
 to enter stage 3 which runs <code>/sbin/reboot</code> or
 <code>/sbin/halt</code> as last command.</p>
 <p>To report success:</p>
-<pre><code> # ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org</code></pre>
+<pre><code> ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org</code></pre>
 <h3 id="step-5-service-migration-1">Step 5: Service migration</h3>
 <p>The goal is to migrate all services from <em>/etc/rc.*</em> scheme to
 the <em>runit</em> service supervision design; take a look at these <a
