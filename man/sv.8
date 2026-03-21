@@ -73,8 +73,8 @@ Same as \f[I]status\f[R].
 Same as \f[I]up\f[R], but wait up to 7 seconds for the command to take
 effect.
 Then report the status or timeout.
-If the script \f[I]./check\f[R] exists in the service directory,
-\f[B]sv\f[R] runs this script to check whether the service is up and
+If the program \f[I]./check\f[R] exists in the service directory,
+\f[B]sv\f[R] runs this program to check whether the service is up and
 available; it\[aq]s considered to be available if \f[I]./check\f[R]
 exits with 0.
 .TP
@@ -90,8 +90,8 @@ Same as \f[I]hup\f[R], and additionally report the status afterwards.
 Send the commands \f[I]term\f[R], \f[I]cont\f[R], and \f[I]up\f[R] to
 the service, and wait up to 7 seconds for the service to restart.
 Then report the status or timeout.
-If the script \f[I]./check\f[R] exists in the service directory,
-\f[B]sv\f[R] runs this script to check whether the service is up and
+If the program \f[I]./check\f[R] exists in the service directory,
+\f[B]sv\f[R] runs this program to check whether the service is up and
 available again; it\[aq]s considered to be available if
 \f[I]./check\f[R] exits with 0.
 .TP
@@ -117,8 +117,8 @@ Send the service the \f[I]term\f[R], \f[I]cont\f[R] and \f[I]up\f[R]
 commands, and wait up to 7 seconds for the service to restart.
 Then report the status, and on timeout send the service the
 \f[I]kill\f[R] command.
-If the script \f[I]./check\f[R] exists in the service directory,
-\f[B]sv\f[R] runs this script to check whether the service is up and
+If the program \f[I]./check\f[R] exists in the service directory,
+\f[B]sv\f[R] runs this program to check whether the service is up and
 available again; it\[aq]s considered to be available if
 \f[I]./check\f[R] exits with 0.
 .TP
@@ -139,9 +139,9 @@ Check for the service to be in the state that\[aq]s been requested (up
 or down).
 Wait up to 7 seconds for the service to reach the requested state, then
 report the status or timeout.
-If the requested state of the service is \f[I]up\f[R], and the script
+If the requested state of the service is \f[I]up\f[R], and the program
 \f[I]./check\f[R] exists in the service directory, \f[B]sv\f[R] runs
-this script to check whether the service is up and running; it\[aq]s
+this program to check whether the service is up and running; it\[aq]s
 considered to be up if \f[I]./check\f[R] exits with 0.
 .SH OPTIONS
 .TP

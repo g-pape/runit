@@ -70,8 +70,8 @@ by the base name of the "init script".
 
 **start**
 :   Same as *up*, but wait up to 7 seconds for the command to take
-    effect. Then report the status or timeout. If the script *./check*
-    exists in the service directory, **sv** runs this script to check
+    effect. Then report the status or timeout. If the program *./check*
+    exists in the service directory, **sv** runs this program to check
     whether the service is up and available; it\'s considered to be
     available if *./check* exits with 0.
 
@@ -85,8 +85,8 @@ by the base name of the "init script".
 **restart**
 :   Send the commands *term*, *cont*, and *up* to the service, and wait
     up to 7 seconds for the service to restart. Then report the status
-    or timeout. If the script *./check* exists in the service directory,
-    **sv** runs this script to check whether the service is up and
+    or timeout. If the program *./check* exists in the service directory,
+    **sv** runs this program to check whether the service is up and
     available again; it\'s considered to be available if *./check* exits
     with 0.
 
@@ -107,8 +107,8 @@ by the base name of the "init script".
 **force-restart**
 :   Send the service the *term*, *cont* and *up* commands, and wait up
     to 7 seconds for the service to restart. Then report the status, and
-    on timeout send the service the *kill* command. If the script
-    *./check* exists in the service directory, **sv** runs this script
+    on timeout send the service the *kill* command. If the program
+    *./check* exists in the service directory, **sv** runs this program
     to check whether the service is up and available again; it\'s
     considered to be available if *./check* exits with 0.
 
@@ -128,8 +128,8 @@ by the base name of the "init script".
 :   Check for the service to be in the state that\'s been requested (up
     or down). Wait up to 7 seconds for the service to reach the
     requested state, then report the status or timeout. If the requested
-    state of the service is *up*, and the script *./check* exists in the
-    service directory, **sv** runs this script to check whether the
+    state of the service is *up*, and the program *./check* exists in the
+    service directory, **sv** runs this program to check whether the
     service is up and running; it\'s considered to be up if *./check*
     exits with 0.
 

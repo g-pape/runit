@@ -49,12 +49,12 @@ force its reload or restart.</p>
 program for more options.</p>
 <hr />
 <p>For service daemons that do not make their service available
-immediately after starting, a <code>check</code> script can be added.
+immediately after starting, a <code>check</code> program can be added.
 The <a href="https://smarden.org/runit/sv.8.html">sv</a> program will
-use this <code>check</code> script to better evaluate whether a service
+use this <code>check</code> program to better evaluate whether a service
 is fully started and available, for example:</p>
 <p>For a mail service listening on localhost:25, this <code>check</code>
-script could be used</p>
+program could be used</p>
 <pre><code> #!/bin/sh
  exec nc -z localhost 25</code></pre>
 <hr />

@@ -85,9 +85,9 @@ Same as <em>status</em>.
 <dt><strong>start</strong></dt>
 <dd>
 Same as <em>up</em>, but wait up to 7 seconds for the command to take
-effect. Then report the status or timeout. If the script
+effect. Then report the status or timeout. If the program
 <em>./check</em> exists in the service directory, <strong>sv</strong>
-runs this script to check whether the service is up and available; it's
+runs this program to check whether the service is up and available; it's
 considered to be available if <em>./check</em> exits with 0.
 </dd>
 <dt><strong>stop</strong></dt>
@@ -103,8 +103,8 @@ Same as <em>hup</em>, and additionally report the status afterwards.
 <dd>
 Send the commands <em>term</em>, <em>cont</em>, and <em>up</em> to the
 service, and wait up to 7 seconds for the service to restart. Then
-report the status or timeout. If the script <em>./check</em> exists in
-the service directory, <strong>sv</strong> runs this script to check
+report the status or timeout. If the program <em>./check</em> exists in
+the service directory, <strong>sv</strong> runs this program to check
 whether the service is up and available again; it's considered to be
 available if <em>./check</em> exits with 0.
 </dd>
@@ -131,10 +131,10 @@ on timeout send the service the <em>kill</em> command.
 Send the service the <em>term</em>, <em>cont</em> and <em>up</em>
 commands, and wait up to 7 seconds for the service to restart. Then
 report the status, and on timeout send the service the <em>kill</em>
-command. If the script <em>./check</em> exists in the service directory,
-<strong>sv</strong> runs this script to check whether the service is up
-and available again; it's considered to be available if <em>./check</em>
-exits with 0.
+command. If the program <em>./check</em> exists in the service
+directory, <strong>sv</strong> runs this program to check whether the
+service is up and available again; it's considered to be available if
+<em>./check</em> exits with 0.
 </dd>
 <dt><strong>force-shutdown</strong></dt>
 <dd>
@@ -156,9 +156,9 @@ report the status or timeout.
 Check for the service to be in the state that's been requested (up or
 down). Wait up to 7 seconds for the service to reach the requested
 state, then report the status or timeout. If the requested state of the
-service is <em>up</em>, and the script <em>./check</em> exists in the
-service directory, <strong>sv</strong> runs this script to check whether
-the service is up and running; it's considered to be up if
+service is <em>up</em>, and the program <em>./check</em> exists in the
+service directory, <strong>sv</strong> runs this program to check
+whether the service is up and running; it's considered to be up if
 <em>./check</em> exits with 0.
 </dd>
 </dl>

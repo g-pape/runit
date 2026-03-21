@@ -1,3 +1,4 @@
+  * man/sv.8, doc/dependencies.html: rename check script to program.
   * doc/runscripts.html: clarify outdated status of the collection.
   * doc/*.html, man/*.8: replace; converted from markdown source.
   * svlogd.c, man/svlogd.8: -LL: print warning on data loss.

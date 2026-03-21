@@ -53,12 +53,12 @@ options.
 ---
 
 For service daemons that do not make their service available immediately
-after starting, a `check` script can be added. The
+after starting, a `check` program can be added. The
 [sv](https://smarden.org/runit/sv.8.html) program will use this `check`
-script to better evaluate whether a service is fully started and
+program to better evaluate whether a service is fully started and
 available, for example:
 
-For a mail service listening on localhost:25, this `check` script could
+For a mail service listening on localhost:25, this `check` program could
 be used
 
      #!/bin/sh
