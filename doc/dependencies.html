@@ -27,23 +27,23 @@ few examples:</p>
 service up and running, add <code>sv start pinkd</code> to
 <em>floyd</em>’s <code>run</code> script, right after
 <code>set -e</code>.</p>
-<pre><code> #!/bin/sh
- set -e
- sv start pinkd
- exec floyd</code></pre>
+<pre><code>#!/bin/sh
+set -e
+sv start pinkd
+exec floyd</code></pre>
 <p>When the <em>pinkd</em> service daemon crashes or is restarted for
 some other reason and the <em>floyd</em> daemon is unable to handle
 this, add <code>sv hup floyd</code> (or whatever the <em>floyd</em>
 daemon understands) to <em>pinkd</em>’s <code>finish</code> script to
 force its reload or restart.</p>
-<pre><code> #!/bin/sh
- sv hup floyd</code></pre>
+<pre><code>#!/bin/sh
+sv hup floyd</code></pre>
 <p>If the <em>pinkd</em> service shall be stopped when the
 <em>floyd</em> service is stopped gracefully, add
 <code>test "$1" != 0 || sv down pinkd</code> to <em>floyd</em>’s
 <code>finish</code> script.</p>
-<pre><code> #!/bin/sh
- test &quot;$1&quot; != 0 || sv down pinkd</code></pre>
+<pre><code>#!/bin/sh
+test &quot;$1&quot; != 0 || sv down pinkd</code></pre>
 <p>Or vice versa.</p>
 <p>Explore the <a href="https://smarden.org/runit/sv.8.html">sv</a>
 program for more options.</p>
@@ -55,8 +55,8 @@ use this <code>check</code> program to better evaluate whether a service
 is fully started and available, for example:</p>
 <p>For a mail service listening on localhost:25, this <code>check</code>
 program could be used</p>
-<pre><code> #!/bin/sh
- exec nc -z localhost 25</code></pre>
+<pre><code>#!/bin/sh
+exec nc -z localhost 25</code></pre>
 <hr />
 <p><a href="mailto:pape@smarden.org">Gerrit Pape
 &lt;pape@smarden.org&gt;</a></p>

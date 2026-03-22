@@ -63,17 +63,17 @@ even more complexity to the init script in comparison with a run script
 used by *runit*. Many of today\'s init scripts don\'t provide a clean
 process state, here is an example on what could happen:
 
-     # /etc/init.d/foo-daemon start
-     Starting foo daemon: food.
-     #
+    # /etc/init.d/foo-daemon start
+    Starting foo daemon: food.
+    #
 
 Fine. Everything works, nothing to worry about. After rebooting the
 system this shows up on the screen:
 
-     ...
-     Starting foo daemon: food: command not found
-     failed.
-     ...
+    ...
+    Starting foo daemon: food: command not found
+    failed.
+    ...
 
 The `food` program is installed in `/opt/foo/bin/`. When starting the
 service for the first time using the init script, the `PATH` environment
@@ -87,7 +87,7 @@ system reboot.
 With bad init scripts miraculous things could also happen when just
 doing
 
-     # /etc/init.d/foo-daemon restart
+    # /etc/init.d/foo-daemon restart
 
 at the command line.
 

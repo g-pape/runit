@@ -40,7 +40,7 @@ The default directory for services is now `/service/`, and no longer
 `/var/service/`. To be consistent with the new default location, create
 a symlink when upgrading
 
-     # ln -s /var/service /
+    # ln -s /var/service /
 
 When installing runit on a system that should comply with the Filesystem
 Hierarchy Standard (FHS), neither `/service/` nor `/var/service/` should

@@ -33,24 +33,24 @@ If you have installed the precompiled Debian package, start at step 3.
 *running* and *shutdown* in `/etc/runit/1`, `/etc/runit/2` and
 `/etc/runit/3`, create the files now:
 
-     mkdir -p /etc/runit
-     cp -p /package/admin/runit/etc/debian/[123] /etc/runit/
+    mkdir -p /etc/runit
+    cp -p /package/admin/runit/etc/debian/[123] /etc/runit/
 
 Create also a getty service directory:
 
-     mkdir -p /etc/sv/getty-5
-     cp -p /package/admin/runit/etc/debian/getty-tty5/run /etc/sv/getty-5/
+    mkdir -p /etc/sv/getty-5
+    cp -p /package/admin/runit/etc/debian/getty-tty5/run /etc/sv/getty-5/
 
 If you want *runit* to handle the ctrl-alt-del keyboard request, do:
 
-     cp -p /package/admin/runit/etc/debian/ctrlaltdel /etc/runit/
+    cp -p /package/admin/runit/etc/debian/ctrlaltdel /etc/runit/
 
 ### Step 2: The runit programs
 
 The *runit* programs must reside on the root partition, copy them to
 `/sbin`:
 
-     cp -p /package/admin/runit/command/runit* /sbin/
+    cp -p /package/admin/runit/command/runit* /sbin/
 
 ### Step 3: The getties
 
@@ -59,12 +59,12 @@ Choose a free `tty`, say `tty5`, where *sysvinit* is not running any
 getty (edit `/etc/inittab` and `kill -HUP 1` if needed), and tell
 [runsvdir](runsvdir.8.html) about the getty-5 *service*:
 
-     mkdir -p /service
-     ln -s /etc/sv/getty-5 /service/
+    mkdir -p /service
+    ln -s /etc/sv/getty-5 /service/
 
 Start *runit*\'s stage 2 for testing:
 
-     /etc/runit/2 &
+    /etc/runit/2 &
 
 And check that the getty is running.
 
@@ -94,14 +94,14 @@ done smoothly. For those services that are not migrated to use `run`
 scripts yet, add the corresponding `init`-script startup to
 `/etc/runit/1`, e.g.:
 
-     #!/bin/sh
-     # one time tasks
+    #!/bin/sh
+    # one time tasks
 
-     /etc/init.d/kerneld start
-     /etc/init.d/rmnologin
+    /etc/init.d/kerneld start
+    /etc/init.d/rmnologin
 
-     touch /etc/runit/stopit
-     chmod 0 /etc/runit/stopit
+    touch /etc/runit/stopit
+    chmod 0 /etc/runit/stopit
 
 It is possible to just add `/etc/init.d/rc 2` for having all services
 from the former runlevel 2 started as one time tasks, but keep the goal
@@ -121,19 +121,19 @@ and repair the *runit* stages, then start again at step 4.
 
 Now it is time to replace the *sysvinit* `/sbin/init` binary:
 
-     mv /sbin/init /sbin/init.sysv
-     ln -s runit-init /sbin/init
+    mv /sbin/init /sbin/init.sysv
+    ln -s runit-init /sbin/init
 
 ### Step 7: Final reboot
 
 The last step is to do the final reboot to boot the system with the new
 default Unix process no 1 *runit*.
 
-     init 6
+    init 6
 
 To report success:
 
-     ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org
+    ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org
 
 ---
 
@@ -152,27 +152,27 @@ until step 4.
 *running* and *shutdown* in `/etc/runit/1`, `/etc/runit/2` and
 `/etc/runit/3` respectively. Create the scripts now:
 
-     mkdir -p /etc/runit
+    mkdir -p /etc/runit
 
     OpenBSD 2.9:
-     cp -p /package/admin/runit/etc/openbsd/[123] /etc/runit/
+    cp -p /package/admin/runit/etc/openbsd/[123] /etc/runit/
 
     FreeBSD 4.4:
-     cp -p /package/admin/runit/etc/freebsd/[123] /etc/runit/
+    cp -p /package/admin/runit/etc/freebsd/[123] /etc/runit/
 
 Remove the `svscanboot` startup from `/etc/rc.local` by deleting the
 line `csh -cf '/command/svscanboot &'` (this normally is the last one);
 *runit* will start [runsvdir](runsvdir.8.html) in stage 2 after running
 `rc.local` in stage 1.
 
-     vi /etc/rc.local
+    vi /etc/rc.local
 
 ### Step 2: The runit programs
 
 The *runit* programs must reside on the root partition, install them
 into `/sbin`:
 
-     install -m0500 /package/admin/runit/command/runit* /sbin/
+    install -m0500 /package/admin/runit/command/runit* /sbin/
 
 ### Step 3: The getties
 
@@ -180,22 +180,22 @@ At least one getty must run in stage 2 so that you are able to login. To
 have it run on the virtual console no 5, create the getty-5 service
 directory:
 
-     mkdir -p /etc/sv/getty-5
+    mkdir -p /etc/sv/getty-5
 
     OpenBSD 2.9:
-     cp -p /package/admin/runit/etc/openbsd/getty-ttyC4/run /etc/sv/getty-5/
+    cp -p /package/admin/runit/etc/openbsd/getty-ttyC4/run /etc/sv/getty-5/
 
     FreeBSD 4.4:
-     cp -p /package/admin/runit/etc/freebsd/getty-ttyv4/run /etc/sv/getty-5/
+    cp -p /package/admin/runit/etc/freebsd/getty-ttyv4/run /etc/sv/getty-5/
 
 and tell [runsvdir](runsvdir.8.html) about the `getty-5` *service*:
 
-     mkdir -p /service
-     ln -s /etc/sv/getty-5 /service/
+    mkdir -p /service
+    ln -s /etc/sv/getty-5 /service/
 
 Start *runit*\'s stage 2 for testing:
 
-     /etc/runit/2 &
+    /etc/runit/2 &
 
 And check that the getty is running.
 
@@ -208,12 +208,12 @@ former `/sbin/init` if anything goes wrong.
 Make a backup copy of the current `/sbin/init` program and replace it
 with `/sbin/runit-init`:
 
-     cp -p /sbin/init /sbin/init.bsd
-     install /sbin/runit-init /sbin/init
+    cp -p /sbin/init /sbin/init.bsd
+    install /sbin/runit-init /sbin/init
 
 Boot your system with *runit* for the first time:
 
-     reboot
+    reboot
 
 Watch the console output while *runit* boots up the system. Switch to
 the virtual console 5 (CTRL-ALT-F5) when stage 2 is reached, a getty
@@ -225,7 +225,7 @@ Use **init 6** to reboot and **init 0** to halt a system that runs
 
 To report success:
 
-     ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org
+    ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org
 
 ### Step 5: Service migration
 
@@ -235,13 +235,13 @@ scripts](runscripts.html) for popular services. The migration can be
 done smoothly. By default *runit* runs the `/etc/rc` scripts in stage 1
 as a one time task, so the services are started automatically:
 
-     #!/bin/sh
-     # system one time tasks
+    #!/bin/sh
+    # system one time tasks
 
-     /bin/sh /etc/rc autoboot
+    /bin/sh /etc/rc autoboot
 
-     touch /etc/runit/stopit
-     chmod 0 /etc/runit/stopit
+    touch /etc/runit/stopit
+    chmod 0 /etc/runit/stopit
 
 To migrate a service, [create a service directory](faq.html#create),
 disable the service if it is running, disable the service in

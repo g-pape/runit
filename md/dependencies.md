@@ -25,25 +25,25 @@ For the service daemon *floyd*, that needs the *pinkd* service up and
 running, add `sv start pinkd` to *floyd*'s `run` script, right after
 `set -e`.
 
-     #!/bin/sh
-     set -e
-     sv start pinkd
-     exec floyd
+    #!/bin/sh
+    set -e
+    sv start pinkd
+    exec floyd
 
 When the *pinkd* service daemon crashes or is restarted for some other
 reason and the *floyd* daemon is unable to handle this, add
 `sv hup floyd` (or whatever the *floyd* daemon understands) to *pinkd*'s
 `finish` script to force its reload or restart.
 
-     #!/bin/sh
-     sv hup floyd
+    #!/bin/sh
+    sv hup floyd
 
 If the *pinkd* service shall be stopped when the *floyd* service is
 stopped gracefully, add `test "$1" != 0 || sv down pinkd` to *floyd*'s
 `finish` script.
 
-     #!/bin/sh
-     test "$1" != 0 || sv down pinkd
+    #!/bin/sh
+    test "$1" != 0 || sv down pinkd
 
 Or vice versa.
 
@@ -61,8 +61,8 @@ available, for example:
 For a mail service listening on localhost:25, this `check` program could
 be used
 
-     #!/bin/sh
-     exec nc -z localhost 25
+    #!/bin/sh
+    exec nc -z localhost 25
 
 ---
 

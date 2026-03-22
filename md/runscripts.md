@@ -110,10 +110,10 @@ dutoit.]{.small}
 
 (*Debian*)
 
-     #!/bin/sh
-     exec in.tftpd --daemon --no-fork --tftpd-timeout 30 \
-       --retry-timeout 5 --no-tsize --no-blksize --no-multicast \
-       --maxthread 1000 --verbose=7 /var/atfpd 2>&1
+    #!/bin/sh
+    exec in.tftpd --daemon --no-fork --tftpd-timeout 30 \
+      --retry-timeout 5 --no-tsize --no-blksize --no-multicast \
+      --maxthread 1000 --verbose=7 /var/atfpd 2>&1
 
 ---
 
@@ -121,16 +121,16 @@ dutoit.]{.small}
 
 (*SunOS*, Apache 1.\*, patched to run under supervise)
 
-     #!/bin/sh
-     exec 2>&1
-     exec env -i \
-     /pack/apache/1.3.27-1/sbin/httpd -F 2>&1
+    #!/bin/sh
+    exec 2>&1
+    exec env -i \
+    /pack/apache/1.3.27-1/sbin/httpd -F 2>&1
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec 1>&2
-     exec apache-ssl -F
+    #!/bin/sh
+    exec 1>&2
+    exec apache-ssl -F
 
 ---
 
@@ -138,17 +138,17 @@ dutoit.]{.small}
 
 (*SunOS*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec env -i /command/pgrphack \
-     /pack/apache/2.0.43-1/sbin/httpd -DFOREGROUND 2>&1
+    #!/bin/sh
+    exec 2>&1
+    exec env -i /command/pgrphack \
+    /pack/apache/2.0.43-1/sbin/httpd -DFOREGROUND 2>&1
 
 (*HP-UX/GNU*, *Linux*)
 
-     #!/bin/sh
-     TZ=MET-1METDST
-     export TZ
-     exec /usr/local/apache2/bin/httpd -DNO_DETACH
+    #!/bin/sh
+    TZ=MET-1METDST
+    export TZ
+    exec /usr/local/apache2/bin/httpd -DNO_DETACH
 
 ---
 
@@ -158,9 +158,9 @@ atd run script
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec atd -d
+    #!/bin/sh
+    exec 2>&1
+    exec atd -d
 
 ---
 
@@ -168,16 +168,16 @@ atd run script
 
 (*Linux*)
 
-     #!/bin/sh
-     MEM="`head -1 ./env/MEM`"
-     CHROOT="`head -1 ./env/CHROOT`"
-     exec softlimit -m "${MEM}" \
-       named -u bind -t "${CHROOT}" -g 2>&1
+    #!/bin/sh
+    MEM="`head -1 ./env/MEM`"
+    CHROOT="`head -1 ./env/CHROOT`"
+    exec softlimit -m "${MEM}" \
+      named -u bind -t "${CHROOT}" -g 2>&1
 
 (*HP-UX/GNU*, *Linux*)
 
-     #!/bin/sh
-     exec named -f -t /var/spool/named/ -u named
+    #!/bin/sh
+    exec named -f -t /var/spool/named/ -u named
 
 ---
 
@@ -185,10 +185,10 @@ atd run script
 
 (*SunOS*)
 
-     #!/bin/sh
-     exec 2>&1
-     ulimit -n 1024
-     exec /pack/boa/current/boa -c /pack/boa/current -d 2>&1
+    #!/bin/sh
+    exec 2>&1
+    ulimit -n 1024
+    exec /pack/boa/current/boa -c /pack/boa/current -d 2>&1
 
 ---
 
@@ -196,9 +196,9 @@ atd run script
 
 (*SunOS*)
 
-     #!/bin/sh
-     /pack/cfengine/sbin/cfagent --file /pack/cfengine/etc/cfagent.conf \
-       -L -v -q exec sleep 3600
+    #!/bin/sh
+    /pack/cfengine/sbin/cfagent --file /pack/cfengine/etc/cfagent.conf \
+      -L -v -q exec sleep 3600
 
 ---
 
@@ -206,27 +206,27 @@ atd run script
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     
-     set -e
-     
-     PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
-     DAEMON=cfsd
-     CONFIG_FILE=/etc/cfs.conf
-     
-     # source config file
-     test ! -r "$CONFIG_FILE" || . "$CONFIG_FILE"
-     
-     test -n "$CRYPT_ROOT" || exit 0
-     test -n "$NULL_EXPORT" || exit 0
-     test -n "$CFS_MOUNT" || exit 0
-     test -n "$CFS_UMOUNT" || exit 0
-     
-     sv start portmap || exit 1
-     
-     exec env \
-        NODAEMON=1 CFS_MOUNT="$CFS_MOUNT" CFS_UMOUNT="$CFS_UMOUNT" $DAEMON
+    #!/bin/sh
+    exec 2>&1
+    
+    set -e
+    
+    PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+    DAEMON=cfsd
+    CONFIG_FILE=/etc/cfs.conf
+    
+    # source config file
+    test ! -r "$CONFIG_FILE" || . "$CONFIG_FILE"
+    
+    test -n "$CRYPT_ROOT" || exit 0
+    test -n "$NULL_EXPORT" || exit 0
+    test -n "$CFS_MOUNT" || exit 0
+    test -n "$CFS_UMOUNT" || exit 0
+    
+    sv start portmap || exit 1
+    
+    exec env \
+       NODAEMON=1 CFS_MOUNT="$CFS_MOUNT" CFS_UMOUNT="$CFS_UMOUNT" $DAEMON
 
 ---
 
@@ -234,9 +234,9 @@ atd run script
 
 (*LFS*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec chronyd -d -r -s
+    #!/bin/sh
+    exec 2>&1
+    exec chronyd -d -r -s
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -246,9 +246,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*RedHat 7*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec setuidgid clamav softlimit -a 40000000 clamd
+    #!/bin/sh
+    exec 2>&1
+    exec setuidgid clamav softlimit -a 40000000 clamd
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -258,9 +258,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec chpst -uclamav clamsmtpd -d 3
+    #!/bin/sh
+    exec 2>&1
+    exec chpst -uclamav clamsmtpd -d 3
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -270,15 +270,15 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*SunOS*)
 
-     #!/bin/sh
-     exec 2>&1
-     PREFIX="/usr/lib/courier-imap"
-     exec envdir ./env \
-       tcpserver -v -R 0 143 \
-       $PREFIX/sbin/imaplogin \
-       $PREFIX/libexec/authlib/authshadow \
-       $PREFIX/libexec/authlib/authvchkpw \
-       $PREFIX/bin/imapd Maildir
+    #!/bin/sh
+    exec 2>&1
+    PREFIX="/usr/lib/courier-imap"
+    exec envdir ./env \
+      tcpserver -v -R 0 143 \
+      $PREFIX/sbin/imaplogin \
+      $PREFIX/libexec/authlib/authshadow \
+      $PREFIX/libexec/authlib/authvchkpw \
+      $PREFIX/bin/imapd Maildir
 
 ---
 
@@ -286,9 +286,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec cron -f -l
+    #!/bin/sh
+    exec 2>&1
+    exec cron -f -l
 
 ---
 
@@ -296,9 +296,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec cupsd -f
+    #!/bin/sh
+    exec 2>&1
+    exec cupsd -f
 
 ---
 
@@ -306,8 +306,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec dhclient -e -d -cf ./config -lf ./leases -pf ./pid eth1
+    #!/bin/sh
+    exec dhclient -e -d -cf ./config -lf ./leases -pf ./pid eth1
 
 ---
 
@@ -315,8 +315,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*, DHCP Client Daemon v.scriptconfig-0.1)
 
-     #!/bin/sh
-     exec dhcpcd -a -d -D -H eth0
+    #!/bin/sh
+    exec dhcpcd -a -d -D -H eth0
 
 ---
 
@@ -324,27 +324,27 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec dhcpd-2.2.x -f -d -cf ./config eth0
+    #!/bin/sh
+    exec 2>&1
+    exec dhcpd-2.2.x -f -d -cf ./config eth0
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Solaris 8*, uses additional dsvclockd service, would get fired off
 automatically, but then it\'s not supervised)
 
-     #!/bin/sh
-     exec 2>&1
-     exec envdir ./env /usr/lib/inet/dsvclockd -f
+    #!/bin/sh
+    exec 2>&1
+    exec envdir ./env /usr/lib/inet/dsvclockd -f
 
-     #!/bin/sh
-     if svok /service/dsvclockd; then
-       sleep 2 # wait to make sure dsvclockd is initialized
-       exec 2>&1
-       exec envdir ./env /usr/lib/inet/in.dhcpd -b manual -d # -v
-     fi
-     echo dsvclockd is not running - aborting
-     exec /usr/bin/sleep 5
+    #!/bin/sh
+    if svok /service/dsvclockd; then
+      sleep 2 # wait to make sure dsvclockd is initialized
+      exec 2>&1
+      exec envdir ./env /usr/lib/inet/in.dhcpd -b manual -d # -v
+    fi
+    echo dsvclockd is not running - aborting
+    exec /usr/bin/sleep 5
 
 The in.dhcpd service needs a [log service](faq.html#createlog) to be set
 up.
@@ -355,9 +355,9 @@ up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec dictd -d nodetach
+    #!/bin/sh
+    exec 2>&1
+    exec dictd -d nodetach
 
 ---
 
@@ -365,18 +365,18 @@ up.
 
 (*Linux*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec dropbear -F -E -p 22
+    #!/bin/sh
+    exec 2>&1
+    exec dropbear -F -E -p 22
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*, running under
 [tcpsvd](https://smarden.org/ipsvd/tcpsvd.8.html))
 
-     #!/bin/sh
-     exec 2>&1
-     exec tcpsvd -v -i./peers 0 22 dropbear -i -E
+    #!/bin/sh
+    exec 2>&1
+    exec tcpsvd -v -i./peers 0 22 dropbear -i -E
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -386,8 +386,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*, *FreeBSD*)
 
-     #!/bin/sh
-     exec /usr/local/sbin/exim -bdf -q30m
+    #!/bin/sh
+    exec /usr/local/sbin/exim -bdf -q30m
 
 ---
 
@@ -395,9 +395,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     echo -n .
-     exec sleep 300
+    #!/bin/sh
+    echo -n .
+    exec sleep 300
 
 ---
 
@@ -405,18 +405,18 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Slackware Linux 9.0*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec fam -L -f -v
+    #!/bin/sh
+    exec 2>&1
+    exec fam -L -f -v
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     sv start /service/portmap || exit 1
-     exec famd -T 0 -f
+    #!/bin/sh
+    exec 2>&1
+    sv start /service/portmap || exit 1
+    exec famd -T 0 -f
 
 ---
 
@@ -424,18 +424,18 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian etch*)
 
-     #!/bin/sh
-     exec 1>&2
-     
-     daemon_directory=/usr/lib/postfix \
-     command_directory=/usr/sbin \
-     config_directory=/etc/postfix \
-     queue_directory=/var/spool/postfix \
-     mail_owner=postfix \
-     setgid_group=postdrop \
-       /etc/postfix/postfix-script check || exit 1
-     
-     exec /usr/lib/postfix/master
+    #!/bin/sh
+    exec 1>&2
+    
+    daemon_directory=/usr/lib/postfix \
+    command_directory=/usr/sbin \
+    config_directory=/etc/postfix \
+    queue_directory=/var/spool/postfix \
+    mail_owner=postfix \
+    setgid_group=postdrop \
+      /etc/postfix/postfix-script check || exit 1
+    
+    exec /usr/lib/postfix/master
 
 ---
 
@@ -443,9 +443,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*LFS*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec fcron -f -y
+    #!/bin/sh
+    exec 2>&1
+    exec fcron -f -y
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -455,15 +455,15 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     INTERVAL=551
-     exec 2>&1
-     echo "*** Starting fetchmail service..."
-     exec env FETCHMAILHOME="./pid" \
-       chpst -u fetchmail fetchmail -v \
-         -f ./fetchmail.conf \
-         --nodetach \
-         --daemon ${INTERVAL}
+    #!/bin/sh
+    INTERVAL=551
+    exec 2>&1
+    echo "*** Starting fetchmail service..."
+    exec env FETCHMAILHOME="./pid" \
+      chpst -u fetchmail fetchmail -v \
+        -f ./fetchmail.conf \
+        --nodetach \
+        --daemon ${INTERVAL}
 
 ---
 
@@ -471,8 +471,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec gdm -nodaemon
+    #!/bin/sh
+    exec gdm -nodaemon
 
 ---
 
@@ -480,8 +480,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian*)
 
-     #!/bin/sh
-     exec mingetty tty5
+    #!/bin/sh
+    exec mingetty tty5
 
 The [runit](index.html) package does not care about utmp records for
 getties. You should choose a getty that handles its own utmp and wtmp
@@ -491,15 +491,15 @@ records. Debian\'s `mingetty` creates its own utmp record.
 
 (*Slackware Linux 9.0*)
 
-     #!/bin/sh
-     exec agetty 38400 tty1 linux
+    #!/bin/sh
+    exec agetty 38400 tty1 linux
 
 ### A `fgetty` run script
 
 (*Linux*)
 
-     #!/bin/sh
-     exec chpst -P fgetty tty4
+    #!/bin/sh
+    exec chpst -P fgetty tty4
 
 The [runsv](runsv.8.html) program does not automatically create a new
 session and separate process group for run scripts, which can cause some
@@ -512,10 +512,10 @@ program can be used to alter the process state for those *getties*.
 
 (*LFS*)
 
-     #!/bin/sh
-     exec 2>&1
-     . /etc/sysconfig/mouse
-     exec gpm -D -m $MDEVICE -t $PROTOCOL
+    #!/bin/sh
+    exec 2>&1
+    . /etc/sysconfig/mouse
+    exec gpm -D -m $MDEVICE -t $PROTOCOL
 
 ---
 
@@ -523,9 +523,9 @@ program can be used to alter the process state for those *getties*.
 
 (*LFS*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec tcpsvd -l0 -u nobody 127.0.0.1 110 hotwayd
+    #!/bin/sh
+    exec 2>&1
+    exec tcpsvd -l0 -u nobody 127.0.0.1 110 hotwayd
 
 ---
 
@@ -533,17 +533,17 @@ program can be used to alter the process state for those *getties*.
 
 (*Linux*, oidentd version 2.0.6)
 
-     #!/bin/sh
-     exec 2>&1
-     exec oidentd -i -S -t 10 -u daemon -g daemon
+    #!/bin/sh
+    exec 2>&1
+    exec oidentd -i -S -t 10 -u daemon -g daemon
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian*)
 
-     #!/bin/sh
-     exec /usr/local/sbin/oidentd --nosyslog -i -u ident -g ident -l 15 -m \
-       -C /etc/oidentd/oidentd.conf 2>&1
+    #!/bin/sh
+    exec /usr/local/sbin/oidentd --nosyslog -i -u ident -g ident -l 15 -m \
+      -C /etc/oidentd/oidentd.conf 2>&1
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -553,11 +553,11 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     MEM="`head -1 ./env/MEM`"
-     exec softlimit -m "${MEM}" \
-       setuidgid news \
-       /usr/sw/bin/news/inndstart -f -r
+    #!/bin/sh
+    MEM="`head -1 ./env/MEM`"
+    exec softlimit -m "${MEM}" \
+      setuidgid news \
+      /usr/sw/bin/news/inndstart -f -r
 
 ---
 
@@ -565,21 +565,21 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*RedHat 7*)
 
-     #!/bin/sh
-     exec 2>&1
-     if [ -f /usr/local/jabber/jabber.pid ]; then
-       rm /usr/local/jabber/jabber.pid
-     fi
-     exec setuidgid jabberd \
-       /usr/local/jabber/jabberd/jabberd -D -c /etc/jabber.xml
+    #!/bin/sh
+    exec 2>&1
+    if [ -f /usr/local/jabber/jabber.pid ]; then
+      rm /usr/local/jabber/jabber.pid
+    fi
+    exec setuidgid jabberd \
+      /usr/local/jabber/jabberd/jabberd -D -c /etc/jabber.xml
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
-     #!/bin/sh
-     exec 2>&1
-     sleep 5 # so that jit starts after jabberd is up
-     exec setuidgid jabberd \
-       /usr/local/jabber/jit/jabberd/jabberd -c /etc/jit.xml
+    #!/bin/sh
+    exec 2>&1
+    sleep 5 # so that jit starts after jabberd is up
+    exec setuidgid jabberd \
+      /usr/local/jabber/jit/jabberd/jabberd -c /etc/jit.xml
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -589,10 +589,10 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     DAEMON=junkbuster
-     exec "$DAEMON" /etc/junkbuster/config
+    #!/bin/sh
+    exec 2>&1
+    DAEMON=junkbuster
+    exec "$DAEMON" /etc/junkbuster/config
 
 ---
 
@@ -600,9 +600,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sid*, *FreeBSD 5.3-REL*)
 
-     #!/bin/sh
-     sv start /service/getty-* || exit 1
-     exec kdm -nodaemon
+    #!/bin/sh
+    sv start /service/getty-* || exit 1
+    exec kdm -nodaemon
 
 ---
 
@@ -610,9 +610,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec keepalived -n
+    #!/bin/sh
+    exec 2>&1
+    exec keepalived -n
 
 ---
 
@@ -620,8 +620,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec klogd -n
+    #!/bin/sh
+    exec klogd -n
 
 ---
 
@@ -629,11 +629,11 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec envuidgid news \
-       tcpserver -v -x rules.cdb -c 10 -U 0 119 \
-       leafnode
+    #!/bin/sh
+    exec 2>&1
+    exec envuidgid news \
+      tcpserver -v -x rules.cdb -c 10 -U 0 119 \
+      leafnode
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -643,10 +643,10 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh -e
-     exec < /proc/kmsg \
-     setuidgid loguser \
-     multilog t n64 ./main
+    #!/bin/sh -e
+    exec < /proc/kmsg \
+    setuidgid loguser \
+    multilog t n64 ./main
 
 ---
 
@@ -654,11 +654,11 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     DEBIANCONFIG=/etc/default/mdadm
-     MAIL_TO=root
-     test -f $DEBIANCONFIG && . $DEBIANCONFIG
-     exec mdadm --monitor --scan --mail $MAIL_TO
+    #!/bin/sh
+    DEBIANCONFIG=/etc/default/mdadm
+    MAIL_TO=root
+    test -f $DEBIANCONFIG && . $DEBIANCONFIG
+    exec mdadm --monitor --scan --mail $MAIL_TO
 
 ---
 
@@ -666,12 +666,12 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec envuidgid nobody \
-       tcpserver -vUR 0 113 \
-       timeoutafter 60 \
-       minidentd -v
+    #!/bin/sh
+    exec 2>&1
+    exec envuidgid nobody \
+      tcpserver -vUR 0 113 \
+      timeoutafter 60 \
+      minidentd -v
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -681,9 +681,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sid*, *FreeBSD 5.3-REL*)
 
-     #!/bin/sh
-     MPDCONF=/etc/mpd.conf
-     exec mpd --stdout --no-daemon $MPDCONF
+    #!/bin/sh
+    MPDCONF=/etc/mpd.conf
+    exec mpd --stdout --no-daemon $MPDCONF
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -693,16 +693,16 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     secure=""
-     for table in passwd group
-       do
-         if egrep '^'$table':.*nisplus' /etc/nsswitch.conf >/dev/null
-           then
-             nscd_nischeck $table || secure="$secure -S $table,yes"
-         fi
-     done
-     exec nscd -d -- $secure
+    #!/bin/sh
+    secure=""
+    for table in passwd group
+      do
+        if egrep '^'$table':.*nisplus' /etc/nsswitch.conf >/dev/null
+          then
+            nscd_nischeck $table || secure="$secure -S $table,yes"
+        fi
+    done
+    exec nscd -d -- $secure
 
 ---
 
@@ -710,15 +710,15 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     MEM=`head -1 ./env/MEM`
-     exec softlimit -m "${MEM}" \
-       ntpd -n
+    #!/bin/sh
+    MEM=`head -1 ./env/MEM`
+    exec softlimit -m "${MEM}" \
+      ntpd -n
 
 (*OpenNTPD on OpenBSD/Linux*)
 
-     #!/bin/sh
-     exec /usr/sbin/ntpd -s -d 2>&1
+    #!/bin/sh
+    exec /usr/sbin/ntpd -s -d 2>&1
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -728,9 +728,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec tcpsvd -u nobody -x nullidentd-cdb -t 60 0 113 nullidentd
+    #!/bin/sh
+    exec 2>&1
+    exec tcpsvd -u nobody -x nullidentd-cdb -t 60 0 113 nullidentd
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -740,10 +740,10 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec setuidgid polipo \
-       polipo -c config forbiddenFile="`pwd`"/forbidden diskCacheRoot="`pwd`"/cache
+    #!/bin/sh
+    exec 2>&1
+    exec setuidgid polipo \
+      polipo -c config forbiddenFile="`pwd`"/forbidden diskCacheRoot="`pwd`"/cache
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -753,11 +753,11 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*BSD*)
 
-     #!/bin/sh
-     exec tcpserver -R -v -c 50 0 995 /usr/local/sbin/stunnel
-     -f  -p /etc/ssl/stunnel.pem \
-     -l /var/qmail/bin/qmail-popup -- /var/qmail/bin/qmail-popup
-     "`cat /var/qmail/control/me`" vchkpw /var/qmail/bin/qmail-pop3d Maildir 2>&1
+    #!/bin/sh
+    exec tcpserver -R -v -c 50 0 995 /usr/local/sbin/stunnel
+    -f  -p /etc/ssl/stunnel.pem \
+    -l /var/qmail/bin/qmail-popup -- /var/qmail/bin/qmail-popup
+    "`cat /var/qmail/control/me`" vchkpw /var/qmail/bin/qmail-pop3d Maildir 2>&1
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -767,9 +767,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*RedHat 7*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec setuidgid pop3vscan pop3vscan -d
+    #!/bin/sh
+    exec 2>&1
+    exec setuidgid pop3vscan pop3vscan -d
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -779,9 +779,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*LFS*, *Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec portmap -d
+    #!/bin/sh
+    exec 2>&1
+    exec portmap -d
 
 ---
 
@@ -789,9 +789,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian*, *SunOS*)
 
-     #!/bin/sh
-     exec setuidgid postgres /usr/lib/postgresql/bin/postmaster \
-       -D /var/lib/postgres/data 2>&1
+    #!/bin/sh
+    exec setuidgid postgres /usr/lib/postgresql/bin/postmaster \
+      -D /var/lib/postgres/data 2>&1
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -801,15 +801,15 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian*)
 
-     #!/bin/sh
-     set -e  # barf if modprobe fails
-     modprobe cpufreq-userspace
-     test ! -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ||
-       exec /usr/sbin/powernowd -d
-     
-     echo "required sysfs objects not found!"
-     echo "Read /usr/share/doc/powernowd/README.Debian for more information."
-     sv down "$(pwd)"
+    #!/bin/sh
+    set -e  # barf if modprobe fails
+    modprobe cpufreq-userspace
+    test ! -f /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ||
+      exec /usr/sbin/powernowd -d
+    
+    echo "required sysfs objects not found!"
+    echo "Read /usr/share/doc/powernowd/README.Debian for more information."
+    sv down "$(pwd)"
 
 ---
 
@@ -817,18 +817,18 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*FreeBSD*)
 
-     #!/bin/sh
-     exec 2>&1
-     echo "ppp -ddial dsl "
-     exec ppp -unit0 -foreground dsl
+    #!/bin/sh
+    exec 2>&1
+    echo "ppp -ddial dsl "
+    exec ppp -unit0 -foreground dsl
 
 ### A `pppd` run script
 
 (*Linux*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec chpst -P pppd call isp nodetach
+    #!/bin/sh
+    exec 2>&1
+    exec chpst -P pppd call isp nodetach
 
 ---
 
@@ -836,9 +836,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec chpst -u privoxy:nogroup privoxy --no-daemon /etc/privoxy/config
+    #!/bin/sh
+    exec 2>&1
+    exec chpst -u privoxy:nogroup privoxy --no-daemon /etc/privoxy/config
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -849,9 +849,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 (*Linux*, ProFTPD Version 1.2.8rc1, configure it to use \'ErrorLog
 \"/dev/stdout\"\')
 
-     #!/bin/sh
-     exec 2>&1
-     exec proftpd -n -d 1
+    #!/bin/sh
+    exec 2>&1
+    exec proftpd -n -d 1
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -861,9 +861,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec pure-ftpd -a 50 -E -l pam -u 100
+    #!/bin/sh
+    exec 2>&1
+    exec pure-ftpd -a 50 -E -l pam -u 100
 
 ---
 
@@ -871,9 +871,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Slackware Linux 9.0*, cistron radius 1.6.1)
 
-     #!/bin/sh
-     exec 2>&1
-     exec radiusd -f -y -z -lstdout
+    #!/bin/sh
+    exec 2>&1
+    exec radiusd -f -y -z -lstdout
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -883,12 +883,12 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 ()
 
-     #!/bin/sh
-     MRTGUID=`id -u mrtg`
-     MRTGGID=`id -g mrtg`
-     exec 2>&1
-     exec tcpserver -l 0 -R -H -q \
-       -u"${MRTGUID}" -g"${MRTGGID}" 0 5660 /home/mrtg/ext/rmrtg
+    #!/bin/sh
+    MRTGUID=`id -u mrtg`
+    MRTGGID=`id -g mrtg`
+    exec 2>&1
+    exec tcpserver -l 0 -R -H -q \
+      -u"${MRTGUID}" -g"${MRTGGID}" 0 5660 /home/mrtg/ext/rmrtg
 
 ---
 
@@ -896,12 +896,12 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*SunOS*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec softlimit -d 100000000 tcpserver \
-       -x /pack/rsync/rsync.service/tcp.rsync.cdb -v -c 100 -U -H -l 0 -R \
-       1.2.3.4 873 nice -2 /pack/rsync/bin/rsync --daemon --no-detach \
-       --config /pack/rsync/etc/rsyncd.conf
+    #!/bin/sh
+    exec 2>&1
+    exec softlimit -d 100000000 tcpserver \
+      -x /pack/rsync/rsync.service/tcp.rsync.cdb -v -c 100 -U -H -l 0 -R \
+      1.2.3.4 873 nice -2 /pack/rsync/bin/rsync --daemon --no-detach \
+      --config /pack/rsync/etc/rsyncd.conf
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -911,10 +911,10 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     PATH="/usr/local/samba/bin"
-     exec 2>&1
-     exec smbd -F -S -d3
+    #!/bin/sh
+    PATH="/usr/local/samba/bin"
+    exec 2>&1
+    exec smbd -F -S -d3
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -922,10 +922,10 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     PATH="/usr/local/samba/bin"
-     exec 2>&1
-     exec nmbd -F -S -d1
+    #!/bin/sh
+    PATH="/usr/local/samba/bin"
+    exec 2>&1
+    exec nmbd -F -S -d1
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -935,10 +935,10 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*RedHat 7*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec setuidgid sc_serv \
-       /usr/local/sc_serv/bin/sc_serv /etc/sc_serv.conf
+    #!/bin/sh
+    exec 2>&1
+    exec setuidgid sc_serv \
+      /usr/local/sc_serv/bin/sc_serv /etc/sc_serv.conf
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -948,8 +948,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec spamd -m 20 -a -H -s stderr 2>&1
+    #!/bin/sh
+    exec spamd -m 20 -a -H -s stderr 2>&1
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -959,8 +959,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec squid -f ./config -sN
+    #!/bin/sh
+    exec squid -f ./config -sN
 
 ---
 
@@ -968,9 +968,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec /usr/sbin/sshd -D -e
+    #!/bin/sh
+    exec 2>&1
+    exec /usr/sbin/sshd -D -e
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -980,11 +980,11 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*, sshd version OpenSSH_3.4p1)
 
-     #!/bin/sh -e
-     exec 2>&1
-     exec \
-     tcpserver -1vpdl0 -Xxtcp.cdb 0 ssh \
-     sshd -ief config
+    #!/bin/sh -e
+    exec 2>&1
+    exec \
+    tcpserver -1vpdl0 -Xxtcp.cdb 0 ssh \
+    sshd -ief config
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -994,18 +994,18 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian woody*)
 
-     #!/bin/sh
-     exec 2>&1
-     NEED_LOCKD=yes
-     if test -f /proc/ksyms; then
-       # We need to be conservative and run lockd,
-       # unless we can prove that it isn't required.
-       grep -q lockdctl /proc/ksyms || NEED_LOCKD=no
-     fi
-     if [ "$NEED_LOCKD" = yes ]; then
-       rpc.lockd
-     fi
-     exec rpc.statd -F -d
+    #!/bin/sh
+    exec 2>&1
+    NEED_LOCKD=yes
+    if test -f /proc/ksyms; then
+      # We need to be conservative and run lockd,
+      # unless we can prove that it isn't required.
+      grep -q lockdctl /proc/ksyms || NEED_LOCKD=no
+    fi
+    if [ "$NEED_LOCKD" = yes ]; then
+      rpc.lockd
+    fi
+    exec rpc.statd -F -d
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -1013,19 +1013,19 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian*)
 
-     #!/bin/sh
-     sv start portmap statd || exit 1
-     RPCNFSDCOUNT=8  # Number of servers to be started up by default
-     RPCMOUNTDOPTS=
-     
-     trap '/usr/bin/killall -2 nfsd' 0
-     trap 'exit 2' 1 2 3 15
-     
-     exportfs -r
-     rpc.nfsd -- $RPCNFSDCOUNT
-     rpcinfo -u localhost nfs 3 >/dev/null 2>&1 ||
-       RPCMOUNTDOPTS="$RPCMOUNTDOPTS --no-nfs-version 3"
-     exec rpc.mountd -F $RPCMOUNTDOPTS
+    #!/bin/sh
+    sv start portmap statd || exit 1
+    RPCNFSDCOUNT=8  # Number of servers to be started up by default
+    RPCMOUNTDOPTS=
+    
+    trap '/usr/bin/killall -2 nfsd' 0
+    trap 'exit 2' 1 2 3 15
+    
+    exportfs -r
+    rpc.nfsd -- $RPCNFSDCOUNT
+    rpcinfo -u localhost nfs 3 >/dev/null 2>&1 ||
+      RPCMOUNTDOPTS="$RPCMOUNTDOPTS --no-nfs-version 3"
+    exec rpc.mountd -F $RPCMOUNTDOPTS
 
 ---
 
@@ -1033,8 +1033,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*BSD*)
 
-     #!/bin/sh
-     exec /usr/local/sbin/stunnel -f -d 1234 -r 25 -v3 -a /etc/ssl/mailcerts 2>&1
+    #!/bin/sh
+    exec /usr/local/sbin/stunnel -f -d 1234 -r 25 -v3 -a /etc/ssl/mailcerts 2>&1
 
 ---
 
@@ -1042,17 +1042,17 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec /usr/bin/svnserve -d --foreground
+    #!/bin/sh
+    exec 2>&1
+    exec /usr/bin/svnserve -d --foreground
 
 ---
 
 ### [A `swat` run script]{#swat}
 
-     #!/bin/sh
-     exec 2>&1
-     exec tcpsvd -l0 127.0.0.1 901 swat
+    #!/bin/sh
+    exec 2>&1
+    exec tcpsvd -l0 127.0.0.1 901 swat
 
 ---
 
@@ -1060,16 +1060,16 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec syslogd -n
+    #!/bin/sh
+    exec syslogd -n
 
 ---
 
 ### [A `taiclockd` run script]{#taiclockd}
 
-     #!/bin/sh
-     exec 2>&1
-     exec setuidgid taiclock /usr/local/clockspeed/bin/taiclockd
+    #!/bin/sh
+    exec 2>&1
+    exec setuidgid taiclock /usr/local/clockspeed/bin/taiclockd
 
 ---
 
@@ -1077,8 +1077,8 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*RedHat 7*)
 
-     #!/bin/sh
-     exec /usr/local/tmda/bin/tmda-ofmipd -f -d -R pop3 -p my.host.name:8025 2>&1
+    #!/bin/sh
+    exec /usr/local/tmda/bin/tmda-ofmipd -f -d -R pop3 -p my.host.name:8025 2>&1
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -1088,11 +1088,11 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*SunOS*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec \
-     setuidgid apache \
-     /pack/tomcat/current/bin/catalina.sh run
+    #!/bin/sh
+    exec 2>&1
+    exec \
+    setuidgid apache \
+    /pack/tomcat/current/bin/catalina.sh run
 
 ---
 
@@ -1100,9 +1100,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec chpst -P -u debian-tor:debian-tor tor
+    #!/bin/sh
+    exec 2>&1
+    exec chpst -P -u debian-tor:debian-tor tor
 
 ---
 
@@ -1110,11 +1110,11 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*RedHat 7*)
 
-     #!/bin/sh
-     exec 2>&1
-     exec tcpserver -c30 -Xv -llocalhost \
-       -x/etc/tcp.ftp.cdb -uvsftpd -gvsftpd 0 ftp \
-         softlimit -d300000 /var/vsftpd/bin/vsftpd
+    #!/bin/sh
+    exec 2>&1
+    exec tcpserver -c30 -Xv -llocalhost \
+      -x/etc/tcp.ftp.cdb -uvsftpd -gvsftpd 0 ftp \
+        softlimit -d300000 /var/vsftpd/bin/vsftpd
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -1125,9 +1125,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 (*Slackware Linux 9.0*, the service should have a `down` file, use
 `svc -o /service/wvdial` to bring up a ppp connection)
 
-     #!/bin/sh
-     exec 2>&1
-     exec wvdial ISP
+    #!/bin/sh
+    exec 2>&1
+    exec wvdial ISP
 
 This service needs a [log service](faq.html#createlog) to be set up.
 
@@ -1137,9 +1137,9 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Linux*)
 
-     #!/bin/sh
-     sv start /service/vc-* || exit 1
-     exec xdm -nodaemon
+    #!/bin/sh
+    sv start /service/vc-* || exit 1
+    exec xdm -nodaemon
 
 ---
 
@@ -1147,12 +1147,12 @@ This service needs a [log service](faq.html#createlog) to be set up.
 
 (*Debian sarge*)
 
-     #!/bin/sh
-     SOCKET_DIR=/tmp/.font-unix
-     mkdir -p $SOCKET_DIR
-     chown 0:0 $SOCKET_DIR
-     chmod 1777 $SOCKET_DIR
-     exec /usr/bin/X11/xfs -nodaemon
+    #!/bin/sh
+    SOCKET_DIR=/tmp/.font-unix
+    mkdir -p $SOCKET_DIR
+    chown 0:0 $SOCKET_DIR
+    chmod 1777 $SOCKET_DIR
+    exec /usr/bin/X11/xfs -nodaemon
 
 ---
 

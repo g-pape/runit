@@ -90,10 +90,10 @@ make the script executable. Note that for the use with runit, service
 daemons must not put themself into the background, but must run in the
 foreground. Here's a simple example for a <code>getty</code>
 service:</p>
-<pre><code> $ cat /etc/sv/getty-2/run
- #!/bin/sh
- exec getty 38400 tty2 linux
- $ </code></pre>
+<pre><code>$ cat /etc/sv/getty-2/run
+#!/bin/sh
+exec getty 38400 tty2 linux
+$ </code></pre>
 <p>Note the <code>exec</code> in the last line, it tells the shell that
 interprets the script to replace itself with the service daemon
 <code>getty</code>; this is necessary to make <a
@@ -113,10 +113,10 @@ service logging daemon, normally this is the <a
 href="svlogd.8.html">svlogd</a> program. See the <a
 href="runsv.8.html">runsv</a> man page for details. Here's an example of
 a <code>./log/run</code> script:</p>
-<pre><code> $ cat /etc/sv/socklog-klog/log/run
- #!/bin/sh
- exec chpst -ulog svlogd -tt ./main
- $ </code></pre>
+<pre><code>$ cat /etc/sv/socklog-klog/log/run
+#!/bin/sh
+exec chpst -ulog svlogd -tt ./main
+$ </code></pre>
 <hr />
 <p><span id="tell"></span></p>
 <h3 id="how-do-i-tell-runit-about-a-new-service">How do I tell runit
@@ -127,7 +127,7 @@ directory, so that it picks up and runs the service by default?</p>
 <p>Answer: Create a symbolic link in <code>/service/</code> pointing to
 the service directory, runit will pick up the service within the next
 five seconds, and automatically start it on system boot. E.g.:</p>
-<pre><code> # ln -s /etc/sv/getty-2 /service/</code></pre>
+<pre><code># ln -s /etc/sv/getty-2 /service/</code></pre>
 <hr />
 <p><span id="control"></span></p>
 <h3 id="how-do-i-start-stop-or-restart-a-service">How do I start, stop,
@@ -137,7 +137,7 @@ or I want to have it restarted immediately. How can I control a service
 running under runit service supervision?</p>
 <p>Answer: Use the <a href="sv.8.html">sv</a> program. E.g., to restart
 the <code>socklog-unix</code> service, do:</p>
-<pre><code> # sv restart socklog-unix</code></pre>
+<pre><code># sv restart socklog-unix</code></pre>
 <hr />
 <p><span id="signal"></span></p>
 <h3 id="how-can-i-send-signals-to-a-service-daemon">How can I send
@@ -147,7 +147,7 @@ its configuration, or I want to send it the INT signal. How can a send
 signals to a service daemon?</p>
 <p>Answer: Use the <a href="sv.8.html">sv</a> program. E.g., to send the
 <code>dhcp</code> service the HUP signal, do:</p>
-<pre><code> # sv hup dhcp</code></pre>
+<pre><code># sv hup dhcp</code></pre>
 <hr />
 <p><span id="status"></span></p>
 <h3 id="how-can-i-query-the-status-of-a-service">How can I query the
@@ -157,9 +157,9 @@ available, or down as requested, or so. How can I find out this
 information?</p>
 <p>Answer: User the <a href="sv.8.html">sv</a> program. E.g., to query
 or check the status of the <code>socklog-unix</code> service, do:</p>
-<pre><code> # sv status socklog-unix</code></pre>
+<pre><code># sv status socklog-unix</code></pre>
 <p>or</p>
-<pre><code> # sv check socklog-unix</code></pre>
+<pre><code># sv check socklog-unix</code></pre>
 <hr />
 <p><span id="remove"></span></p>
 <h3 id="how-do-i-remove-a-service">How do I remove a service</h3>
@@ -169,7 +169,7 @@ supervision. How do I tell runit?</p>
 to the service directory, runit recognizes the removed service within
 the next five seconds, then stops the service, the optional log service,
 and finally the supervisor process. E.g.:</p>
-<pre><code> # rm /service/getty-2</code></pre>
+<pre><code># rm /service/getty-2</code></pre>
 <hr />
 <p><span id="depends"></span></p>
 <h3 id="how-do-i-make-a-service-depend-on-another-service">How do I make
@@ -182,11 +182,11 @@ daemon starts. The <a href="sv.8.html">sv</a> program can be used for
 that. E.g. the <code>cron</code> service wants the
 <code>socklog-unix</code> system logging service to be available before
 starting the <code>cron</code> service daemon, so no logs get lost:</p>
-<pre><code> $ cat /etc/sv/cron/run
- #!/bin/sh
- sv start socklog-unix || exit 1
- exec cron -f
- $ </code></pre>
+<pre><code>$ cat /etc/sv/cron/run
+#!/bin/sh
+sv start socklog-unix || exit 1
+exec cron -f
+$ </code></pre>
 <p>See also the <a href="dependencies.html">documentation</a>.</p>
 <hr />
 <p><span id="runlevels"></span></p>
@@ -210,10 +210,10 @@ defined through LSB</a>. To make this script interface work for a
 service, create a symbolic link in <code>/etc/init.d/</code>, named as
 the service daemon, pointing to the <a href="sv.8.html">sv</a> program,
 e.g. for the <code>cron</code> service:</p>
-<pre><code> # ln -s /bin/sv /etc/init.d/cron
- # /etc/init.d/cron restart
- ok: run: cron: (pid 5869) 0s
- # </code></pre>
+<pre><code># ln -s /bin/sv /etc/init.d/cron
+# /etc/init.d/cron restart
+ok: run: cron: (pid 5869) 0s
+# </code></pre>
 <hr />
 <p><span id="user"></span></p>
 <h3
@@ -227,8 +227,8 @@ the <code>./supervise/</code> subdirectory in the service directory.
 E.g.: to allow the user <code>burdon</code> to control the service
 <code>dhcp</code>, change to the <code>dhcp</code> service directory,
 and do</p>
-<pre><code> # chmod 755 ./supervise
- # chown burdon ./supervise/ok ./supervise/control ./supervise/status</code></pre>
+<pre><code># chmod 755 ./supervise
+# chown burdon ./supervise/ok ./supervise/control ./supervise/status</code></pre>
 <p>This works similarly with groups, of course.</p>
 <hr />
 <p><span id="userservices"></span></p>
@@ -242,9 +242,9 @@ facility to manage services through <code>~/service/</code>, <a
 href="#createlog">create a service</a> <code>runsvdir-floyd</code> with
 the following run script and a usual log/run script, and <a
 href="#tell">tell runit</a> about the service</p>
-<pre><code> #!/bin/sh
- exec 2&gt;&amp;1
- exec chpst -ufloyd runsvdir /home/floyd/service</code></pre>
+<pre><code>#!/bin/sh
+exec 2&gt;&amp;1
+exec chpst -ufloyd runsvdir /home/floyd/service</code></pre>
 <p>Now <code>floyd</code> can create services on his own, and manage
 them through symbolic links in <code>~/service/</code> to have them run
 under his user id.</p>
@@ -262,8 +262,8 @@ dangling symlinks. E.g., make a ramdisk available at a moint point, say
 <code>/var/run/</code>, and create symbolic links for the files and
 directories that runit needs to write access to pointing into
 <code>/var/run/</code>:</p>
-<pre><code> # ln -s /var/run/runit.stopit /etc/runit/stopit
- # ln -s /var/run/sv.getty-2 /etc/sv/getty-2/supervise</code></pre>
+<pre><code># ln -s /var/run/runit.stopit /etc/runit/stopit
+# ln -s /var/run/sv.getty-2 /etc/sv/getty-2/supervise</code></pre>
 <hr />
 <p><a href="mailto:pape@smarden.org">Gerrit Pape
 &lt;pape@smarden.org&gt;</a></p>

@@ -36,7 +36,7 @@ to run a program with a different name as the 0th argument.</p>
 <p>The default directory for services is now <code>/service/</code>, and
 no longer <code>/var/service/</code>. To be consistent with the new
 default location, create a symlink when upgrading</p>
-<pre><code> # ln -s /var/service /</code></pre>
+<pre><code># ln -s /var/service /</code></pre>
 <p>When installing runit on a system that should comply with the
 Filesystem Hierarchy Standard (FHS), neither <code>/service/</code> nor
 <code>/var/service/</code> should be chosen, but

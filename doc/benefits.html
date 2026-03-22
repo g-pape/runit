@@ -57,15 +57,15 @@ This adds even more complexity to the init script in comparison with a
 run script used by <em>runit</em>. Many of today's init scripts don't
 provide a clean process state, here is an example on what could
 happen:</p>
-<pre><code> # /etc/init.d/foo-daemon start
- Starting foo daemon: food.
- #</code></pre>
+<pre><code># /etc/init.d/foo-daemon start
+Starting foo daemon: food.
+#</code></pre>
 <p>Fine. Everything works, nothing to worry about. After rebooting the
 system this shows up on the screen:</p>
-<pre><code> ...
- Starting foo daemon: food: command not found
- failed.
- ...</code></pre>
+<pre><code>...
+Starting foo daemon: food: command not found
+failed.
+...</code></pre>
 <p>The <code>food</code> program is installed in
 <code>/opt/foo/bin/</code>. When starting the service for the first time
 using the init script, the <code>PATH</code> environment variable
@@ -78,7 +78,7 @@ worked in the first place, and that the error didn't show up until
 system reboot.</p>
 <p>With bad init scripts miraculous things could also happen when just
 doing</p>
-<pre><code> # /etc/init.d/foo-daemon restart</code></pre>
+<pre><code># /etc/init.d/foo-daemon restart</code></pre>
 <p>at the command line.</p>
 <p>The clean process state includes open file descriptors, obsoleting
 the widely used hack in many service daemons to force-close all file

@@ -104,10 +104,10 @@ the use with runit, service daemons must not put themself into the
 background, but must run in the foreground. Here\'s a simple example for
 a `getty` service:
 
-     $ cat /etc/sv/getty-2/run
-     #!/bin/sh
-     exec getty 38400 tty2 linux
-     $ 
+    $ cat /etc/sv/getty-2/run
+    #!/bin/sh
+    exec getty 38400 tty2 linux
+    $ 
 
 Note the `exec` in the last line, it tells the shell that interprets the
 script to replace itself with the service daemon `getty`; this is
@@ -129,10 +129,10 @@ script must run a service logging daemon, normally this is the
 [svlogd](svlogd.8.html) program. See the [runsv](runsv.8.html) man page
 for details. Here\'s an example of a `./log/run` script:
 
-     $ cat /etc/sv/socklog-klog/log/run
-     #!/bin/sh
-     exec chpst -ulog svlogd -tt ./main
-     $ 
+    $ cat /etc/sv/socklog-klog/log/run
+    #!/bin/sh
+    exec chpst -ulog svlogd -tt ./main
+    $ 
 
 ---
 
@@ -148,7 +148,7 @@ Answer: Create a symbolic link in `/service/` pointing to the service
 directory, runit will pick up the service within the next five seconds,
 and automatically start it on system boot. E.g.:
 
-     # ln -s /etc/sv/getty-2 /service/
+    # ln -s /etc/sv/getty-2 /service/
 
 ---
 
@@ -163,7 +163,7 @@ running under runit service supervision?
 Answer: Use the [sv](sv.8.html) program. E.g., to restart the
 `socklog-unix` service, do:
 
-     # sv restart socklog-unix
+    # sv restart socklog-unix
 
 ---
 
@@ -178,7 +178,7 @@ signals to a service daemon?
 Answer: Use the [sv](sv.8.html) program. E.g., to send the `dhcp`
 service the HUP signal, do:
 
-     # sv hup dhcp
+    # sv hup dhcp
 
 ---
 
@@ -192,11 +192,11 @@ or down as requested, or so. How can I find out this information?
 Answer: User the [sv](sv.8.html) program. E.g., to query or check the
 status of the `socklog-unix` service, do:
 
-     # sv status socklog-unix
+    # sv status socklog-unix
 
 or
 
-     # sv check socklog-unix
+    # sv check socklog-unix
 
 ---
 
@@ -212,7 +212,7 @@ directory, runit recognizes the removed service within the next five
 seconds, then stops the service, the optional log service, and finally
 the supervisor process. E.g.:
 
-     # rm /service/getty-2
+    # rm /service/getty-2
 
 ---
 
@@ -229,11 +229,11 @@ The [sv](sv.8.html) program can be used for that. E.g. the `cron`
 service wants the `socklog-unix` system logging service to be available
 before starting the `cron` service daemon, so no logs get lost:
 
-     $ cat /etc/sv/cron/run
-     #!/bin/sh
-     sv start socklog-unix || exit 1
-     exec cron -f
-     $ 
+    $ cat /etc/sv/cron/run
+    #!/bin/sh
+    sv start socklog-unix || exit 1
+    exec cron -f
+    $ 
 
 See also the [documentation](dependencies.html).
 
@@ -266,10 +266,10 @@ To make this script interface work for a service, create a symbolic link
 in `/etc/init.d/`, named as the service daemon, pointing to the
 [sv](sv.8.html) program, e.g. for the `cron` service:
 
-     # ln -s /bin/sv /etc/init.d/cron
-     # /etc/init.d/cron restart
-     ok: run: cron: (pid 5869) 0s
-     # 
+    # ln -s /bin/sv /etc/init.d/cron
+    # /etc/init.d/cron restart
+    ok: run: cron: (pid 5869) 0s
+    # 
 
 ---
 
@@ -286,8 +286,8 @@ Answer: Yes, you simply need to adjust file system permissions for the
 user `burdon` to control the service `dhcp`, change to the `dhcp`
 service directory, and do
 
-     # chmod 755 ./supervise
-     # chown burdon ./supervise/ok ./supervise/control ./supervise/status
+    # chmod 755 ./supervise
+    # chown burdon ./supervise/ok ./supervise/control ./supervise/status
 
 This works similarly with groups, of course.
 
@@ -305,9 +305,9 @@ services through `~/service/`, [create a service](#createlog)
 `runsvdir-floyd` with the following run script and a usual log/run
 script, and [tell runit](#tell) about the service
 
-     #!/bin/sh
-     exec 2>&1
-     exec chpst -ufloyd runsvdir /home/floyd/service
+    #!/bin/sh
+    exec 2>&1
+    exec chpst -ufloyd runsvdir /home/floyd/service
 
 Now `floyd` can create services on his own, and manage them through
 symbolic links in `~/service/` to have them run under his user id.
@@ -328,8 +328,8 @@ dangling symlinks. E.g., make a ramdisk available at a moint point, say
 `/var/run/`, and create symbolic links for the files and directories
 that runit needs to write access to pointing into `/var/run/`:
 
-     # ln -s /var/run/runit.stopit /etc/runit/stopit
-     # ln -s /var/run/sv.getty-2 /etc/sv/getty-2/supervise
+    # ln -s /var/run/runit.stopit /etc/runit/stopit
+    # ln -s /var/run/sv.getty-2 /etc/sv/getty-2/supervise
 
 ---
 

@@ -25,8 +25,8 @@ by adding <code>/sbin/runsvdir-start</code> to the system's
 <p>In any case, you first need to copy the <em>stage 2</em> script to
 <code>/sbin/runsvdir-start</code>, and create the services directory
 <code>/service/</code>:</p>
-<pre><code> install -m0750 /package/admin/runit/etc/2 /sbin/runsvdir-start
- mkdir -p /service</code></pre>
+<pre><code>install -m0750 /package/admin/runit/etc/2 /sbin/runsvdir-start
+mkdir -p /service</code></pre>
 <hr />
 <p><a href="#sysv">How to use with sysvinit and inittab</a><br />
 <a href="#upstart">How to use with sysvinit and upstart</a><br />
@@ -38,11 +38,11 @@ by adding <code>/sbin/runsvdir-start</code> to the system's
 inittab</h2>
 <p>If your system uses a sysvinit alike init scheme with a
 <code>/etc/inittab</code> file, do:</p>
-<pre><code> cat &gt;&gt;/etc/inittab &lt;&lt;EOT
- SV:123456:respawn:/sbin/runsvdir-start
- EOT</code></pre>
+<pre><code>cat &gt;&gt;/etc/inittab &lt;&lt;EOT
+SV:123456:respawn:/sbin/runsvdir-start
+EOT</code></pre>
 <p>and tell <em>init</em> to re-read its configuration, e.g.:</p>
-<pre><code> init q</code></pre>
+<pre><code>init q</code></pre>
 <hr />
 <p><span id="upstart"></span></p>
 <h2 id="using-with-sysvinit-and-upstart">Using with sysvinit and
@@ -50,42 +50,42 @@ upstart</h2>
 <p>If your system uses a sysvinit alike init scheme that utilizes
 upstart instead of inittab, and which has start and stop scripts located
 in <code>/etc/init/</code>, do:</p>
-<pre><code> cat &gt;/etc/init/runsvdir.conf &lt;&lt;\EOT
- # for runit - manage /usr/sbin/runsvdir-start
- start on runlevel 2
- start on runlevel 3
- start on runlevel 4
- start on runlevel 5
- stop on shutdown
- respawn
- exec /usr/sbin/runsvdir-start
- EOT</code></pre>
+<pre><code>cat &gt;/etc/init/runsvdir.conf &lt;&lt;\EOT
+# for runit - manage /usr/sbin/runsvdir-start
+start on runlevel 2
+start on runlevel 3
+start on runlevel 4
+start on runlevel 5
+stop on shutdown
+respawn
+exec /usr/sbin/runsvdir-start
+EOT</code></pre>
 <p>and tell init to start the new service, e.g.:</p>
-<pre><code> start runsvdir</code></pre>
+<pre><code>start runsvdir</code></pre>
 <hr />
 <p><span id="bsd"></span></p>
 <h2 id="using-with-bsd-init">Using with *BSD init</h2>
 <p>If your system uses a BSD alike init scheme with a
 <code>/etc/rc.local</code> script, do:</p>
-<pre><code> cat &gt;&gt;/etc/rc.local &lt;&lt;EOT
- csh -cf &#39;/sbin/runsvdir-start &amp;&#39;
- EOT</code></pre>
+<pre><code>cat &gt;&gt;/etc/rc.local &lt;&lt;EOT
+csh -cf &#39;/sbin/runsvdir-start &amp;&#39;
+EOT</code></pre>
 <p>and reboot your system.</p>
 <hr />
 <p><span id="macosx"></span></p>
 <h2 id="using-with-macosx-init">Using with MacOSX init</h2>
 <p>On MacOSX 10.2 create an entry for <em>runit</em> in
 <code>/System/Library/StartupItems/</code>:</p>
-<pre><code> cd /System/Library/StartupItems
- mkdir -p runit
- cp -p /package/admin/runit/etc/macosx/StartupItems/* runit/</code></pre>
+<pre><code>cd /System/Library/StartupItems
+mkdir -p runit
+cp -p /package/admin/runit/etc/macosx/StartupItems/* runit/</code></pre>
 <p>and reboot your system.</p>
 <p>On MacOSX 10.4 create an entry for <em>runit</em> in
 <code>/Library/LaunchDaemons/</code>, and tell <em>launchd</em> to start
 the new service:</p>
-<pre><code> cp /package/admin/runit/etc/macosx/org.smarden.runit.plist \
-   /Library/LaunchDaemons/
- launchctl load /Library/LaunchDaemons/org.smarden.runit.plist</code></pre>
+<pre><code>cp /package/admin/runit/etc/macosx/org.smarden.runit.plist \
+  /Library/LaunchDaemons/
+launchctl load /Library/LaunchDaemons/org.smarden.runit.plist</code></pre>
 <hr />
 <p><a href="mailto:pape@smarden.org">Gerrit Pape
 &lt;pape@smarden.org&gt;</a></p>

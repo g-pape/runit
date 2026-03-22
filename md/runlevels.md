@@ -24,17 +24,17 @@ process no 1 by following the [instructions](replaceinit.html).
 
 Create the following directories and symbolic links:
 
-     mkdir -p /etc/runit/runsvdir/default
-     mkdir -p /etc/runit/runsvdir/single
-     ln -s /etc/sv/getty-5 /etc/runit/runsvdir/single/
-     ln -s default /etc/runit/runsvdir/current
+    mkdir -p /etc/runit/runsvdir/default
+    mkdir -p /etc/runit/runsvdir/single
+    ln -s /etc/sv/getty-5 /etc/runit/runsvdir/single/
+    ln -s default /etc/runit/runsvdir/current
 
 Copy the contents of `/service/` to `/etc/runit/runsvdir/current/` and
 replace `/service/` with a symbolic link:
 
-     cp -pR /service/* /etc/runit/runsvdir/current/
-     mv -f /service /service.old && \
-       ln -s /etc/runit/runsvdir/current /service
+    cp -pR /service/* /etc/runit/runsvdir/current/
+    mv -f /service /service.old && \
+      ln -s /etc/runit/runsvdir/current /service
 
 You have now created two runlevels: `default` and `single`. The
 `current` runlevel is `default`. It is safe to remove `/service.old/` if
@@ -43,14 +43,14 @@ you don\'t need it anymore.
 Finally edit `/etc/runit/2` to set the `default` runlevel when stage 2
 starts:
 
-     $ cat /etc/runit/2 
-     #!/bin/sh
-     PATH=/command:/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin
-     
-     runsvchdir default >/dev/null
-     
-     exec env - PATH=$PATH \
-     runsvdir /service 'log: ...........................................................................................................................................................................................................................................................................................................................................................................................................'
+    $ cat /etc/runit/2 
+    #!/bin/sh
+    PATH=/command:/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin
+    
+    runsvchdir default >/dev/null
+    
+    exec env - PATH=$PATH \
+    runsvdir /service 'log: ...........................................................................................................................................................................................................................................................................................................................................................................................................'
 
 ---
 
@@ -63,11 +63,11 @@ Switching runlevels with *runit* is done by switching the directory the
 [runsvchdir](runsvchdir.8.html) program, e.g. to switch to the `single`
 user runlevel, do:
 
-     runsvchdir single
+    runsvchdir single
 
 To switch back to the `default` runlevel, do:
 
-     runsvchdir default
+    runsvchdir default
 
 See [the runsvdir program](runsvdir.8.html) for a description of what
 happens when *runsvdir* sees the directory changed. Note that there is
@@ -87,18 +87,18 @@ To create a new runlevel, simply create a new directory in
 runlevel. The name must not start with a dot and must not be `current`,
 `current.new`, or `previous`, e.g.:
 
-     mkdir /etc/runit/runsvdir/maintenance
+    mkdir /etc/runit/runsvdir/maintenance
 
 Add the services you want to run in the runlevel `maintenance` to the
 newly created directory, e.g.:
 
-     ln -s /etc/sv/getty-5 /etc/runit/runsvdir/maintenance/
-     ln -s /etc/sv/ssh /etc/runit/runsvdir/maintenance/
-     ln -s /etc/sv/dnscache /etc/runit/runsvdir/maintenance/
+    ln -s /etc/sv/getty-5 /etc/runit/runsvdir/maintenance/
+    ln -s /etc/sv/ssh /etc/runit/runsvdir/maintenance/
+    ln -s /etc/sv/dnscache /etc/runit/runsvdir/maintenance/
 
 If you want to switch to the runlevel `maintenance`, do:
 
-     runsvchdir maintenance
+    runsvchdir maintenance
 
 ---
 

@@ -21,8 +21,8 @@ Normally this is done by either adding an entry for
 In any case, you first need to copy the *stage 2* script to
 `/sbin/runsvdir-start`, and create the services directory `/service/`:
 
-     install -m0750 /package/admin/runit/etc/2 /sbin/runsvdir-start
-     mkdir -p /service
+    install -m0750 /package/admin/runit/etc/2 /sbin/runsvdir-start
+    mkdir -p /service
 
 ---
 
@@ -40,13 +40,13 @@ In any case, you first need to copy the *stage 2* script to
 If your system uses a sysvinit alike init scheme with a `/etc/inittab`
 file, do:
 
-     cat >>/etc/inittab <<EOT
-     SV:123456:respawn:/sbin/runsvdir-start
-     EOT
+    cat >>/etc/inittab <<EOT
+    SV:123456:respawn:/sbin/runsvdir-start
+    EOT
 
 and tell *init* to re-read its configuration, e.g.:
 
-     init q
+    init q
 
 ---
 
@@ -58,20 +58,20 @@ If your system uses a sysvinit alike init scheme that utilizes upstart
 instead of inittab, and which has start and stop scripts located in
 `/etc/init/`, do:
 
-     cat >/etc/init/runsvdir.conf <<\EOT
-     # for runit - manage /usr/sbin/runsvdir-start
-     start on runlevel 2
-     start on runlevel 3
-     start on runlevel 4
-     start on runlevel 5
-     stop on shutdown
-     respawn
-     exec /usr/sbin/runsvdir-start
-     EOT
+    cat >/etc/init/runsvdir.conf <<\EOT
+    # for runit - manage /usr/sbin/runsvdir-start
+    start on runlevel 2
+    start on runlevel 3
+    start on runlevel 4
+    start on runlevel 5
+    stop on shutdown
+    respawn
+    exec /usr/sbin/runsvdir-start
+    EOT
 
 and tell init to start the new service, e.g.:
 
-     start runsvdir
+    start runsvdir
 
 ---
 
@@ -82,9 +82,9 @@ and tell init to start the new service, e.g.:
 If your system uses a BSD alike init scheme with a `/etc/rc.local`
 script, do:
 
-     cat >>/etc/rc.local <<EOT
-     csh -cf '/sbin/runsvdir-start &'
-     EOT
+    cat >>/etc/rc.local <<EOT
+    csh -cf '/sbin/runsvdir-start &'
+    EOT
 
 and reboot your system.
 
@@ -97,18 +97,18 @@ and reboot your system.
 On MacOSX 10.2 create an entry for *runit* in
 `/System/Library/StartupItems/`:
 
-     cd /System/Library/StartupItems
-     mkdir -p runit
-     cp -p /package/admin/runit/etc/macosx/StartupItems/* runit/
+    cd /System/Library/StartupItems
+    mkdir -p runit
+    cp -p /package/admin/runit/etc/macosx/StartupItems/* runit/
 
 and reboot your system.
 
 On MacOSX 10.4 create an entry for *runit* in `/Library/LaunchDaemons/`,
 and tell *launchd* to start the new service:
 
-     cp /package/admin/runit/etc/macosx/org.smarden.runit.plist \
-       /Library/LaunchDaemons/
-     launchctl load /Library/LaunchDaemons/org.smarden.runit.plist
+    cp /package/admin/runit/etc/macosx/org.smarden.runit.plist \
+      /Library/LaunchDaemons/
+    launchctl load /Library/LaunchDaemons/org.smarden.runit.plist
 
 ---
 
