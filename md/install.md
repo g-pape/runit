@@ -40,6 +40,11 @@ archive
     rm runit-2.3.1.tar
     cd admin/runit-2.3.1
 
+On \*BSD, if `gcc` is not available on the system, use `cc` instead:
+
+    echo 'cc -O2 -Wall' >src/conf-cc
+    echo 'cc -s' >src/conf-ld
+
 On MacOSX, do
 
     echo 'cc -Xlinker -x' >src/conf-ld
@@ -84,6 +89,11 @@ unpack the archive
 Run `pwd` and note the working directory. When following the
 documentation onwards, you need to replace `/package/admin/runit`
 accordingly.
+
+On \*BSD, if `gcc` is not available on the system, use `cc` instead:
+
+    echo 'cc -O2 -Wall' >src/conf-cc
+    echo 'cc -s' >src/conf-ld
 
 On MacOSX, do
 

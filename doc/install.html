@@ -37,6 +37,10 @@ gunzip runit-2.3.1.tar
 tar -xpf runit-2.3.1.tar
 rm runit-2.3.1.tar
 cd admin/runit-2.3.1</code></pre>
+<p>On *BSD, if <code>gcc</code> is not available on the system, use
+<code>cc</code> instead:</p>
+<pre><code>echo &#39;cc -O2 -Wall&#39; &gt;src/conf-cc
+echo &#39;cc -s&#39; &gt;src/conf-ld</code></pre>
 <p>On MacOSX, do</p>
 <pre><code>echo &#39;cc -Xlinker -x&#39; &gt;src/conf-ld
 cp src/Makefile src/Makefile.old
