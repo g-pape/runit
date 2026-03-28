@@ -1,3 +1,4 @@
+  * doc/install.html: how to install as non-root user.
   * doc/install.html, doc/replaceinit.html, doc/runlevels.html,
     doc/useinit.html: strip '^# ' from code blocks for multiline copy&paste.
   * man/sv.8, doc/dependencies.html: rename check script to program.
