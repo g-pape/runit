@@ -1,3 +1,6 @@
+  * etc/freebsd: rename to etc/bsd.
+  * etc/openbsd, etc/freebsd/getty-ttyv4: remove; obsolete.
+  * doc/replaceinit.html: revise section "Replacing init on *BSD".
   * doc/install.html: how to install as non-root user; optionally use cc on
     *BSD.
   * doc/install.html, doc/replaceinit.html, doc/runlevels.html,

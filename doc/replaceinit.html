@@ -117,79 +117,71 @@ new default Unix process no 1 <em>runit</em>.</p>
 <pre><code>( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org</code></pre>
 <hr />
 <p><span id="bsd"></span></p>
-<h2 id="replacing-init-bsd">Replacing init (*BSD)</h2>
+<h2 id="replacing-init-on-bsd">Replacing init on *BSD</h2>
 <p>Follow these steps to migrate from <em>init</em> to <em>runit</em> on
-<a href="https://www.openbsd.org/">OpenBSD 2.9</a> or <a
-href="https://www.freebsd.org/">FreeBSD 4.4</a>. The
-<code>/sbin/init</code> binary is not replaced until step 4.</p>
+<a href="https://www.freebsd.org/">FreeBSD</a> (14.4 and older), <a
+href="https://netbsd.org">NetBSD</a> (10.1 and older), or <a
+href="https://www.openbsd.org/">OpenBSD</a> (7.8 and older). The
+<code>/sbin/init</code> program is not replaced until step 4.</p>
+<p>Login as root to a local serial or virtual terminal.</p>
 <h3 id="step-1-the-three-stages-1">Step 1: The three stages</h3>
-<p><em>runit</em> looks for the three stages implementing the system's
-<em>booting</em>, <em>running</em> and <em>shutdown</em> in
-<code>/etc/runit/1</code>, <code>/etc/runit/2</code> and
-<code>/etc/runit/3</code> respectively. Create the scripts now:</p>
+<p><a href="runit.8.html">runit</a> looks for the three stages
+implementing the system's <em>booting</em>, <em>running</em> and
+<em>shutdown</em> in <code>/etc/runit/1</code>,
+<code>/etc/runit/2</code> and <code>/etc/runit/3</code> respectively.
+Create the scripts now:</p>
 <pre><code>mkdir -p /etc/runit
-
-OpenBSD 2.9:
-cp -p /package/admin/runit/etc/openbsd/[123] /etc/runit/
-
-FreeBSD 4.4:
-cp -p /package/admin/runit/etc/freebsd/[123] /etc/runit/</code></pre>
-<p>Remove the <code>svscanboot</code> startup from
-<code>/etc/rc.local</code> by deleting the line
-<code>csh -cf '/command/svscanboot &amp;'</code> (this normally is the
-last one); <em>runit</em> will start <a
-href="runsvdir.8.html">runsvdir</a> in stage 2 after running
-<code>rc.local</code> in stage 1.</p>
-<pre><code>vi /etc/rc.local</code></pre>
+cp -p /package/admin/runit/etc/bsd/[123] /etc/runit/</code></pre>
 <h3 id="step-2-the-runit-programs-1">Step 2: The runit programs</h3>
 <p>The <em>runit</em> programs must reside on the root partition,
 install them into <code>/sbin</code>:</p>
 <pre><code>install -m0500 /package/admin/runit/command/runit* /sbin/</code></pre>
 <h3 id="step-3-the-getties-1">Step 3: The getties</h3>
-<p>At least one getty must run in stage 2 so that you are able to login.
-To have it run on the virtual console no 5, create the getty-5 service
-directory:</p>
-<pre><code>mkdir -p /etc/sv/getty-5
-
-OpenBSD 2.9:
-cp -p /package/admin/runit/etc/openbsd/getty-ttyC4/run /etc/sv/getty-5/
-
-FreeBSD 4.4:
-cp -p /package/admin/runit/etc/freebsd/getty-ttyv4/run /etc/sv/getty-5/</code></pre>
-<p>and tell <a href="runsvdir.8.html">runsvdir</a> about the
-<code>getty-5</code> <em>service</em>:</p>
+<p>When booting with <em>runit</em> as <em>init</em>, at least one
+<code>getty</code> should run in stage 2 so that you are able to login
+to the terminal. Create the <code>getty-default</code> service directory
+now:</p>
+<pre><code>mkdir -p /etc/sv/getty-default</code></pre>
+<p>Run the <code>tty</code> command to get the name of the current
+terminal, and create the corresponding <code>getty-default</code> run
+script:</p>
+<pre><code>TTYNAME=$(tty); tee /etc/sv/getty-default/run &lt;&lt;EOT &amp;&amp; chmod 755 $_
+#!/bin/sh
+exec /usr/libexec/getty Pc ${TTYNAME##*/}
+EOT</code></pre>
+<p>Tell <em>runit</em> about the <code>getty-default</code> service:</p>
 <pre><code>mkdir -p /service
-ln -s /etc/sv/getty-5 /service/</code></pre>
-<p>Start <em>runit</em>'s stage 2 for testing:</p>
-<pre><code>/etc/runit/2 &amp;</code></pre>
-<p>And check that the getty is running.</p>
-<h3 id="step-4-replace-the-sbininit-binary">Step 4: Replace the
-<code>/sbin/init</code> binary</h3>
-<p>Before replacing the <code>init</code> binary, make sure that you are
-able to boot your system alternatively, e.g. with a boot floppy, to
-restore the former <code>/sbin/init</code> if anything goes wrong.</p>
-<p>Make a backup copy of the current <code>/sbin/init</code> program and
-replace it with <code>/sbin/runit-init</code>:</p>
+ln -s /etc/sv/getty-default /service/</code></pre>
+<p>Optionally create more <code>getty</code> services for additional
+terminals, look at <code>/etc/ttys</code>.</p>
+<p>On a headless system you can also do the migration through
+<code>ssh</code> login without setting up any <code>getty</code>
+service.</p>
+<h3 id="step-4-replace-the-sbininit-program">Step 4: Replace the
+<code>/sbin/init</code> program</h3>
+<p>Before replacing the <code>init</code> program, make sure that you
+are able to boot the system by other means to restore the original
+<code>/sbin/init</code> if anything goes wrong, e.g. with the
+installation image, a rescue system, or save a snapshot.</p>
+<p>Make a backup copy of the <code>/sbin/init</code> program and replace
+it with <code>/sbin/runit-init</code>:</p>
 <pre><code>cp -p /sbin/init /sbin/init.bsd
 install /sbin/runit-init /sbin/init</code></pre>
 <p>Boot your system with <em>runit</em> for the first time:</p>
 <pre><code>reboot</code></pre>
-<p>Watch the console output while <em>runit</em> boots up the system.
-Switch to the virtual console 5 (CTRL-ALT-F5) when stage 2 is reached, a
-getty should run there, you are able to login.</p>
+<p>Watch the console output while <a href="runit.8.html">runit</a>
+starts the system. Switch to the same terminal as before, the default
+<code>getty</code> runs there to login.</p>
 <p>Use <strong>init 6</strong> to reboot and <strong>init 0</strong> to
-halt a system that runs <em>runit</em>. This will cause <em>runit</em>
-to enter stage 3 which runs <code>/sbin/reboot</code> or
-<code>/sbin/halt</code> as last command.</p>
+halt a system that runs with <em>runit</em>. This will cause <a
+href="runit.8.html">runit</a> to enter stage 3 which runs
+<code>/sbin/reboot</code> or <code>/sbin/halt</code> as last
+command.</p>
 <p>To report success:</p>
 <pre><code>( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org</code></pre>
 <h3 id="step-5-service-migration-1">Step 5: Service migration</h3>
-<p>The goal is to migrate all services from <em>/etc/rc.*</em> scheme to
-the <em>runit</em> service supervision design; take a look at these <a
-href="runscripts.html">run scripts</a> for popular services. The
-migration can be done smoothly. By default <em>runit</em> runs the
-<code>/etc/rc</code> scripts in stage 1 as a one time task, so the
-services are started automatically:</p>
+<p>By default <em>runit</em> runs the <code>/etc/rc</code> scripts in
+stage 1 as one time task, so services are started as before:</p>
 <pre><code>#!/bin/sh
 # system one time tasks
 
@@ -197,11 +189,45 @@ services are started automatically:</p>
 
 touch /etc/runit/stopit
 chmod 0 /etc/runit/stopit</code></pre>
+<p>The system starts up as usual apart from the <code>getties</code>,
+but with <a href="runit.8.html">runit</a> as <em>init</em> and service
+supervision enabled. You can now <a href="faq.html#run">add new
+services</a>, and migrate services from the <em>/etc/rc.*</em> scheme to
+<em>runit</em> service supervision, because of the <a
+href="benefits.html">benefits</a>. Take a look at these <a
+href="runscripts.html">run scripts</a> for popular services.</p>
 <p>To migrate a service, <a href="faq.html#create">create a service
-directory</a>, disable the service if it is running, disable the service
-in <code>/etc/rc.conf</code> or remove the service startup from the
-<code>/etc/rc.*</code> scripts and <a href="faq.html#tell">tell
-runsvdir</a> about the new service.</p>
+directory</a>, stop the service if it is running, disable the service in
+<code>/etc/rc.conf</code> or remove the service startup from the
+<code>/etc/rc.*</code> scripts, and <a href="faq.html#tell">tell
+runit</a> about the new service.</p>
+<h4 id="example-sshd">Example: <code>sshd</code></h4>
+<pre><code>mkdir -p /etc/sv/sshd
+tee /etc/sv/sshd/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+#!/bin/sh
+exec /usr/sbin/sshd -D
+EOT
+/etc/rc.d/sshd stop</code></pre>
+<p>Edit <code>/etc/rc.conf</code> and disable <code>sshd</code> (ie. set
+to “<code>NO</code>”) to prevent it from being started again. Then
+enable the <em>runit</em> <code>sshd</code> service:</p>
+<pre><code>ln -s /etc/sv/sshd /service/</code></pre>
+<p>Check the status of the <em>runit</em> <code>sshd</code> service:</p>
+<pre><code>sv status sshd</code></pre>
+<h4 id="example-cron">Example: <code>cron</code></h4>
+<pre><code>mkdir -p /etc/sv/cron
+tee /etc/sv/cron/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+#!/bin/sh
+exec cron -n
+EOT
+/etc/rc.d/cron stop</code></pre>
+<p>Edit <code>/etc/rc.conf</code> or <code>/etc/defaults/rc.conf</code>
+and disable <code>cron</code> (ie. set to “<code>NO</code>”) to prevent
+it from being started again. Then enable the <em>runit</em>
+<code>cron</code> service:</p>
+<pre><code>ln -s /etc/sv/cron /service/</code></pre>
+<p>Check the status of the <em>runit</em> <code>cron</code> service:</p>
+<pre><code>sv status cron</code></pre>
 <hr />
 <p><span id="macosx"></span></p>
 <h2 id="replacing-init-on-macosx">Replacing init on MacOSX</h2>
