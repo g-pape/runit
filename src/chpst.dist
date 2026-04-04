@@ -1,8 +1,8 @@
-usage: chpst [-vVP012] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
+usage: chpst [-vVPFI012] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
 
 100
-$Id: 77dfc11f6cabbc3e49bcaad51af65e3325082516 $
-usage: chpst [-vVP012] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
+$Id: f63dd32831de12538463234394807e4ad186d935 $
+usage: chpst [-vVPFI012] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
 
 100
 test=1

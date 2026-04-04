@@ -1,3 +1,9 @@
+  * man/chpst.8: document new -F and -I options.
+  * chpst.c: -F option implies -I (thx github/andy-bower).
+  * chpst.c: add new option -F: fghack using unshare(); chpst.c: add new
+    option -I: run another init using unshare().
+  * Makefile, TARGETS: add test for unshare() system call (_GNU_SOURCE).
+  * hasunshare.h1, hasunshare.h2, tryunshare.c: new.
   * conf-cc: trim.
   * doc/install.html, doc/replaceinit.html, doc/runlevels.html,
     doc/useinit.html: strip '^# ' from code blocks for multiline copy&paste.

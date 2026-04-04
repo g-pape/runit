@@ -6,7 +6,7 @@ chpst - runs a program with a changed process state
 
 # SYNOPSIS
 
-**chpst** \[-vVP012\] \[-u *user*\] \[-U *user*\] \[-b *argv0*\] \[-e
+**chpst** \[-vVPFI012\] \[-u *user*\] \[-U *user*\] \[-b *argv0*\] \[-e
 *dir*\] \[-/ *root*\] \[-C *pwd*\] \[-n *inc*\] \[-l\|-L *lock*\] \[-m
 *bytes*\] \[-d *bytes*\] \[-o *n*\] \[-p *n*\] \[-f *bytes*\] \[-c
 *bytes*\] \[-t *seconds*\] *prog*
@@ -108,6 +108,26 @@ runs *prog*.
 
 **-P**
 :   pgrphack. Run *prog* in a new process group.
+
+**-F**
+:   fghack or follow. Run *prog* in new pid and mount namespaces as
+    second process (pid 2), and wait for *prog* and all processes
+    started by it to exit, no matter in which order. Then exit with the
+    return code of the last process exited. The /proc filesystem is
+    unmounted in *prog*\'s namespace, and while waiting **chpst** relays
+    most signals it receives to all processes in *prog*\'s namespace. On
+    QUIT signal **chpst** sends the KILL signal to pid 1 in the
+    namespace to have it, *prog*, and all its children exit immediately.
+    Only works on systems that provide **unshare**(2).
+
+**-I**
+:   init. Run *prog* in new pid and mount namespaces as process no 1
+    (pid 1), and wait for it to exit. *prog* must be an init program.
+    The /proc filesystem is unmounted in *prog*\'s namespace, and
+    while waiting **chpst** relays most signals it receives to *prog*.
+    On QUIT signal **chpst** sends the KILL signal to *prog* to have it
+    and all its children exit immediately. Only works on systems that
+    provide **unshare**(2).
 
 **-0**
 :   Close standard input before starting *prog*.

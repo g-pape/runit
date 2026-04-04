@@ -194,6 +194,9 @@ hassgact.h: choose compile hassgact.h1 hassgact.h2 load trysgact.c
 hassgprm.h: choose compile hassgprm.h1 hassgprm.h2 load trysgprm.c
 	./choose cl trysgprm hassgprm.h1 hassgprm.h2 > hassgprm.h
 
+hasunshare.h: choose compile hasunshare.h1 hasunshare.h2 load tryunshare.c
+	./choose cl tryunshare hasunshare.h1 hasunshare.h2 > hasunshare.h
+
 haswaitp.h: choose compile haswaitp.h1 haswaitp.h2 load trywaitp.c
 	./choose cl trywaitp haswaitp.h1 haswaitp.h2 > haswaitp.h
 
@@ -326,7 +329,7 @@ subgetopt.o: compile subgetopt.c subgetopt.h
 	./compile subgetopt.c
 
 sysdeps: compile direntry.h hasflock.h hasmkffo.h hassgact.h \
-hassgprm.h haswaitp.h iopause.h load select.h systype \
+hassgprm.h hasunshare.h haswaitp.h iopause.h load select.h systype \
 uint64.h reboot_system.h socket.lib
 	rm -f sysdeps
 	cat systype compile load socket.lib >>sysdeps
@@ -340,6 +343,7 @@ uint64.h reboot_system.h socket.lib
 	grep sysdep hasmkffo.h >>sysdeps
 	grep sysdep hasflock.h >>sysdeps
 	grep sysdep reboot_system.h >>sysdeps
+	grep sysdep hasunshare.h >>sysdeps
 	cat sysdeps
 
 systype: find-systype.sh trycpp.c x86cpuid.c

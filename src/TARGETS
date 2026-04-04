@@ -56,6 +56,7 @@ hasflock.h
 hasmkffo.h
 hassgact.h
 hassgprm.h
+hasunshare.h
 haswaitp.h
 iopause.h
 iopause.o

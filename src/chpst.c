@@ -1,3 +1,13 @@
+#include "hasunshare.h"
+#ifdef HASUNSHARE
+#define _GNU_SOURCE
+#include <sched.h>
+#include <sys/mount.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include "sig.h"
+#include "wait.h"
+#endif
 #include <sys/types.h>
 #include <time.h>
 #include <sys/time.h>
@@ -20,12 +30,16 @@
 #include "openreadclose.h"
 #include "direntry.h"
 
-#define USAGE_MAIN " [-vVP012] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog"
+#define USAGE_MAIN " [-vVPFI012] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog"
 #define FATAL "chpst: fatal: "
 #define WARNING "chpst: warning: "
 
 const char *progname;
 static stralloc sa;
+char bufnum[FMT_ULONG];
+#ifdef HASUNSHARE
+pid_t pid;
+#endif
 
 void fatal(const char *m) { strerr_die3sys(111, FATAL, m, ": "); }
 void fatal2(const char *m0, const char *m1) {
@@ -47,6 +61,7 @@ unsigned int pgrp =0;
 unsigned int nostdin =0;
 unsigned int nostdout =0;
 unsigned int nostderr =0;
+unsigned int newpids =0;
 long limitd =-2;
 long limits =-2;
 long limitl =-2;
@@ -85,7 +100,6 @@ void suidgid(char *user, unsigned int ext) {
 
 void euidgid(char *user, unsigned int ext) {
   struct uidgid ugid;
-  char bufnum[FMT_ULONG];
 
   if (ext) {
     if (! uidgids_get(&ugid, user)) {
@@ -258,6 +272,65 @@ void slimit() {
   }
 }
 
+void newpid1() {
+#ifdef HASUNSHARE
+  void sig_handler(int sig) { kill(pid, sig); }
+  void sig_handler_pid1(int sig) { kill(-1, sig); }
+  void sig_quit_handler(int unused) { kill(pid, SIGKILL); }
+  int i, w =0;
+
+  for (i =0; i < 32; ++i) sig_catch(i, sig_handler);
+#ifdef SIGRTMIN
+  for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler);
+#endif
+  sig_catch(SIGQUIT, sig_quit_handler);
+  if (unshare(CLONE_NEWPID | CLONE_NEWNS) == -1)
+    fatal("unable to set namespaces");
+  if ((pid =fork()) == -1) fatal("unable to fork new pid 1");
+  if (pid) { /* parent, signal relay */
+    if (wait_pid(&i, pid) == -1) fatal("unable to wait for new pid 1");
+    if (verbose) warn("pid1: done");
+    _exit(wait_crashed(i) ? 128 + WTERMSIG(i) : wait_exitcode(i));
+  }
+  /* new pid 1 */
+  if (verbose) warn("pid1: start");
+  if (mount(NULL, "/", NULL, MS_PRIVATE|MS_REC, NULL) == -1)
+    if (!root) fatal("pid1: unable to set root mount propagation");
+  if (umount2("/proc", MNT_DETACH) == -1)
+    if (errno != EINVAL) fatal("pid1: unable to umount /proc");
+  if (newpids > 1) {
+    for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
+#ifdef SIGRTMIN
+    for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
+#endif
+    sig_uncatch(sig_child);
+    if ((pid =fork()) == -1) fatal("pid1: unable to fork pid 2");
+    if (pid) /* parent, zombies, amialone */
+      for (;;) {
+        pid_t p;
+        if ((p =wait_pid(&i, -1)) == -1) {
+          if (errno != ECHILD)
+            strerr_warn2(WARNING, "pid1: wait_pid(): ", &strerr_sys);
+          _exit(wait_crashed(w) ? 128 + WTERMSIG(w) : wait_exitcode(w));
+        } else {
+          w =i;
+          if (verbose) {
+            bufnum[fmt_ulong(bufnum, p)] =0;
+            strerr_warn4(WARNING, "pid1: pid ", bufnum, ": exit", 0);
+          }
+        }
+      }
+    /* pid 2 */
+  }
+  for (i =0; i < 32; ++i) sig_uncatch(i);
+#ifdef SIGRTMIN
+  for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_uncatch(i);
+#endif
+#else
+  fatalx("unable to set namespaces", "system does not provide unshare()");
+#endif
+}
+
 /* argv[0] */
 void setuidgid(int, char *const *);
 void envuidgid(int, char *const *);
@@ -287,7 +360,7 @@ int main(int argc, char **argv) {
   if (str_equal(progname, "setlock")) setlock(argc, argv);
   if (str_equal(progname, "softlimit")) softlimit(argc, argv);
 
-  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012V"))
+  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012FIV"))
          != opteof)
     switch(opt) {
     case 'u': set_user =(char*)optarg; break;
@@ -328,6 +401,8 @@ int main(int argc, char **argv) {
     case '0': nostdin =1; break;
     case '1': nostdout =1; break;
     case '2': nostderr =1; break;
+    case 'F': newpids =2; break;
+    case 'I': if (!newpids) newpids =1; break;
     case 'V': strerr_warn1("$Id$", 0);
     case '?': usage();
     }
@@ -347,6 +422,7 @@ int main(int argc, char **argv) {
     errno =0;
     if (nice(nicelvl) == -1) if (errno) fatal("unable to set nice level");
   }
+  if (newpids) newpid1();
   if (env_user) euidgid(env_user, 1);
   if (set_user) suidgid(set_user, 1);
   if (lock) slock(lock, lockdelay, 0);
