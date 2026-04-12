@@ -18,154 +18,184 @@
 
 []{#sysv}
 
-## Replacing sysvinit (GNU/Linux)
+## Replacing sysvinit on GNU/Linux
 
-Follow these steps to migrate from *sysvinit* to *runit* on [Debian
-GNU/Linux (woody)](https://www.debian.org/releases/woody/). The
-`/sbin/init` binary is not replaced until step 6, *runit* is the default
-Unix process no 1 after step 7.
+Follow these steps to migrate from *init* to *runit* on a
+[GNU/Linux](https://en.wikipedia.org/wiki/Linux) system that runs with
+[sysvinit](https://en.wikipedia.org/wiki/Init#SYSV). The `/sbin/init`
+program is not replaced until step 4. The result after step 4 is a
+*runit* init setup with *sysvinit*\'s boot-time system
+configuration/initialization.
 
-If you have installed the precompiled Debian package, start at step 3.
+Login as root to a local serial or virtual terminal.
 
 ### Step 1: The three stages
 
-*runit* looks for the three stages implementing the system\'s *booting*,
-*running* and *shutdown* in `/etc/runit/1`, `/etc/runit/2` and
-`/etc/runit/3`, create the files now:
+[runit](runit.8.html) looks for the three stages implementing the
+system\'s *booting*, *running* and *shutdown* in `/etc/runit/1`,
+`/etc/runit/2` and `/etc/runit/3` respectively. Create the scripts now:
 
     mkdir -p /etc/runit
-    cp -p /package/admin/runit/etc/debian/[123] /etc/runit/
+    cp -p /package/admin/runit/etc/sysv/[123] /etc/runit/
 
-Create also a getty service directory:
+Read the *inittab*(5) man page and look for `sysinit` in `/etc/inittab`
+to check that `/etc/init.d/rcS` is the *sysvinit* boot-time system
+configuration/initialization script on your system. If not, adapt
+`/etc/runit/1` accordingly.
 
-    mkdir -p /etc/sv/getty-5
-    cp -p /package/admin/runit/etc/debian/getty-tty5/run /etc/sv/getty-5/
-
-If you want *runit* to handle the ctrl-alt-del keyboard request, do:
-
-    cp -p /package/admin/runit/etc/debian/ctrlaltdel /etc/runit/
+    man 5 inittab
+    grep sysinit /etc/inittab
 
 ### Step 2: The runit programs
 
-The *runit* programs must reside on the root partition, copy them to
-`/sbin`:
+The *runit* programs must reside on the root partition, install them
+into `/sbin`:
 
-    cp -p /package/admin/runit/command/runit* /sbin/
+    install -m0755 /package/admin/runit/command/runit* /sbin/
 
 ### Step 3: The getties
 
-At least one getty must run in stage 2 so that you are able to login.
-Choose a free `tty`, say `tty5`, where *sysvinit* is not running any
-getty (edit `/etc/inittab` and `kill -HUP 1` if needed), and tell
-[runsvdir](runsvdir.8.html) about the getty-5 *service*:
+When booting with *runit* as *init*, at least one `getty` should run in
+stage 2 so that you are able to login to the terminal. Create the
+getty-default service directory now:
+
+    mkdir -p /etc/sv/getty-default
+
+Run the `tty` command to get the name of the current terminal, and
+create the corresponding `getty-default` run script:
+
+    TTYNAME=$(tty); tee /etc/sv/getty-default/run <<EOT && chmod 755 $_
+    #!/bin/sh
+    exec agetty ${TTYNAME##*/}
+    EOT
+
+Check `/etc/inittab` again, now for the default invocation of a `getty`
+program on your system, and if it's not `agetty`, adapt
+`/etc/sv/getty-default/run` accordingly.
+
+    grep getty /etc/inittab
+
+Tell *runit* about the `getty-default` service:
 
     mkdir -p /service
-    ln -s /etc/sv/getty-5 /service/
+    ln -s /etc/sv/getty-default /service/
 
-Start *runit*\'s stage 2 for testing:
+Optionally create more `getty` services for additional terminals, look
+at `/etc/inittab`.
 
-    /etc/runit/2 &
+### Step 4: Replace the `/sbin/init` program
 
-And check that the getty is running.
+Before replacing the `init` program, make sure that you are able to boot
+the system by other means to restore the original `/sbin/init` if
+anything goes wrong, e.g. with the installation image, a rescue system,
+or save a snapshot.
 
-### Step 4: Reboot into runit for testing
+Make a backup copy of the `/sbin/init` program and replace it with
+`/sbin/runit-init`:
 
-Boot your system with *runit* for the first time. This does not change
-the default boot behavior of your system, *lilo* will be told to use
-*runit* just once:
+    cp -p /sbin/init /sbin/init.sysv
+    install /sbin/runit-init /sbin/init
 
--   reboot the system
--   enter the following on the lilo prompt:\
-    `init=/sbin/runit-init`
--   watch the console output while *runit* boots up the system
--   switch to `tty5` when stage 2 is reached, a `getty` should run
-    there, you are able to login.
+Boot your system with *runit* for the first time:
 
-If you are not using *lilo* as boot loader, refer to the documentation
-of your boot loader on how to pass `init=/sbin/runit-init` to the
-kernel.
+    init.sysv 6
 
-### Step 5: Service migration
+Watch the console output while [runit](runit.8.html) starts the system,
+and runs *sysvinit*\'s boot-time system configuration/initialization.
+Switch to the same terminal as before, the default `getty` runs there to
+login. Other services need to be migrated or started manually, see
+below.
 
-The goal is to migrate all services from *sysvinit* scheme to the
-*runit* service supervision design; take a look at these [run
-scripts](runscripts.html) for popular services. The migration can be
-done smoothly. For those services that are not migrated to use `run`
-scripts yet, add the corresponding `init`-script startup to
-`/etc/runit/1`, e.g.:
-
-    #!/bin/sh
-    # one time tasks
-
-    /etc/init.d/kerneld start
-    /etc/init.d/rmnologin
-
-    touch /etc/runit/stopit
-    chmod 0 /etc/runit/stopit
-
-It is possible to just add `/etc/init.d/rc 2` for having all services
-from the former runlevel 2 started as one time tasks, but keep the goal
-above in mind, supervising services has great advantages.
-
-To migrate a service, [create a service directory](faq.html#create),
-disable the service if it is running, disable the service in
-`/etc/rc.conf` or remove the service startup from the `/etc/rc.*`
-scripts and [tell runsvdir](faq.html#tell) about the new service.
-
-Repeat step 4 and 5, using **`/sbin/runit-init 6`** to reboot the
-system, until you are satisfied with your services startup. If anything
-goes wrong, reboot the system into the default *sysvinit* `/sbin/init`
-and repair the *runit* stages, then start again at step 4.
-
-### Step 6: Replace /sbin/init
-
-Now it is time to replace the *sysvinit* `/sbin/init` binary:
-
-    mv /sbin/init /sbin/init.sysv
-    ln -s runit-init /sbin/init
-
-### Step 7: Final reboot
-
-The last step is to do the final reboot to boot the system with the new
-default Unix process no 1 *runit*.
-
-    init 6
+Use **init 6** to reboot and **init 0** to halt a system that runs with
+*runit*. This will cause [runit](runit.8.html) to enter stage 3 and to
+tell the Linux kernel to reboot or halt when stage 3 is done.
 
 To report success:
 
     ( uname -a ; cat /etc/runit/[123] ) |mail pape-runit-2.3.1@xxiv.smarden.org
 
+### Step 5: Service migration
+
+By default *runit* runs *sysvinit*\'s `/etc/init.d/rcS` script in stage
+1 as one time task, so boot-time system configuration/initialization is
+done as before:
+
+    #!/bin/sh
+    # system one time tasks
+
+    /etc/init.d/rcS
+    /etc/init.d/rmnologin
+
+    touch /etc/runit/stopit
+    chmod 0 /etc/runit/stopit
+
+The system runs with [runit](runit.8.html) as *init* and service
+supervision enabled. You can now [add new services](faq.html#run), and
+migrate services from the original *init* scheme to *runit* service
+supervision, because of the [benefits](benefits.html). Take a look at
+these [run scripts](runscripts.html) for popular services.
+
+Login as root to a local terminal. Usually *sysvinit* enters runlevel 2
+after booting, look for `initdefault` in `/etc/inittab`. Run
+*sysvinit*\'s `rc` script to start the services from *sysvinit*\'s
+default runlevel (replace "`2`" with your system's default):
+
+    /etc/init.d/rc 2
+
+To migrate a service, [create a service directory](faq.html#create),
+stop the service again, and [tell runit](faq.html#tell) about the new
+service.
+
+#### Example: `sshd`
+
+    mkdir -p /etc/sv/sshd
+    tee /etc/sv/sshd/run <<\EOT && chmod 755 $_
+    #!/bin/sh
+    exec /usr/sbin/sshd -D
+    EOT
+    /etc/init.d/sshd stop
+    ln -s /etc/sv/sshd /service/
+
+Check the status of the *runit* `sshd` service:
+
+    sv status sshd
+
+#### Example: `cron`
+
+    mkdir -p /etc/sv/cron
+    tee /etc/sv/cron/run <<\EOT && chmod 755 $_
+    #!/bin/sh
+    exec cron -f
+    EOT
+    /etc/init.d/cron stop
+    ln -s /etc/sv/cron /service/
+
+Check the status of the *runit* `cron` service:
+
+    sv status cron
+
 ---
 
 []{#bsd}
 
-## Replacing init (\*BSD)
+## Replacing init on \*BSD
 
-Follow these steps to migrate from *init* to *runit* on [OpenBSD
-2.9](https://www.openbsd.org/) or [FreeBSD
-4.4](https://www.freebsd.org/). The `/sbin/init` binary is not replaced
-until step 4.
+Follow these steps to migrate from *init* to *runit* on
+[FreeBSD](https://www.freebsd.org/) (14.4 and older),
+[NetBSD](https://netbsd.org) (10.1 and older), or
+[OpenBSD](https://www.openbsd.org/) (7.8 and older). The `/sbin/init`
+program is not replaced until step 4.
+
+Login as root to a local serial or virtual terminal.
 
 ### Step 1: The three stages
 
-*runit* looks for the three stages implementing the system\'s *booting*,
-*running* and *shutdown* in `/etc/runit/1`, `/etc/runit/2` and
-`/etc/runit/3` respectively. Create the scripts now:
+[runit](runit.8.html) looks for the three stages implementing the
+system\'s *booting*, *running* and *shutdown* in `/etc/runit/1`,
+`/etc/runit/2` and `/etc/runit/3` respectively. Create the scripts now:
 
     mkdir -p /etc/runit
-
-    OpenBSD 2.9:
-    cp -p /package/admin/runit/etc/openbsd/[123] /etc/runit/
-
-    FreeBSD 4.4:
-    cp -p /package/admin/runit/etc/freebsd/[123] /etc/runit/
-
-Remove the `svscanboot` startup from `/etc/rc.local` by deleting the
-line `csh -cf '/command/svscanboot &'` (this normally is the last one);
-*runit* will start [runsvdir](runsvdir.8.html) in stage 2 after running
-`rc.local` in stage 1.
-
-    vi /etc/rc.local
+    cp -p /package/admin/runit/etc/bsd/[123] /etc/runit/
 
 ### Step 2: The runit programs
 
@@ -176,37 +206,40 @@ into `/sbin`:
 
 ### Step 3: The getties
 
-At least one getty must run in stage 2 so that you are able to login. To
-have it run on the virtual console no 5, create the getty-5 service
-directory:
+When booting with *runit* as *init*, at least one `getty` should run in
+stage 2 so that you are able to login to the terminal. Create the
+`getty-default` service directory now:
 
-    mkdir -p /etc/sv/getty-5
+    mkdir -p /etc/sv/getty-default
 
-    OpenBSD 2.9:
-    cp -p /package/admin/runit/etc/openbsd/getty-ttyC4/run /etc/sv/getty-5/
+Run the `tty` command to get the name of the current terminal, and create
+the corresponding `getty-default` run script:
 
-    FreeBSD 4.4:
-    cp -p /package/admin/runit/etc/freebsd/getty-ttyv4/run /etc/sv/getty-5/
+    TTYNAME=$(tty); tee /etc/sv/getty-default/run <<EOT && chmod 755 $_
+    #!/bin/sh
+    exec /usr/libexec/getty Pc ${TTYNAME##*/}
+    EOT
 
-and tell [runsvdir](runsvdir.8.html) about the `getty-5` *service*:
+Tell *runit* about the `getty-default` service:
 
     mkdir -p /service
-    ln -s /etc/sv/getty-5 /service/
+    ln -s /etc/sv/getty-default /service/
 
-Start *runit*\'s stage 2 for testing:
+Optionally create more `getty` services for additional terminals, look
+at `/etc/ttys`.
 
-    /etc/runit/2 &
+On a headless system you can also do the migration through `ssh` login
+without setting up any `getty` service.
 
-And check that the getty is running.
+### Step 4: Replace the `/sbin/init` program
 
-### Step 4: Replace the `/sbin/init` binary
+Before replacing the `init` program, make sure that you are able to boot
+the system by other means to restore the original `/sbin/init` if
+anything goes wrong, e.g. with the installation image, a rescue system,
+or save a snapshot.
 
-Before replacing the `init` binary, make sure that you are able to boot
-your system alternatively, e.g. with a boot floppy, to restore the
-former `/sbin/init` if anything goes wrong.
-
-Make a backup copy of the current `/sbin/init` program and replace it
-with `/sbin/runit-init`:
+Make a backup copy of the `/sbin/init` program and replace it with
+`/sbin/runit-init`:
 
     cp -p /sbin/init /sbin/init.bsd
     install /sbin/runit-init /sbin/init
@@ -215,13 +248,13 @@ Boot your system with *runit* for the first time:
 
     reboot
 
-Watch the console output while *runit* boots up the system. Switch to
-the virtual console 5 (CTRL-ALT-F5) when stage 2 is reached, a getty
-should run there, you are able to login.
+Watch the console output while [runit](runit.8.html) starts the system.
+Switch to the same terminal as before, the default `getty` runs there to
+login.
 
-Use **init 6** to reboot and **init 0** to halt a system that runs
-*runit*. This will cause *runit* to enter stage 3 which runs
-`/sbin/reboot` or `/sbin/halt` as last command.
+Use **init 6** to reboot and **init 0** to halt a system that runs with
+*runit*. This will cause [runit](runit.8.html) to enter stage 3 which
+runs `/sbin/reboot` or `/sbin/halt` as last command.
 
 To report success:
 
@@ -229,11 +262,8 @@ To report success:
 
 ### Step 5: Service migration
 
-The goal is to migrate all services from */etc/rc.\** scheme to the
-*runit* service supervision design; take a look at these [run
-scripts](runscripts.html) for popular services. The migration can be
-done smoothly. By default *runit* runs the `/etc/rc` scripts in stage 1
-as a one time task, so the services are started automatically:
+By default *runit* runs the `/etc/rc` scripts in stage 1 as one time
+task, so services are started as before:
 
     #!/bin/sh
     # system one time tasks
@@ -243,10 +273,54 @@ as a one time task, so the services are started automatically:
     touch /etc/runit/stopit
     chmod 0 /etc/runit/stopit
 
+The system starts up as usual apart from the `getties`, but with
+[runit](runit.8.html) as *init* and service supervision enabled. You can
+now [add new services](faq.html#run), and migrate services from the
+*/etc/rc.\** scheme to *runit* service supervision, because of the
+[benefits](benefits.html). Take a look at these [run
+scripts](runscripts.html) for popular services.
+
 To migrate a service, [create a service directory](faq.html#create),
-disable the service if it is running, disable the service in
-`/etc/rc.conf` or remove the service startup from the `/etc/rc.*`
-scripts and [tell runsvdir](faq.html#tell) about the new service.
+stop the service if it is running, disable the service in `/etc/rc.conf`
+or remove the service startup from the `/etc/rc.*` scripts, and [tell
+runit](faq.html#tell) about the new service.
+
+#### Example: `sshd`
+
+    mkdir -p /etc/sv/sshd
+    tee /etc/sv/sshd/run <<\EOT && chmod 755 $_
+    #!/bin/sh
+    exec /usr/sbin/sshd -D
+    EOT
+    /etc/rc.d/sshd stop
+
+Edit `/etc/rc.conf` and disable `sshd` (ie. set to "`NO`") to prevent it
+from being started again. Then enable the *runit* `sshd` service:
+
+    ln -s /etc/sv/sshd /service/
+
+Check the status of the *runit* `sshd` service:
+
+    sv status sshd
+
+#### Example: `cron`
+
+    mkdir -p /etc/sv/cron
+    tee /etc/sv/cron/run <<\EOT && chmod 755 $_
+    #!/bin/sh
+    exec cron -n
+    EOT
+    /etc/rc.d/cron stop
+
+Edit `/etc/rc.conf` or `/etc/defaults/rc.conf` and disable `cron` (ie.
+set to "`NO`") to prevent it from being started again. Then enable the
+*runit* `cron` service:
+
+    ln -s /etc/sv/cron /service/
+
+Check the status of the *runit* `cron` service:
+
+    sv status cron
 
 ---
 

@@ -1,3 +1,11 @@
+  * etc/debian: rename to etc/sysv.
+  * etc/freebsd: rename to etc/bsd.
+  * etc/openbsd, etc/freebsd/getty-ttyv4, etc/debian/getty-tty5: remove;
+    obsolete.
+  * doc/replaceinit.html: revise sections "Replacing init on *BSD" and
+    "Replacing sysvinit on GNU/Linux".
+  * doc/install.html: how to install as non-root user; optionally use cc on
+    *BSD.
   * man/chpst.8: document new -F and -I options.
   * chpst.c: -F option implies -I (thx github/andy-bower).
   * chpst.c: add new option -F: fghack using unshare(); chpst.c: add new

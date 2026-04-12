@@ -13,9 +13,19 @@
 <hr />
 <h1 id="runit---installation">runit - installation</h1>
 <hr />
-<p><em>runit</em> installs into <a
-href="https://cr.yp.to/slashpackage.html">/package</a>. If you don't
-have a <code>/package</code> directory, create it now:</p>
+<p><em>runit</em> by default installs into the <a
+href="https://cr.yp.to/slashpackage.html">/package hierarchy</a>. To
+install as non-root user and without the <a
+href="https://cr.yp.to/slashpackage.html">/package</a> directory, make
+the programs and documentation available manually.</p>
+<hr />
+<p><a href="#package">Install into /package</a><br />
+<a href="#manually">Install programs and documentation manually</a></p>
+<hr />
+<p><span id="package"></span></p>
+<h2 id="install-runit-into-package">Install runit into /package</h2>
+<p>If you don't have a <code>/package</code> directory, create it
+now:</p>
 <pre><code>mkdir -p /package
 chmod 1755 /package</code></pre>
 <p>Download <a href="runit-2.3.1.tar.gz">runit-2.3.1.tar.gz</a> into
@@ -27,6 +37,10 @@ gunzip runit-2.3.1.tar
 tar -xpf runit-2.3.1.tar
 rm runit-2.3.1.tar
 cd admin/runit-2.3.1</code></pre>
+<p>On *BSD, if <code>gcc</code> is not available on the system, use
+<code>cc</code> instead:</p>
+<pre><code>echo &#39;cc -O2 -Wall&#39; &gt;src/conf-cc
+echo &#39;cc -s&#39; &gt;src/conf-ld</code></pre>
 <p>On MacOSX, do</p>
 <pre><code>echo &#39;cc -Xlinker -x&#39; &gt;src/conf-ld
 cp src/Makefile src/Makefile.old
@@ -36,6 +50,48 @@ sed -e &#39;s/ -static//&#39; &lt;src/Makefile.old &gt;src/Makefile</code></pre>
 <p>If you want to make the man pages available in the
 <code>/usr/local/man/</code> hierarchy, do:</p>
 <pre><code>package/install-man</code></pre>
+<p>To report success:</p>
+<pre><code>mail pape-runit-2.3.1@xxiv.smarden.org &lt;compile/sysdeps</code></pre>
+<p>If you use <em>runit</em> regularly, please <a
+href="https://smarden.org/pape/#contribution">contribute</a> to the
+project.</p>
+<p>Refer to <a href="replaceinit.html">replacing init</a> for replacing
+<em>init</em> with <em>runit</em>, or to <a href="useinit.html">use with
+traditional init</a> for running <em>runit</em>'s service supervision
+with your system's current <em>init</em> scheme.</p>
+<hr />
+<p><span id="manually"></span></p>
+<h2 id="install-runit-programs-and-documentation-manually">Install runit
+programs and documentation manually</h2>
+<p>Download <a href="runit-2.3.1.tar.gz">runit-2.3.1.tar.gz</a> into the
+current directory (<a
+href="https://smarden.org/runit/sha256sum.asc">sha256sum</a>) and unpack
+the archive</p>
+<pre><code>gunzip runit-2.3.1.tar
+tar -xpf runit-2.3.1.tar
+cd admin/runit-2.3.1</code></pre>
+<p>Run <code>pwd</code> and note the working directory. When following
+the documentation onwards, you need to replace
+<code>/package/admin/runit</code> accordingly.</p>
+<p>On *BSD, if <code>gcc</code> is not available on the system, use
+<code>cc</code> instead:</p>
+<pre><code>echo &#39;cc -O2 -Wall&#39; &gt;src/conf-cc
+echo &#39;cc -s&#39; &gt;src/conf-ld</code></pre>
+<p>On MacOSX, do</p>
+<pre><code>echo &#39;cc -Xlinker -x&#39; &gt;src/conf-ld
+cp src/Makefile src/Makefile.old
+sed -e &#39;s/ -static//&#39; &lt;src/Makefile.old &gt;src/Makefile</code></pre>
+<p>Compile and check the <em>runit</em> programs</p>
+<pre><code>package/compile
+package/check</code></pre>
+<p>The <em>runit</em> programs are available in the
+<code>command/</code> directory. You probably want to install the
+<code>command/runit*</code> programs into <code>/sbin</code>, and the
+other programs from <code>command/</code> into <code>/bin</code>. As
+non-root user you probably want to install them into
+<code>$HOME/bin</code>.</p>
+<p>The documentation is available in the <code>doc/</code> directory,
+and the man pages in the <code>man/</code> directory.</p>
 <p>To report success:</p>
 <pre><code>mail pape-runit-2.3.1@xxiv.smarden.org &lt;compile/sysdeps</code></pre>
 <p>If you use <em>runit</em> regularly, please <a

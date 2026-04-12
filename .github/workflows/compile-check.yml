@@ -1,4 +1,4 @@
-name: make check
+name: compile-check
 
 on:
   push:
@@ -11,73 +11,69 @@ on:
       - next
 
 jobs:
-  make-check-on-ubuntu:
+  compile-check-on-ubuntu:
     strategy:
       matrix:
         runners: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04]
     runs-on: ${{ matrix.runners }}
     steps:
     - uses: actions/checkout@v4
-    - name: make check
-      run: cd src && make check
-  make-check-on-macos:
+    - name: compile-check
+      run: package/compile && package/check
+  compile-check-on-macos:
     strategy:
       matrix:
         runners: [macos-latest, macos-15, macos-14]
     runs-on: ${{ matrix.runners }}
     steps:
     - uses: actions/checkout@v4
-    - name: make check
+    - name: compile-check
       run: |
         echo 'cc -Xlinker -x' > src/conf-ld
         sed -i '' 's/ -static//' src/Makefile
-        cd src && make check
+        package/compile && package/check
 
-  make-check-freebsd:
+  compile-check-on-freebsd:
     runs-on: ubuntu-latest
-    name: make check freebsd
     steps:
     - uses: actions/checkout@v4
-    - name: make check
+    - name: compile-check
       uses: vmactions/freebsd-vm@v1
       with:
         usesh: true
         run: |
           echo 'cc -O2 -Wall' > src/conf-cc
           echo 'cc -s' > src/conf-ld
-          cd src && make check
+          package/compile && package/check
 
-  make-check-openbsd:
+  compile-check-on-openbsd:
     runs-on: ubuntu-latest
-    name: make check openbsd
     steps:
     - uses: actions/checkout@v4
-    - name: make check
+    - name: compile-check
       uses: vmactions/openbsd-vm@v1
       with:
         usesh: true
         run: |
           echo 'cc -O2 -Wall' > src/conf-cc
           echo 'cc -s' > src/conf-ld
-          cd src && make check
+          package/compile && package/check
 
-  make-check-netbsd:
+  compile-check-on-netbsd:
     runs-on: ubuntu-latest
-    name: make check netbsd
     steps:
     - uses: actions/checkout@v4
-    - name: make check
+    - name: compile-check
       uses: vmactions/netbsd-vm@v1
       with:
         usesh: true
-        run: cd src && make check
+        run: package/compile && package/check
 
-  make-check-solaris:
+  compile-check-on-solaris:
     runs-on: ubuntu-latest
-    name: make check solaris
     steps:
     - uses: actions/checkout@v4
-    - name: make check
+    - name: compile-check
       uses: vmactions/solaris-vm@v1
       with:
         release: "11.4-gcc"
@@ -85,4 +81,4 @@ jobs:
         run: |
           cp src/Makefile src/Makefile.old
           sed -e 's/ -static//' <src/Makefile.old >src/Makefile
-          cd src && make check
+          package/compile && package/check
