@@ -1,5 +1,3 @@
-DESTDIR=
-
 PACKAGE=runit-2.3.1
 DIRS=doc man etc package src
 
@@ -27,7 +25,7 @@ $(PACKAGE).tar.gz:
 	find TEMP -exec touch {} \;
 	su -c '\
 	  chown -R root:root TEMP/admin ; \
-	  (cd TEMP && tar --exclude CVS -cpzf ../$(PACKAGE).tar.gz admin); \
+	  (cd TEMP && tar -cpzf ../$(PACKAGE).tar.gz admin); \
 	  rm -rf TEMP'
 
 clean:
