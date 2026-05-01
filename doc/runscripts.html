@@ -54,6 +54,7 @@ dutoit.</span></p>
 <a href="#fam">fam</a><br />
 <a href="#fcron">fcron</a><br />
 <a href="#fetchmail">fetchmail</a><br />
+<a href="#gammastep">gammastep</a><br />
 <a href="#gdm">gdm</a><br />
 <a href="#getty">getty</a><br />
 <a href="#gpm">gpm</a><br />
@@ -379,6 +380,18 @@ exec env FETCHMAILHOME=&quot;./pid&quot; \
     --nodetach \
     --daemon ${INTERVAL}</code></pre>
 <hr />
+<h3 id="a-gammastep-run-script"><span id="gammastep">A
+<code>gammastep</code> run script</span></h3>
+<p>(<em>Debian - Wayland</em>)</p>
+<pre><code>#!/bin/sh
+exec 2&gt;&amp;1
+export USER=&lt;your-username&gt;
+export XDG_RUNTIME_DIR=/tmp/runtime-$USER
+export WAYLAND_DISPLAY=wayland-1
+exec chpst -u $USER gammastep</code></pre>
+<hr />
+<p>You would need to either change the <code>USER</code> variable, or <a
+href="faq.html#user">run this service as user</a></p>
 <h3 id="a-gdm-run-script"><span id="gdm">A <code>gdm</code> run
 script</span></h3>
 <p>(<em>Debian woody</em>)</p>

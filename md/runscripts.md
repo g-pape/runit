@@ -51,6 +51,7 @@ dutoit.]{.small}
 [fam](#fam)\
 [fcron](#fcron)\
 [fetchmail](#fetchmail)\
+[gammastep](#gammastep)\
 [gdm](#gdm)\
 [getty](#getty)\
 [gpm](#gpm)\
@@ -466,6 +467,23 @@ This service needs a [log service](faq.html#createlog) to be set up.
         --daemon ${INTERVAL}
 
 ---
+
+
+### [A `gammastep` run script]{#gammastep}
+
+(*Debian - Wayland*)
+
+    #!/bin/sh
+    exec 2>&1
+    export USER=<your-username>
+    export XDG_RUNTIME_DIR=/tmp/runtime-$USER
+    export WAYLAND_DISPLAY=wayland-1
+    exec chpst -u $USER gammastep
+
+---
+
+You would need to either change the `USER` variable, or
+[run this service as user](faq.html#user)
 
 ### [A `gdm` run script]{#gdm}
 
