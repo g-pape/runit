@@ -33,10 +33,11 @@ struct {
 } sv[MAXSERVICES];
 int svnum =0;
 int check =1;
+int selfpipe[2];
 char *rplog =0;
 int rploglen;
 int logpipe[2];
-iopause_fd io[1];
+iopause_fd io[2];
 struct taia stamplog;
 int exitsoon =0;
 int pgrp =0;
@@ -50,9 +51,10 @@ void warn(char *m1, char *m2) {
 }
 void warn3x(char *m1, char *m2, char *m3) {
   strerr_warn6("runsvdir ", svdir, ": warning: ", m1, m2, m3, 0);
-} 
-void s_term(int unused) { exitsoon =1; }
-void s_hangup(int unused) { exitsoon =2; }
+}
+void s_term(int unused) { exitsoon =1; write(selfpipe[1], "", 1); }
+void s_hangup(int unused) { exitsoon =2; write(selfpipe[1], "", 1); }
+void s_child(int unused) { write(selfpipe[1], "", 1); }
 
 void runsv(int no, char *name) {
   int pid;
@@ -69,7 +71,11 @@ void runsv(int no, char *name) {
     prog[1] =name;
     prog[2] =0;
     sig_uncatch(sig_hangup);
+    sig_unblock(sig_hangup);
     sig_uncatch(sig_term);
+    sig_unblock(sig_term);
+    sig_uncatch(sig_child);
+    sig_unblock(sig_child);
     if (pgrp) setsid();
     pathexec_run(*prog, prog, (char* const*)environ);
     fatal("unable to start runsv ", name);
@@ -153,8 +159,8 @@ int setup_log() {
     warn3x("unable to set filedescriptor for log.", 0, 0);
     return(-1);
   }
-  io[0].fd =logpipe[0];
-  io[0].events =IOPAUSE_READ;
+  io[1].fd =logpipe[0];
+  io[1].events =IOPAUSE_READ;
   taia_now(&stamplog);
   return(1);
 }
@@ -180,10 +186,16 @@ int main(int argc, char **argv) {
     }
     if (! argv || ! *argv) usage();
   }
-
-  sig_catch(sig_term, s_term);
-  sig_catch(sig_hangup, s_hangup);
   svdir =*argv++;
+
+  if (pipe(selfpipe) == -1) fatal("unable to create selfpipe", 0);
+  coe(selfpipe[0]);
+  coe(selfpipe[1]);
+  ndelay_on(selfpipe[0]);
+  ndelay_on(selfpipe[1]);
+  io[0].fd =selfpipe[0];
+  io[0].events =IOPAUSE_READ;
+
   if (argv && *argv) {
     rplog =*argv;
     if (setup_log() != 1) {
@@ -195,6 +207,12 @@ int main(int argc, char **argv) {
     fatal("unable to open current directory", 0);
   coe(curdir);
 
+  sig_block(sig_term);
+  sig_catch(sig_term, s_term);
+  sig_block(sig_hangup);
+  sig_catch(sig_hangup, s_hangup);
+  sig_block(sig_child);
+  sig_catch(sig_child, s_child);
   taia_now(&stampcheck);
 
   for (;;) {
@@ -258,14 +276,16 @@ int main(int argc, char **argv) {
     taia_uint(&deadline, check ? 1 : 5);
     taia_add(&deadline, &now, &deadline);
 
-    sig_block(sig_child);
-    if (rplog)
-      iopause(io, 1, &deadline, &now);
-    else
-      iopause(0, 0, &deadline, &now);
+    sig_unblock(sig_hangup);
+    sig_unblock(sig_term);
     sig_unblock(sig_child);
+    iopause(io, 1 + (rplog ? 1 : 0), &deadline, &now);
+    sig_block(sig_child);
+    sig_block(sig_term);
+    sig_block(sig_hangup);
 
-    if (rplog && (io[0].revents | IOPAUSE_READ))
+    if (io[0].revents) while (read(selfpipe[0], &ch, 1) == 1) {}
+    if (rplog && io[1].revents)
       while (read(logpipe[0], &ch, 1) > 0)
         if (ch) {
           for (i =6; i < rploglen; i++)
