@@ -1,4 +1,5 @@
-  * runsvdir.c: add selfpipe.
+  * runsvdir.c: add selfpipe; buffer and optimize readproctitle log; close
+    unused filedescriptor.
   * etc/debian: rename to etc/sysv.
   * etc/freebsd: rename to etc/bsd.
   * etc/openbsd, etc/freebsd/getty-ttyv4, etc/debian/getty-tty5: remove;

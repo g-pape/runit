@@ -10,6 +10,7 @@
 #include "open.h"
 #include "pathexec.h"
 #include "fd.h"
+#include "byte.h"
 #include "str.h"
 #include "coe.h"
 #include "iopause.h"
@@ -37,6 +38,7 @@ int selfpipe[2];
 char *rplog =0;
 int rploglen;
 int logpipe[2];
+char inbuf[256];
 iopause_fd io[2];
 struct taia stamplog;
 int exitsoon =0;
@@ -147,6 +149,7 @@ int setup_log() {
     warn3x("log must have at least seven characters.", 0, 0);
     return(0);
   }
+  rplog +=5; rploglen -=5;
   if (pipe(logpipe) == -1) {
     warn3x("unable to create pipe for log.", 0, 0);
     return(-1);
@@ -155,7 +158,7 @@ int setup_log() {
   coe(logpipe[0]);
   ndelay_on(logpipe[0]);
   ndelay_on(logpipe[1]);
-  if (fd_copy(2, logpipe[1]) == -1) {
+  if (fd_move(2, logpipe[1]) == -1) {
     warn3x("unable to set filedescriptor for log.", 0, 0);
     return(-1);
   }
@@ -269,12 +272,14 @@ int main(int argc, char **argv) {
 
     if (rplog)
       if (taia_less(&now, &stamplog) == 0) {
-        write(logpipe[1], ".", 1);
+        for (i =1; i < rploglen; i++) rplog[i -1] =rplog[i];
+        rplog[rploglen -1] ='.';
         taia_uint(&deadline, 900);
         taia_add(&stamplog, &now, &deadline);
       }
     taia_uint(&deadline, check ? 1 : 5);
     taia_add(&deadline, &now, &deadline);
+    if (rplog && taia_less(&stamplog, &deadline)) deadline =stamplog;
 
     sig_unblock(sig_hangup);
     sig_unblock(sig_term);
@@ -286,12 +291,14 @@ int main(int argc, char **argv) {
 
     if (io[0].revents) while (read(selfpipe[0], &ch, 1) == 1) {}
     if (rplog && io[1].revents)
-      while (read(logpipe[0], &ch, 1) > 0)
-        if (ch) {
-          for (i =6; i < rploglen; i++)
-            rplog[i -1] =rplog[i];
-          rplog[rploglen -1] =ch;
-        }
+      while ((i =read(logpipe[0], inbuf, 256)) > 0) {
+        int j;
+        if (i < rploglen)
+          for (j =0; j < rploglen -i; ++j) rplog[j] =rplog[j +i];
+        j =i;
+        if (j > rploglen) j =rploglen;
+        byte_copy(rplog +rploglen -j, j, inbuf +i -j);
+      }
 
     switch(exitsoon) {
     case 1:
