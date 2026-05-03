@@ -53,6 +53,7 @@ fmt_uint.o
 fmt_uint0.o
 fmt_ulong.o
 hasflock.h
+hasinotify.h
 hasmkffo.h
 hassgact.h
 hassgprm.h
