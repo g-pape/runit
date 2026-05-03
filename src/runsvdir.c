@@ -1,3 +1,7 @@
+#include "hasinotify.h"
+#ifdef HASINOTIFY
+#include <sys/inotify.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -38,8 +42,20 @@ int selfpipe[2];
 char *rplog =0;
 int rploglen;
 int logpipe[2];
-char inbuf[256];
+#ifdef HASINOTIFY
+#define INBUFSIZE (sizeof(struct inotify_event) +NAME_MAX +1 > 256 ? \
+                   sizeof(struct inotify_event) +NAME_MAX +1 : 256)
+#define IOTIMEOUT 97
+#define IONUM 2
+iopause_fd io[3];
+int watch[2];
+#else
+#define INBUFSIZE 256
+#define IOTIMEOUT 5
+#define IONUM 1
 iopause_fd io[2];
+#endif
+char inbuf[INBUFSIZE];
 struct taia stamplog;
 int exitsoon =0;
 int pgrp =0;
@@ -139,7 +155,7 @@ void runsvdir() {
   for (i =0; i < svnum; i++) {
     if (! sv[i].isgone) continue;
     if (sv[i].pid) kill(sv[i].pid, SIGTERM);
-    sv[i] =sv[--svnum];
+    sv[i--] =sv[--svnum];
     check =1;
   }
 }
@@ -162,11 +178,28 @@ int setup_log() {
     warn3x("unable to set filedescriptor for log.", 0, 0);
     return(-1);
   }
-  io[1].fd =logpipe[0];
-  io[1].events =IOPAUSE_READ;
+  io[IONUM].fd =logpipe[0];
+  io[IONUM].events =IOPAUSE_READ;
   taia_now(&stamplog);
   return(1);
 }
+#ifdef HASINOTIFY
+unsigned int watch_inotify() {
+  int w;
+
+  if ((w =inotify_add_watch(io[1].fd, svdir, IN_DONT_FOLLOW|
+          IN_DELETE_SELF|IN_MOVE_SELF)) == -1)
+    return(0);
+  if (watch[0] != w) inotify_rm_watch(io[1].fd, watch[0]);
+  watch[0] =w;
+  if ((w =inotify_add_watch(io[1].fd, svdir,
+          IN_DELETE_SELF|IN_MOVE_SELF|IN_CREATE|IN_DELETE|IN_MOVE)) == -1)
+    return(0);
+  if (watch[1] != w) inotify_rm_watch(io[1].fd, watch[1]);
+  watch[1] =w;
+  return(1);
+}
+#endif
 
 int main(int argc, char **argv) {
   struct stat s;
@@ -209,7 +242,20 @@ int main(int argc, char **argv) {
   if ((curdir =open_read(".")) == -1) 
     fatal("unable to open current directory", 0);
   coe(curdir);
-
+#ifdef HASINOTIFY
+  if ((i =inotify_init()) == -1)
+    fatal("unable to initialize inotify instance", 0);
+  coe(i);
+  ndelay_on(i);
+  io[1].fd =i;
+  io[1].events =IOPAUSE_READ;
+  if ((watch[0] =inotify_add_watch(io[1].fd, svdir, IN_DONT_FOLLOW|
+          IN_DELETE_SELF|IN_MOVE_SELF)) == -1)
+    fatal("unable to add watch to inotify instance", 0);
+  if ((watch[1] =inotify_add_watch(io[1].fd, svdir,
+          IN_DELETE_SELF|IN_MOVE_SELF|IN_CREATE|IN_DELETE|IN_MOVE)) == -1)
+    fatal("unable to add watch to inotify instance", 0);
+#endif
   sig_block(sig_term);
   sig_catch(sig_term, s_term);
   sig_block(sig_hangup);
@@ -249,13 +295,15 @@ int main(int argc, char **argv) {
         if (check || \
             s.st_mtime != mtime || s.st_ino != ino || s.st_dev != dev) {
           /* svdir modified */
+#ifdef HASINOTIFY
+          if (!watch_inotify())
+            warn("unable to add watch to inotify instance", 0);
+#endif
           if (chdir(svdir) != -1) {
             mtime =s.st_mtime;
             dev =s.st_dev;
             ino =s.st_ino;
             check =0;
-            if (now.sec.x <= (4611686018427387914ULL +(uint64)mtime))
-              sleep(1);
             runsvdir();
             while (fchdir(curdir) == -1) {
               warn("unable to change directory, pausing", 0);
@@ -277,20 +325,26 @@ int main(int argc, char **argv) {
         taia_uint(&deadline, 900);
         taia_add(&stamplog, &now, &deadline);
       }
-    taia_uint(&deadline, check ? 1 : 5);
+    taia_uint(&deadline, check ? 1 : IOTIMEOUT);
     taia_add(&deadline, &now, &deadline);
     if (rplog && taia_less(&stamplog, &deadline)) deadline =stamplog;
 
     sig_unblock(sig_hangup);
     sig_unblock(sig_term);
     sig_unblock(sig_child);
-    iopause(io, 1 + (rplog ? 1 : 0), &deadline, &now);
+    iopause(io, IONUM + (rplog ? 1 : 0), &deadline, &now);
     sig_block(sig_child);
     sig_block(sig_term);
     sig_block(sig_hangup);
 
     if (io[0].revents) while (read(selfpipe[0], &ch, 1) == 1) {}
-    if (rplog && io[1].revents)
+#ifdef HASINOTIFY
+    if (io[1].revents) {
+      check =1;
+      while (read(io[1].fd, inbuf, sizeof(inbuf)) > 0) {}
+    }
+#endif
+    if (rplog && io[IONUM].revents)
       while ((i =read(logpipe[0], inbuf, 256)) > 0) {
         int j;
         if (i < rploglen)

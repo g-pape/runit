@@ -1,3 +1,5 @@
+  * runsvdir.c: use inotify(7) (if available) to watch services directory;
+    remove overcautious delay; cleanup removed services more quickly.
   * Makefile, TARGETS: add test for inotify_init() system call.
   * hasinotify.h1, hasinotify.h2, tryinotify.c: new.
   * runsvdir.c: add selfpipe; buffer and optimize readproctitle log; close
