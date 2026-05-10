@@ -1,6 +1,7 @@
 #include "hasinotify.h"
 #ifdef HASINOTIFY
 #include <sys/inotify.h>
+#include <limits.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -47,15 +48,14 @@ int logpipe[2];
                    sizeof(struct inotify_event) +NAME_MAX +1 : 256)
 #define IOTIMEOUT 97
 #define IONUM 2
-iopause_fd io[3];
 int watch[2];
 #else
 #define INBUFSIZE 256
 #define IOTIMEOUT 5
 #define IONUM 1
-iopause_fd io[2];
 #endif
 char inbuf[INBUFSIZE];
+iopause_fd io[IONUM +1];
 struct taia stamplog;
 int exitsoon =0;
 int pgrp =0;
