@@ -47,7 +47,7 @@ int logpipe[2];
 #define INBUFSIZE (sizeof(struct inotify_event) +NAME_MAX +1 > 256 ? \
                    sizeof(struct inotify_event) +NAME_MAX +1 : 256)
 #define IONUM 2
-int watch[2];
+int watch[3];
 #else
 #define INBUFSIZE 256
 #define IONUM 1
@@ -195,6 +195,28 @@ unsigned int watch_inotify() {
     return(0);
   if (watch[1] != w) inotify_rm_watch(io[1].fd, watch[1]);
   watch[1] =w;
+  if (watch[0] != watch[1]) {
+    if ((w =readlink(svdir, inbuf, 256)) != -1) {
+      if (w < 256) {
+        inbuf[w] =0;
+        if (*inbuf == '/') {
+          if ((w =inotify_add_watch(io[1].fd, inbuf, IN_DONT_FOLLOW|
+                  IN_MASK_ADD|IN_DELETE_SELF|IN_MOVE_SELF)) == -1)
+            return(0);
+          if (watch[2] == w) return(1);
+          if (watch[2] != -1) inotify_rm_watch(io[1].fd, watch[2]);
+          watch[2] =(watch[1] == w) ? -1 : w;
+          return(1);
+        }
+      }
+      else
+        warn3x("unable to readlink ", svdir, ": name too long");
+    }
+    else
+      if (errno != EINVAL) warn("unable to readlink ", svdir);
+  }
+  if (watch[2] != -1) inotify_rm_watch(io[1].fd, watch[2]);
+  watch[2] =-1;
   return(1);
 }
 #endif
@@ -252,6 +274,7 @@ int main(int argc, char **argv) {
   if ((watch[1] =inotify_add_watch(io[1].fd, svdir,
           IN_DELETE_SELF|IN_MOVE_SELF|IN_CREATE|IN_DELETE|IN_MOVE)) == -1)
     fatal("unable to add watch to inotify instance", 0);
+  watch[2] =-1;
 #endif
   sig_block(sig_term);
   sig_catch(sig_term, s_term);
