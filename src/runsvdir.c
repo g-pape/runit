@@ -46,12 +46,10 @@ int logpipe[2];
 #ifdef HASINOTIFY
 #define INBUFSIZE (sizeof(struct inotify_event) +NAME_MAX +1 > 256 ? \
                    sizeof(struct inotify_event) +NAME_MAX +1 : 256)
-#define IOTIMEOUT 97
 #define IONUM 2
 int watch[2];
 #else
 #define INBUFSIZE 256
-#define IOTIMEOUT 5
 #define IONUM 1
 #endif
 char inbuf[INBUFSIZE];
@@ -243,11 +241,10 @@ int main(int argc, char **argv) {
     fatal("unable to open current directory", 0);
   coe(curdir);
 #ifdef HASINOTIFY
-  if ((i =inotify_init()) == -1)
+  if ((io[1].fd =inotify_init()) == -1)
     fatal("unable to initialize inotify instance", 0);
-  coe(i);
-  ndelay_on(i);
-  io[1].fd =i;
+  coe(io[1].fd);
+  ndelay_on(io[1].fd);
   io[1].events =IOPAUSE_READ;
   if ((watch[0] =inotify_add_watch(io[1].fd, svdir, IN_DONT_FOLLOW|
           IN_DELETE_SELF|IN_MOVE_SELF)) == -1)
@@ -325,7 +322,7 @@ int main(int argc, char **argv) {
         taia_uint(&deadline, 900);
         taia_add(&stamplog, &now, &deadline);
       }
-    taia_uint(&deadline, check ? 1 : IOTIMEOUT);
+    taia_uint(&deadline, check ? 1 : 5);
     taia_add(&deadline, &now, &deadline);
     if (rplog && taia_less(&stamplog, &deadline)) deadline =stamplog;
 
@@ -349,8 +346,7 @@ int main(int argc, char **argv) {
         int j;
         if (i < rploglen)
           for (j =0; j < rploglen -i; ++j) rplog[j] =rplog[j +i];
-        j =i;
-        if (j > rploglen) j =rploglen;
+        j =(i > rploglen) ? rploglen : i;
         byte_copy(rplog +rploglen -j, j, inbuf +i -j);
       }
 
