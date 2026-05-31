@@ -39,8 +39,11 @@ static stralloc sa;
 char bufnum[FMT_ULONG];
 #ifdef HASUNSHARE
 pid_t pid;
-#endif
 
+void sig_handler(int sig) { kill(pid, sig); }
+void sig_handler_pid1(int sig) { kill(-1, sig); }
+void sig_quit_handler(int unused) { kill(pid, SIGKILL); }
+#endif
 void fatal(const char *m) { strerr_die3sys(111, FATAL, m, ": "); }
 void fatal2(const char *m0, const char *m1) {
   strerr_die5sys(111, FATAL, m0, ": ", m1, ": ");
@@ -274,9 +277,6 @@ void slimit() {
 
 void newpid1() {
 #ifdef HASUNSHARE
-  void sig_handler(int sig) { kill(pid, sig); }
-  void sig_handler_pid1(int sig) { kill(-1, sig); }
-  void sig_quit_handler(int unused) { kill(pid, SIGKILL); }
   int i, w =0;
 
   for (i =0; i < 32; ++i) sig_catch(i, sig_handler);
@@ -284,6 +284,7 @@ void newpid1() {
   for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler);
 #endif
   sig_catch(SIGQUIT, sig_quit_handler);
+  sig_uncatch(sig_child);
   if (unshare(CLONE_NEWPID | CLONE_NEWNS) == -1)
     fatal("unable to set namespaces");
   if ((pid =fork()) == -1) fatal("unable to fork new pid 1");

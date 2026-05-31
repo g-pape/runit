@@ -1,3 +1,5 @@
+  * chpst.c: -F, -I: move signal handler functions to another ifdef; do not
+    relay SIGCHLD also in main pid.
   * sv.c: status: if log/supervise/ can't be accessed, don't print confusing
     additional line after warning message (introduced with 5fe1bc7).
   * etc/debian: rename to etc/sysv.
