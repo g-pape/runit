@@ -1,3 +1,8 @@
+#include "hasinotify.h"
+#ifdef HASINOTIFY
+#include <sys/inotify.h>
+#include <limits.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -10,6 +15,7 @@
 #include "open.h"
 #include "pathexec.h"
 #include "fd.h"
+#include "byte.h"
 #include "str.h"
 #include "coe.h"
 #include "iopause.h"
@@ -33,10 +39,21 @@ struct {
 } sv[MAXSERVICES];
 int svnum =0;
 int check =1;
+int selfpipe[2];
 char *rplog =0;
 int rploglen;
 int logpipe[2];
-iopause_fd io[1];
+#ifdef HASINOTIFY
+#define INBUFSIZE (sizeof(struct inotify_event) +NAME_MAX +1 > 256 ? \
+                   sizeof(struct inotify_event) +NAME_MAX +1 : 256)
+#define IONUM 2
+int watch[3];
+#else
+#define INBUFSIZE 256
+#define IONUM 1
+#endif
+char inbuf[INBUFSIZE];
+iopause_fd io[IONUM +1];
 struct taia stamplog;
 int exitsoon =0;
 int pgrp =0;
@@ -50,9 +67,10 @@ void warn(char *m1, char *m2) {
 }
 void warn3x(char *m1, char *m2, char *m3) {
   strerr_warn6("runsvdir ", svdir, ": warning: ", m1, m2, m3, 0);
-} 
-void s_term(int unused) { exitsoon =1; }
-void s_hangup(int unused) { exitsoon =2; }
+}
+void s_term(int unused) { exitsoon =1; write(selfpipe[1], "", 1); }
+void s_hangup(int unused) { exitsoon =2; write(selfpipe[1], "", 1); }
+void s_child(int unused) { write(selfpipe[1], "", 1); }
 
 void runsv(int no, char *name) {
   int pid;
@@ -69,7 +87,11 @@ void runsv(int no, char *name) {
     prog[1] =name;
     prog[2] =0;
     sig_uncatch(sig_hangup);
+    sig_unblock(sig_hangup);
     sig_uncatch(sig_term);
+    sig_unblock(sig_term);
+    sig_uncatch(sig_child);
+    sig_unblock(sig_child);
     if (pgrp) setsid();
     pathexec_run(*prog, prog, (char* const*)environ);
     fatal("unable to start runsv ", name);
@@ -131,7 +153,7 @@ void runsvdir() {
   for (i =0; i < svnum; i++) {
     if (! sv[i].isgone) continue;
     if (sv[i].pid) kill(sv[i].pid, SIGTERM);
-    sv[i] =sv[--svnum];
+    sv[i--] =sv[--svnum];
     check =1;
   }
 }
@@ -141,6 +163,7 @@ int setup_log() {
     warn3x("log must have at least seven characters.", 0, 0);
     return(0);
   }
+  rplog +=5; rploglen -=5;
   if (pipe(logpipe) == -1) {
     warn3x("unable to create pipe for log.", 0, 0);
     return(-1);
@@ -149,15 +172,54 @@ int setup_log() {
   coe(logpipe[0]);
   ndelay_on(logpipe[0]);
   ndelay_on(logpipe[1]);
-  if (fd_copy(2, logpipe[1]) == -1) {
+  if (fd_move(2, logpipe[1]) == -1) {
     warn3x("unable to set filedescriptor for log.", 0, 0);
     return(-1);
   }
-  io[0].fd =logpipe[0];
-  io[0].events =IOPAUSE_READ;
+  io[IONUM].fd =logpipe[0];
+  io[IONUM].events =IOPAUSE_READ;
   taia_now(&stamplog);
   return(1);
 }
+#ifdef HASINOTIFY
+unsigned int watch_inotify() {
+  int w;
+
+  if ((w =inotify_add_watch(io[1].fd, svdir, IN_DONT_FOLLOW|
+          IN_DELETE_SELF|IN_MOVE_SELF)) == -1)
+    return(0);
+  if (watch[0] != w) inotify_rm_watch(io[1].fd, watch[0]);
+  watch[0] =w;
+  if ((w =inotify_add_watch(io[1].fd, svdir,
+          IN_DELETE_SELF|IN_MOVE_SELF|IN_CREATE|IN_DELETE|IN_MOVE)) == -1)
+    return(0);
+  if (watch[1] != w) inotify_rm_watch(io[1].fd, watch[1]);
+  watch[1] =w;
+  if (watch[0] != watch[1]) {
+    if ((w =readlink(svdir, inbuf, 256)) != -1) {
+      if (w < 256) {
+        inbuf[w] =0;
+        if (*inbuf == '/') {
+          if ((w =inotify_add_watch(io[1].fd, inbuf, IN_DONT_FOLLOW|
+                  IN_MASK_ADD|IN_DELETE_SELF|IN_MOVE_SELF)) == -1)
+            return(0);
+          if (watch[2] == w) return(1);
+          if (watch[2] != -1) inotify_rm_watch(io[1].fd, watch[2]);
+          watch[2] =(watch[1] == w) ? -1 : w;
+          return(1);
+        }
+      }
+      else
+        warn3x("unable to readlink ", svdir, ": name too long");
+    }
+    else
+      if (errno != EINVAL) warn("unable to readlink ", svdir);
+  }
+  if (watch[2] != -1) inotify_rm_watch(io[1].fd, watch[2]);
+  watch[2] =-1;
+  return(1);
+}
+#endif
 
 int main(int argc, char **argv) {
   struct stat s;
@@ -180,10 +242,16 @@ int main(int argc, char **argv) {
     }
     if (! argv || ! *argv) usage();
   }
-
-  sig_catch(sig_term, s_term);
-  sig_catch(sig_hangup, s_hangup);
   svdir =*argv++;
+
+  if (pipe(selfpipe) == -1) fatal("unable to create selfpipe", 0);
+  coe(selfpipe[0]);
+  coe(selfpipe[1]);
+  ndelay_on(selfpipe[0]);
+  ndelay_on(selfpipe[1]);
+  io[0].fd =selfpipe[0];
+  io[0].events =IOPAUSE_READ;
+
   if (argv && *argv) {
     rplog =*argv;
     if (setup_log() != 1) {
@@ -194,7 +262,26 @@ int main(int argc, char **argv) {
   if ((curdir =open_read(".")) == -1) 
     fatal("unable to open current directory", 0);
   coe(curdir);
-
+#ifdef HASINOTIFY
+  if ((io[1].fd =inotify_init()) == -1)
+    fatal("unable to initialize inotify instance", 0);
+  coe(io[1].fd);
+  ndelay_on(io[1].fd);
+  io[1].events =IOPAUSE_READ;
+  if ((watch[0] =inotify_add_watch(io[1].fd, svdir, IN_DONT_FOLLOW|
+          IN_DELETE_SELF|IN_MOVE_SELF)) == -1)
+    fatal("unable to add watch to inotify instance", 0);
+  if ((watch[1] =inotify_add_watch(io[1].fd, svdir,
+          IN_DELETE_SELF|IN_MOVE_SELF|IN_CREATE|IN_DELETE|IN_MOVE)) == -1)
+    fatal("unable to add watch to inotify instance", 0);
+  watch[2] =-1;
+#endif
+  sig_block(sig_term);
+  sig_catch(sig_term, s_term);
+  sig_block(sig_hangup);
+  sig_catch(sig_hangup, s_hangup);
+  sig_block(sig_child);
+  sig_catch(sig_child, s_child);
   taia_now(&stampcheck);
 
   for (;;) {
@@ -228,13 +315,15 @@ int main(int argc, char **argv) {
         if (check || \
             s.st_mtime != mtime || s.st_ino != ino || s.st_dev != dev) {
           /* svdir modified */
+#ifdef HASINOTIFY
+          if (!watch_inotify())
+            warn("unable to add watch to inotify instance", 0);
+#endif
           if (chdir(svdir) != -1) {
             mtime =s.st_mtime;
             dev =s.st_dev;
             ino =s.st_ino;
             check =0;
-            if (now.sec.x <= (4611686018427387914ULL +(uint64)mtime))
-              sleep(1);
             runsvdir();
             while (fchdir(curdir) == -1) {
               warn("unable to change directory, pausing", 0);
@@ -251,27 +340,38 @@ int main(int argc, char **argv) {
 
     if (rplog)
       if (taia_less(&now, &stamplog) == 0) {
-        write(logpipe[1], ".", 1);
+        for (i =1; i < rploglen; i++) rplog[i -1] =rplog[i];
+        rplog[rploglen -1] ='.';
         taia_uint(&deadline, 900);
         taia_add(&stamplog, &now, &deadline);
       }
     taia_uint(&deadline, check ? 1 : 5);
     taia_add(&deadline, &now, &deadline);
+    if (rplog && taia_less(&stamplog, &deadline)) deadline =stamplog;
 
-    sig_block(sig_child);
-    if (rplog)
-      iopause(io, 1, &deadline, &now);
-    else
-      iopause(0, 0, &deadline, &now);
+    sig_unblock(sig_hangup);
+    sig_unblock(sig_term);
     sig_unblock(sig_child);
+    iopause(io, IONUM + (rplog ? 1 : 0), &deadline, &now);
+    sig_block(sig_child);
+    sig_block(sig_term);
+    sig_block(sig_hangup);
 
-    if (rplog && (io[0].revents | IOPAUSE_READ))
-      while (read(logpipe[0], &ch, 1) > 0)
-        if (ch) {
-          for (i =6; i < rploglen; i++)
-            rplog[i -1] =rplog[i];
-          rplog[rploglen -1] =ch;
-        }
+    if (io[0].revents) while (read(selfpipe[0], &ch, 1) == 1) {}
+#ifdef HASINOTIFY
+    if (io[1].revents) {
+      check =1;
+      while (read(io[1].fd, inbuf, sizeof(inbuf)) > 0) {}
+    }
+#endif
+    if (rplog && io[IONUM].revents)
+      while ((i =read(logpipe[0], inbuf, 256)) > 0) {
+        int j;
+        if (i < rploglen)
+          for (j =0; j < rploglen -i; ++j) rplog[j] =rplog[j +i];
+        j =(i > rploglen) ? rploglen : i;
+        byte_copy(rplog +rploglen -j, j, inbuf +i -j);
+      }
 
     switch(exitsoon) {
     case 1:

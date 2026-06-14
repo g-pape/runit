@@ -185,6 +185,9 @@ fmt_ulong.o: compile fmt.h fmt_ulong.c
 hasflock.h: choose compile hasflock.h1 hasflock.h2 load tryflock.c
 	./choose cl tryflock hasflock.h1 hasflock.h2 > hasflock.h
 
+hasinotify.h: choose compile hasinotify.h1 hasinotify.h2 load tryinotify.c
+	./choose cl tryinotify hasinotify.h1 hasinotify.h2 > hasinotify.h
+
 hasmkffo.h: choose compile hasmkffo.h1 hasmkffo.h2 load trymkffo.c
 	./choose cl trymkffo hasmkffo.h1 hasmkffo.h2 > hasmkffo.h
 
@@ -328,7 +331,7 @@ strerr_sys.o: compile error.h strerr.h strerr_sys.c
 subgetopt.o: compile subgetopt.c subgetopt.h
 	./compile subgetopt.c
 
-sysdeps: compile direntry.h hasflock.h hasmkffo.h hassgact.h \
+sysdeps: compile direntry.h hasflock.h hasinotify.h hasmkffo.h hassgact.h \
 hassgprm.h hasunshare.h haswaitp.h iopause.h load select.h systype \
 uint64.h reboot_system.h socket.lib
 	rm -f sysdeps
@@ -344,6 +347,7 @@ uint64.h reboot_system.h socket.lib
 	grep sysdep hasflock.h >>sysdeps
 	grep sysdep reboot_system.h >>sysdeps
 	grep sysdep hasunshare.h >>sysdeps
+	grep sysdep hasinotify.h >>sysdeps
 	cat sysdeps
 
 systype: find-systype.sh trycpp.c x86cpuid.c
