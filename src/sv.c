@@ -168,7 +168,7 @@ int status(char *unused) {
   }
   else {
     outs("; ");
-    if (svstatus_get()) { svstatus_print("log"); outs("\n"); }
+    if (svstatus_get() > 0) { svstatus_print("log"); outs("\n"); }
   }
   islog =0;
   flush("");
@@ -218,8 +218,9 @@ int check(char *a) {
   if ((r =svstatus_get()) == -1) return(-1);
   while (*a) {
     if (r == 0) { if (*a == 'x') return(1); return(-1); }
-    if ((c =*a) == 'C')
+    if ((c =*a) == 'C') {
       if (svstatus[17] == 'd') c ='d'; else c ='u';
+    }
     pid =(unsigned char)svstatus[15];
     pid <<=8; pid +=(unsigned char)svstatus[14];
     pid <<=8; pid +=(unsigned char)svstatus[13];
@@ -252,9 +253,6 @@ int check(char *a) {
   return(1);
 }
 int control(char *a) {
-  if (svstatus_get() <= 0) return(-1);
-  if (svstatus[17] == *a)
-    if (*a != 'd' || svstatus[18] == 1) return(0); /* once w/o term */
   if ((fd =open_write("supervise/control")) == -1) {
     if (errno != error_nodevice)
       warn("unable to open supervise/control");
@@ -304,7 +302,8 @@ int main(int argc, char **argv) {
     }
   }
   argv +=optind; argc -=optind;
-  if (!(action =*argv++)) usage(); --argc;
+  if (!(action =*argv++)) usage();
+  --argc;
   if (!lsb) { service =argv; services =argc; }
   if (!*service) usage();
 

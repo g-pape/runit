@@ -1,25 +1,15 @@
-DESTDIR=
-
-PACKAGE=runit-2.2.0
+PACKAGE=runit-2.3.1
 DIRS=doc man etc package src
-MANPAGES=runit.8 runit-init.8 runsvdir.8 runsv.8 sv.8 utmpset.8 \
-  runsvchdir.8 svlogd.8 chpst.8
 
-all: clean .manpages $(PACKAGE).tar.gz
+all: clean .doc .man $(PACKAGE).tar.gz
 
-.manpages:
-	for i in $(MANPAGES); do \
-	  rman -S -f html -r '' < man/$$i | \
-	  sed -e "s}name='sect\([0-9]*\)' href='#toc[0-9]*'>\(.*\)}name='sect\1'>\2}g ; \
-	  s}<a href='#toc'>Table of Contents</a>}<a href='https://smarden.org/pape/'>G. Pape</a><br><a href='index.html'>runit</A><hr>}g ; \
-	  s}<!--.*-->}}g" \
-	  > doc/$$i.html ; \
-	done ; \
-	echo 'fix up html manually...'
-	echo 'patch -p0 <manpagehtml.diff && exit'
-	sh
-	find . -name '*.orig' -exec rm -f {} \;
-	touch .manpages
+.doc:
+	cd md && ./gen-html ../doc
+	touch .doc
+
+.man:
+	cd md && ./gen-man ../man
+	touch .man
 
 $(PACKAGE).tar.gz:
 	rm -rf TEMP
@@ -35,7 +25,7 @@ $(PACKAGE).tar.gz:
 	find TEMP -exec touch {} \;
 	su -c '\
 	  chown -R root:root TEMP/admin ; \
-	  (cd TEMP && tar --exclude CVS -cpzf ../$(PACKAGE).tar.gz admin); \
+	  (cd TEMP && tar -cpzf ../$(PACKAGE).tar.gz admin); \
 	  rm -rf TEMP'
 
 clean:
@@ -45,5 +35,4 @@ clean:
 
 cleaner: clean
 	rm -f $(PACKAGE).tar.gz
-	for i in $(MANPAGES); do rm -f doc/`basename $$i`.html; done
-	rm -f .manpages
+	rm -f doc/*.html man/*.[0-9] .doc .man

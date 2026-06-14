@@ -1,4 +1,4 @@
-IT=chpst runit runit-init runsv runsvchdir runsvdir sv svlogd utmpset
+IT=chpst runit runit-init runsv runsvchdir runsvdir sv svlogd
 
 default: sysdeps $(IT)
 
@@ -19,9 +19,6 @@ runsvdir: load runsvdir.o unix.a byte.a time.a
 
 sv: load sv.o unix.a byte.a time.a
 	./load sv unix.a byte.a time.a
-
-utmpset: load utmpset.o unix.a byte.a
-	./load utmpset unix.a byte.a
 
 runsvchdir: load runsvchdir.o unix.a byte.a
 	./load runsvchdir unix.a byte.a
@@ -48,9 +45,6 @@ runsvdir.o: compile sysdeps runsvdir.c
 sv.o: compile sysdeps sv.c
 	./compile sv.c
 
-utmpset.o: compile sysdeps utmpset.c
-	./compile utmpset.c
-
 runsvchdir.o: compile runsvchdir.c
 	./compile runsvchdir.c
 
@@ -73,11 +67,6 @@ fmt_ptime.o: compile sysdeps fmt_ptime.c
 reboot_system.h: choose compile reboot_system.h1 reboot_system.h2
 	./choose c tryreboot reboot_system.h1 reboot_system.h2 > \
 	  reboot_system.h
-
-uw_tmp.h: compile uw_tmp.h1 uw_tmp.h2
-	( ./compile tryuwtmpx.c 2>/dev/null && cat uw_tmp.h2 >uw_tmp.h ) || \
-	( ./compile tryuwtmp.c 2>/dev/null && cat uw_tmp.h1 >uw_tmp.h )
-	rm -f tryuwtmp.o tryuwtmpx.o
 
 socket.lib: compile load trysocketlib.c
 	./compile trysocketlib.c
@@ -124,12 +113,12 @@ buffer_read.o: buffer.h buffer_read.c compile
 buffer_write.o: buffer.h buffer_write.c compile
 	./compile buffer_write.c
 
-byte.a: byte_chr.o byte_copy.o byte_cr.o byte_diff.o byte_rchr.o \
+byte.a: byte_chr.o byte_copy.o byte_cr.o byte_diff.o byte_rchr.o byte_zero.o \
 fmt_uint.o fmt_uint0.o fmt_ulong.o makelib scan_ulong.o str_chr.o \
 str_diff.o str_len.o str_start.o
 	./makelib byte.a byte_chr.o byte_copy.o byte_cr.o byte_diff.o \
-	byte_rchr.o fmt_uint.o fmt_uint0.o fmt_ulong.o scan_ulong.o str_chr.o \
-	str_diff.o str_len.o str_start.o
+	byte_rchr.o byte_zero.o fmt_uint.o fmt_uint0.o fmt_ulong.o \
+	scan_ulong.o str_chr.o str_diff.o str_len.o str_start.o
 
 byte_chr.o: byte.h byte_chr.c compile
 	./compile byte_chr.c
@@ -145,6 +134,9 @@ byte_diff.o: byte.h byte_diff.c compile
 
 byte_rchr.o: byte.h byte_rchr.c compile
 	./compile byte_rchr.c
+
+byte_zero.o: byte.h byte_zero.c compile
+	./compile byte_zero.c
 
 choose: choose.sh warn-auto.sh
 	rm -f choose
@@ -193,6 +185,9 @@ fmt_ulong.o: compile fmt.h fmt_ulong.c
 hasflock.h: choose compile hasflock.h1 hasflock.h2 load tryflock.c
 	./choose cl tryflock hasflock.h1 hasflock.h2 > hasflock.h
 
+hasinotify.h: choose compile hasinotify.h1 hasinotify.h2 load tryinotify.c
+	./choose cl tryinotify hasinotify.h1 hasinotify.h2 > hasinotify.h
+
 hasmkffo.h: choose compile hasmkffo.h1 hasmkffo.h2 load trymkffo.c
 	./choose cl trymkffo hasmkffo.h1 hasmkffo.h2 > hasmkffo.h
 
@@ -201,6 +196,9 @@ hassgact.h: choose compile hassgact.h1 hassgact.h2 load trysgact.c
 
 hassgprm.h: choose compile hassgprm.h1 hassgprm.h2 load trysgprm.c
 	./choose cl trysgprm hassgprm.h1 hassgprm.h2 > hassgprm.h
+
+hasunshare.h: choose compile hasunshare.h1 hasunshare.h2 load tryunshare.c
+	./choose cl tryunshare hasunshare.h1 hasunshare.h2 > hasunshare.h
 
 haswaitp.h: choose compile haswaitp.h1 haswaitp.h2 load trywaitp.c
 	./choose cl trywaitp haswaitp.h1 haswaitp.h2 > haswaitp.h
@@ -333,9 +331,9 @@ strerr_sys.o: compile error.h strerr.h strerr_sys.c
 subgetopt.o: compile subgetopt.c subgetopt.h
 	./compile subgetopt.c
 
-sysdeps: compile direntry.h hasflock.h hasmkffo.h hassgact.h \
-hassgprm.h haswaitp.h iopause.h load select.h systype \
-uint64.h reboot_system.h uw_tmp.h socket.lib
+sysdeps: compile direntry.h hasflock.h hasinotify.h hasmkffo.h hassgact.h \
+hassgprm.h hasunshare.h haswaitp.h iopause.h load select.h systype \
+uint64.h reboot_system.h socket.lib
 	rm -f sysdeps
 	cat systype compile load socket.lib >>sysdeps
 	grep sysdep direntry.h >>sysdeps
@@ -348,7 +346,8 @@ uint64.h reboot_system.h uw_tmp.h socket.lib
 	grep sysdep hasmkffo.h >>sysdeps
 	grep sysdep hasflock.h >>sysdeps
 	grep sysdep reboot_system.h >>sysdeps
-	grep sysdep uw_tmp.h >>sysdeps
+	grep sysdep hasunshare.h >>sysdeps
+	grep sysdep hasinotify.h >>sysdeps
 	cat sysdeps
 
 systype: find-systype.sh trycpp.c x86cpuid.c

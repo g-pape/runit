@@ -58,6 +58,7 @@ int sigterm =0;
 int haslog =0;
 int pidchanged =1;
 int logpipe[2];
+char bufnum[FMT_ULONG];
 char *dir;
 
 void usage () { strerr_die4x(1, "usage: ", progname, USAGE, "\n"); }
@@ -93,25 +94,28 @@ void update_status(struct svdir *s) {
   unsigned long l;
   int fd;
   char status[20];
-  char bspace[64];
-  buffer b;
-  char spid[FMT_ULONG];
   char *fstatus ="supervise/status";
   char *fstatusnew ="supervise/status.new";
+#ifndef RUNSV_STATUS_BINARYONLY
+  char bspace[64];
+  buffer b;
   char *fstat ="supervise/stat";
   char *fstatnew ="supervise/stat.new";
   char *fpid ="supervise/pid";
   char *fpidnew ="supervise/pid.new";
-
+#endif
   if (s->islog) {
     fstatus ="log/supervise/status";
     fstatusnew ="log/supervise/status.new";
+#ifndef RUNSV_STATUS_BINARYONLY
     fstat ="log/supervise/stat";
     fstatnew ="log/supervise/stat.new";
     fpid ="log/supervise/pid";
     fpidnew ="log/supervise/pid.new";
+#endif
   }
 
+#ifndef RUNSV_STATUS_BINARYONLY
   /* pid */
   if (pidchanged) {
     if ((fd =open_trunc(fpidnew)) == -1) {
@@ -119,9 +123,9 @@ void update_status(struct svdir *s) {
       return;
     }
     buffer_init(&b, buffer_unixwrite, fd, bspace, sizeof bspace);
-    spid[fmt_ulong(spid, (unsigned long)s->pid)] =0;
+    bufnum[fmt_ulong(bufnum, (unsigned long)s->pid)] =0;
     if (s->pid) {
-      buffer_puts(&b, spid);
+      buffer_puts(&b, bufnum);
       buffer_puts(&b, "\n");
       buffer_flush(&b);
     }
@@ -166,6 +170,7 @@ void update_status(struct svdir *s) {
   close(fd);
   if (rename(fstatnew, fstat) == -1)
     warn2("unable to rename stat.new to ", fstat);
+#endif
 
   /* supervise compatibility */
   taia_pack(status, &s->start);
@@ -210,7 +215,7 @@ unsigned int custom(struct svdir *s, char c) {
   int w;
   char a[10];
   struct stat st;
-  char *prog[2];
+  char *prog[3];
 
   if (s->islog) return(0);
   byte_copy(a, 10, "control/?");
@@ -225,7 +230,9 @@ unsigned int custom(struct svdir *s, char c) {
         if (haslog && fd_copy(1, logpipe[1]) == -1)
           warn2("unable to setup stdout for ", a);
         prog[0] =a;
-        prog[1] =0;
+        bufnum[fmt_ulong(bufnum, (unsigned long)s->pid)] =0;
+        prog[1] =s->pid ? bufnum : "";
+        prog[2] =0;
         execve(a, prog, environ);
         fatal("unable to run control/?");
       }

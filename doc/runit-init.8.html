@@ -1,61 +1,53 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-
-
+<!DOCTYPE html>
 <html>
 <head>
-<title>runit-init(8) manual page</title>
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<title>runit-init(8)</title>
 </head>
-<body bgcolor='white'>
-<a href='https://smarden.org/pape/'>G. Pape</a><br><a href='index.html'>runit</A><hr><p>
-
-<h2><a name='sect0'>Name</a></h2>
-init - a UNIX process no 1 
-<h2><a name='sect1'>Synopsis</a></h2>
-<b>init</b> [ 0 | 6 ] 
-<h2><a name='sect2'>Description</a></h2>
-<b>runit-init</b>
-is the first process the kernel starts. If <b>runit-init</b> is started as process
-no 1, it runs and replaces itself with <i><b>runit</b>(8)</i>. <p>
-If <b>runit-init</b> is started
-while the system is up, it must be either called as <b>init 0</b> or <b>init 6:</b> 
+<body>
+<p><a href="https://smarden.org/pape/">G. Pape</a><br />
+<a href="index.html">runit</a></p>
+<hr />
+<h3 id="name">NAME</h3>
+<p>init - a UNIX process no 1</p>
+<h3 id="synopsis">SYNOPSIS</h3>
+<p><strong>init</strong> [ 0 | 6 ]</p>
+<h3 id="description">DESCRIPTION</h3>
+<p><strong>runit-init</strong> is the first process the kernel starts.
+If <strong>runit-init</strong> is started as process no 1, it runs and
+replaces itself with <strong>runit</strong>(8).</p>
+<p>If <strong>runit-init</strong> is started while the system is up, it
+must be either called as <strong>init 0</strong> or <strong>init
+6</strong>:</p>
 <dl>
-
-<dt><b>init
-0</b> </dt>
-<dd>tells the Unix process no 1 to shutdown and halt the system. To signal
-<i><b>runit</b>(8)</i> the system halt request, <b>runit-init</b> removes all permissions of
-the file <i>/etc/runit/reboot</i> (chmod 0), and sets the execute by owner permission
-of the file <i>/etc/runit/stopit</i> (chmod 100). Then a CONT signal is sent to
-<i><b>runit</b>(8)</i>. </dd>
-
-<dt><b>init 6</b> </dt>
-<dd>tells the Unix process no 1 to shutdown and reboot the
-system. To signal <i><b>runit</b>(8)</i> the system reboot request, <b>runit-init</b> sets the
-execute by owner permission of the files <i>/etc/runit/reboot</i> and <i>/etc/runit/stopit</i>
-(chmod 100). Then a CONT signal is sent to <i><b>runit</b>(8)</i>. </dd>
+<dt><strong>init 0</strong></dt>
+<dd>
+tells the Unix process no 1 to shutdown and halt the system. To signal
+<strong>runit</strong>(8) the system halt request,
+<strong>runit-init</strong> removes all permissions of the file
+<em>/etc/runit/reboot</em> (chmod 0), and sets the execute by owner
+permission of the file <em>/etc/runit/stopit</em> (chmod 100). Then a
+CONT signal is sent to <strong>runit</strong>(8).
+</dd>
+<dt><strong>init 6</strong></dt>
+<dd>
+tells the Unix process no 1 to shutdown and reboot the system. To signal
+<strong>runit</strong>(8) the system reboot request,
+<strong>runit-init</strong> sets the execute by owner permission of the
+files <em>/etc/runit/reboot</em> and <em>/etc/runit/stopit</em> (chmod
+100). Then a CONT signal is sent to <strong>runit</strong>(8).
+</dd>
 </dl>
-
-<h2><a name='sect3'>Exit Codes</a></h2>
-<b>runit-init</b>
-returns 111 on error, 0 in all other cases. 
-<h2><a name='sect4'>See Also</a></h2>
-<i>runit(8)</i>, <i>runsvdir(8)</i>,
-<i>runsvchdir(8)</i>, <i>sv(8)</i>, <i>runsv(8)</i>, <i>chpst(8)</i>, <i>utmpset(8)</i>, <i>svlogd(8)</i> <p>
-<i>https://smarden.org/runit/</i>
-
-<h2><a name='sect5'>Author</a></h2>
-Gerrit Pape &lt;pape@smarden.org&gt; <p>
-
-<hr><p>
-<a name='toc'><b>Table of Contents</b></a><p>
-<ul>
-<li><a name='toc0' href='#sect0'>Name</a></li>
-<li><a name='toc1' href='#sect1'>Synopsis</a></li>
-<li><a name='toc2' href='#sect2'>Description</a></li>
-<li><a name='toc3' href='#sect3'>Exit Codes</a></li>
-<li><a name='toc4' href='#sect4'>See Also</a></li>
-<li><a name='toc5' href='#sect5'>Author</a></li>
-</ul>
+<h3 id="exit-codes">EXIT CODES</h3>
+<p><strong>runit-init</strong> returns 111 on error, 0 in all other
+cases.</p>
+<h3 id="see-also">SEE ALSO</h3>
+<p>runit(8), runsvdir(8), runsvchdir(8), sv(8), runsv(8), chpst(8),
+svlogd(8)</p>
+<p>https://smarden.org/runit/</p>
+<h3 id="author">AUTHOR</h3>
+<p>Gerrit Pape &lt;pape@smarden.org&gt;</p>
 </body>
 </html>

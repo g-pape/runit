@@ -8,9 +8,9 @@ test -d src || sh -cx '! : Wrong working directory.'
 here=`env - PATH=$PATH pwd`
 parent=`dirname $here`
 
-echo 'Creating symlink runit -> runit-2.2.0...'
+echo 'Creating symlink runit -> runit-2.3.1...'
 rm -f runit
-ln -s runit-2.2.0 runit
+ln -s runit-2.3.1 runit
 mv -f runit ..
 
 echo 'Making command links in /command...'
@@ -20,6 +20,11 @@ for i in `cat package/commands`; do
   ln -s $parent/runit/command/$i /command/$i'{new}'
   mv -f /command/$i'{new}' /command/$i
 done
+if test -e /command/utmpset; then
+  echo 'Removing utmpset from /command...'
+  rm -f /command/utmpset
+fi
+
 echo 'Making compatibility links in /usr/local/bin...'
 mkdir -p /usr/local/bin
 for i in `cat package/commands`; do
@@ -27,3 +32,7 @@ for i in `cat package/commands`; do
   ln -s /command/$i /usr/local/bin/$i'{new}'
   mv -f /usr/local/bin/$i'{new}' /usr/local/bin/$i
 done
+if test -e /usr/local/bin/utmpset; then
+  echo 'Removing utmpset from /usr/local/bin...'
+  rm -f /usr/local/bin/utmpset
+fi

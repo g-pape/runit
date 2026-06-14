@@ -1,3 +1,77 @@
+  * runsvdir.c: use inotify(7) (if available) to watch services directory;
+    remove overcautious delay; cleanup removed services more quickly.
+  * Makefile, TARGETS: add test for inotify_init() system call.
+  * hasinotify.h1, hasinotify.h2, tryinotify.c: new.
+  * runsvdir.c: add selfpipe; buffer and optimize readproctitle log; close
+    unused filedescriptor.
+  * chpst.c: -F, -I: move signal handler functions to another ifdef; do not
+    relay SIGCHLD also in main pid.
+  * sv.c: status: if log/supervise/ can't be accessed, don't print confusing
+    additional line after warning message (introduced with 5fe1bc7).
+  * etc/debian: rename to etc/sysv.
+  * etc/freebsd: rename to etc/bsd.
+  * etc/openbsd, etc/freebsd/getty-ttyv4, etc/debian/getty-tty5: remove;
+    obsolete.
+  * doc/replaceinit.html: revise sections "Replacing init on *BSD" and
+    "Replacing sysvinit on GNU/Linux".
+  * doc/install.html: how to install as non-root user; optionally use cc on
+    *BSD.
+  * man/chpst.8: document new -F and -I options.
+  * chpst.c: -F option implies -I (thx github/andy-bower).
+  * chpst.c: add new option -F: fghack using unshare(); chpst.c: add new
+    option -I: run another init using unshare().
+  * Makefile, TARGETS: add test for unshare() system call (_GNU_SOURCE).
+  * hasunshare.h1, hasunshare.h2, tryunshare.c: new.
+  * conf-cc: trim.
+  * doc/install.html, doc/replaceinit.html, doc/runlevels.html,
+    doc/useinit.html: strip '^# ' from code blocks for multiline copy&paste.
+  * man/sv.8, doc/dependencies.html: rename check script to program.
+  * doc/runscripts.html: clarify outdated status of the collection.
+  * doc/*.html, man/*.8: replace; converted from markdown source.
+  * svlogd.c, man/svlogd.8: -LL: print warning on data loss.
+  * svlogd.c, man/svlogd.8: add option -L, lossy (thx github/teslamotors).
+  * package/upgrade: remove utmpset program on upgrade.
+  * doc/replaceinit.html: remove getty finish scripts that use utmpset;
+    etc/debian/getty-tty5/finish, etc/freebsd/getty-ttyv4/finish,
+    etc/openbsd/getty-ttyC4/finish: remove, obsolete.
+  * doc/index.html, man/runit-init.8, man/runit.8, man/runsv.8,
+    man/runsvdir.8: remove reference to utmpset program.
+  * utmpset.c, utmpset.check, utmpset.dist, man/utmpset.8, tryuwtmp.c,
+    tryuwtmpx.c, uw_tmp.h?: remove, obsolete.
+  * Makefile, package/commands, src/Makefile, TARGETS: remove utmpset and
+    utmpx sysdep.
+
+runit 2.3.1
+Sat, 07 Feb 2026 11:11:01 +0100
+  * doc/dependencies.html: wording; cruft.
+  * runsv.c, man/runsv.8: run control/? with service process id as argument.
+  * sv.c: always write to control pipe, do not look at the status.
+  * svlogd.c: fix uninitialized pointer read with -v and log directory
+    mode r--.
+  * Makefile, TARGETS, byte.h: add byte_zero to byte.a.
+  * byte_zero.c: new.
+  * runsv.c: omit stat, pid in ./supervise/ if RUNSV_STATUS_BINARYONLY is
+    defined.
+  * chpst.dist, sv.dist, svlogd.dist: adapt.
+  * buffer_put.c: fix compilation warning: -Wempty-body (github/clan).
+  * buffer_put.c, byte.h, byte_copy.c, byte_diff.c: fix compilation
+    warnings: -Wdiscarded-qualifiers (github/clan).
+  * sv.c: fix compilation warning: -Wdangling-else (github/clan).
+  * byte_chr.c, byte_copy.c, byte_cr.c, byte_diff.c, byte_rchr.c, chpst.c,
+    str_chr.c, str_len.c, sv.c, svlogd.c: fix compilation warnings:
+    -Wmisleading-indentation (github/clan).
+  * TARGETS: remove prot.o (github/clan).
+  * doc/benefits.html: spelling.
+  * doc/faq.html: cleanup, spelling.
+  * doc/usedietlibc.html: remove.
+  * doc/index.html: remove references to dietlibc, spelling.
+  * man/runsv.8, doc/runsv.8.html: sync; clarify wording wrt log service and
+    custom control char o; style.
+  * man/runit.8, man/sv.8, man/svlogd.8: typo, groff.
+
+runit 2.3.0
+Sun, 09 Nov 2025 11:07:17 +0100
+  * TARGETS: remove hasshsgr.h.
   * runsvctrl.*, runsvstat.*, svwaitdown.*, svwaitup.*: remove, obsolete;
     Makefile, TARGETS: remove runsvctrl, runsvstat, svwaitup, svwaitdown.
   * runsv.c: fix typo in pathname (thx github/plorenzo19).

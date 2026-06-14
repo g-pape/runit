@@ -1,61 +1,49 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-
-
+<!DOCTYPE html>
 <html>
 <head>
-<title>runsvchdir(8) manual page</title>
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<title>runsvchdir(8)</title>
 </head>
-<body bgcolor='white'>
-<a href='https://smarden.org/pape/'>G. Pape</a><br><a href='index.html'>runit</A><hr><p>
-
-<h2><a name='sect0'>Name</a></h2>
-runsvchdir - change services directory of <i>runsvdir(8)</i> 
-<h2><a name='sect1'>Synopsis</a></h2>
-<b>runsvchdir</b>
-<i>dir</i> 
-<h2><a name='sect2'>Description</a></h2>
-<i>dir</i> is a services directory for the use with <i><b>runsvdir</b>(8)</i>.
-If <i>dir</i> does not start with a slash, it is searched in <b>runsvchdir</b>&rsquo;s
-working directory, by default <i>/etc/runit/runsvdir/</i>.
-<i>dir</i> must not start with a dot. <p>
-<b>runsvchdir</b> switches to its working directory,
-copies <i>current</i> to <i>previous</i>, and replaces <i>current</i> with a symlink pointing
-to <i>dir</i>. <p>
-Normally  <i>/service</i> is a symlink to <i>current</i>, and <i><b>runsvdir</b>(8)</i> is running
-<i>/service/</i>. 
-<h2><a name='sect3'>Environment</a></h2>
+<body>
+<p><a href="https://smarden.org/pape/">G. Pape</a><br />
+<a href="index.html">runit</a></p>
+<hr />
+<h3 id="name">NAME</h3>
+<p>runsvchdir - change services directory of runsvdir(8)</p>
+<h3 id="synopsis">SYNOPSIS</h3>
+<p><strong>runsvchdir</strong> <em>dir</em></p>
+<h3 id="description">DESCRIPTION</h3>
+<p><em>dir</em> is a services directory for the use with
+<strong>runsvdir</strong>(8). If <em>dir</em> does not start with a
+slash, it is searched in <strong>runsvchdir</strong>'s working
+directory, by default <em>/etc/runit/runsvdir/</em>. <em>dir</em> must
+not start with a dot.</p>
+<p><strong>runsvchdir</strong> switches to its working directory, copies
+<em>current</em> to <em>previous</em>, and replaces <em>current</em>
+with a symlink pointing to <em>dir</em>.</p>
+<p>Normally <em>/service</em> is a symlink to <em>current</em>, and
+<strong>runsvdir</strong>(8) is running <em>/service/</em>.</p>
+<h3 id="environment">ENVIRONMENT</h3>
 <dl>
-
-<dt><b>RUNSVDIR</b> </dt>
-<dd>The environment variable
-$RUNSVDIR overrides the default working directory <i>/etc/runit/runsvdir/</i>. </dd>
-<h2><a name='sect4'>Exit Codes</a></h2>
-<b>runsvchdir</b> prints an error message and exits 111 on
-error. <b>runsvchdir</b> exits 0 on success. 
-<h2><a name='sect5'>Files</a></h2>
- /etc/runit/runsvdir/previous<br>
-  /etc/runit/runsvdir/current<br>
-  /etc/runit/runsvdir/current.new<br>
- 
-<h2><a name='sect6'>See Also</a></h2>
-<i>runsvdir(8)</i>, <i>runit(8)</i>, <i>runit-init(8)</i>, <i>sv(8)</i>, <i>runsv(8)</i> <p>
-<i>https://smarden.org/runit/</i>
-
-<h2><a name='sect7'>Author</a></h2>
-Gerrit Pape &lt;pape@smarden.org&gt; <p>
-
-<hr><p>
-<a name='toc'><b>Table of Contents</b></a><p>
-<ul>
-<li><a name='toc0' href='#sect0'>Name</a></li>
-<li><a name='toc1' href='#sect1'>Synopsis</a></li>
-<li><a name='toc2' href='#sect2'>Description</a></li>
-<li><a name='toc3' href='#sect3'>Environment</a></li>
-<li><a name='toc4' href='#sect4'>Exit Codes</a></li>
-<li><a name='toc5' href='#sect5'>Files</a></li>
-<li><a name='toc6' href='#sect6'>See Also</a></li>
-<li><a name='toc7' href='#sect7'>Author</a></li>
-</ul>
+<dt><strong>RUNSVDIR</strong></dt>
+<dd>
+The environment variable $RUNSVDIR overrides the default working
+directory <em>/etc/runit/runsvdir/</em>.
+</dd>
+</dl>
+<h3 id="exit-codes">EXIT CODES</h3>
+<p><strong>runsvchdir</strong> prints an error message and exits 111 on
+error. <strong>runsvchdir</strong> exits 0 on success.</p>
+<h3 id="files">FILES</h3>
+<p>/etc/runit/runsvdir/previous<br />
+/etc/runit/runsvdir/current<br />
+/etc/runit/runsvdir/current.new</p>
+<h3 id="see-also">SEE ALSO</h3>
+<p>runsvdir(8), runit(8), runit-init(8), sv(8), runsv(8)</p>
+<p>https://smarden.org/runit/</p>
+<h3 id="author">AUTHOR</h3>
+<p>Gerrit Pape &lt;pape@smarden.org&gt;</p>
 </body>
 </html>

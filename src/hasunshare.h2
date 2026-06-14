@@ -1,0 +1,2 @@
+/* sysdep: +unshare */
+#define HASUNSHARE 1

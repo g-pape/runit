@@ -1,0 +1,8 @@
+#!/bin/sh
+for i in *[!0-9].md; do
+  pandoc -s -t html --template template.html $i >${1:-.}/${i%.md}.html
+done
+for i in *[0-9].md; do
+  pandoc -s -t html --template template-man.html \
+    --shift-heading-level-by 2 $i >${1:-.}/${i%.md}.html
+done

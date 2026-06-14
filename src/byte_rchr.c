@@ -12,10 +12,10 @@ unsigned int byte_rchr(char *s,register unsigned int n,int c)
   t = s;
   u = 0;
   for (;;) {
-    if (!n) break; if (*t == ch) u = t; ++t; --n;
-    if (!n) break; if (*t == ch) u = t; ++t; --n;
-    if (!n) break; if (*t == ch) u = t; ++t; --n;
-    if (!n) break; if (*t == ch) u = t; ++t; --n;
+    if (!n) { break; } if (*t == ch) u = t; ++t; --n;
+    if (!n) { break; } if (*t == ch) u = t; ++t; --n;
+    if (!n) { break; } if (*t == ch) u = t; ++t; --n;
+    if (!n) { break; } if (*t == ch) u = t; ++t; --n;
   }
   if (!u) u = t;
   return u - s;

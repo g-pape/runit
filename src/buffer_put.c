@@ -10,12 +10,12 @@ static int allwrite(int (*op)(int,char *,unsigned int),int fd,const char *buf,un
   int w;
 
   while (len) {
-    w = op(fd,buf,len);
+    w = op(fd,(char *)buf,len);
     if (w == -1) {
       if (errno == error_intr) continue;
       return -1; /* note that some data may have been written */
     }
-    if (w == 0) ; /* luser's fault */
+    if (w == 0) {} /* luser's fault */
     buf += w;
     len -= w;
   }

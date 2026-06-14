@@ -6,4 +6,3 @@ runsvchdir
 runsvdir
 sv
 svlogd
-utmpset
