@@ -17,7 +17,7 @@ jobs:
         runners: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04]
     runs-on: ${{ matrix.runners }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: compile-check
       run: package/compile && package/check
   compile-check-on-macos:
@@ -26,7 +26,7 @@ jobs:
         runners: [macos-latest, macos-15, macos-14]
     runs-on: ${{ matrix.runners }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: compile-check
       run: |
         echo 'cc -Xlinker -x' > src/conf-ld
@@ -36,7 +36,7 @@ jobs:
   compile-check-on-freebsd:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: compile-check
       uses: vmactions/freebsd-vm@v1
       with:
@@ -49,7 +49,7 @@ jobs:
   compile-check-on-openbsd:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: compile-check
       uses: vmactions/openbsd-vm@v1
       with:
@@ -62,7 +62,7 @@ jobs:
   compile-check-on-netbsd:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: compile-check
       uses: vmactions/netbsd-vm@v1
       with:
@@ -72,7 +72,7 @@ jobs:
   compile-check-on-solaris:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: compile-check
       uses: vmactions/solaris-vm@v1
       with:
