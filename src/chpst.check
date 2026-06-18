@@ -38,3 +38,9 @@ echo $?
 chpst -2 ./ENOENT.err 2>/dev/null
 echo $?
 chpst -012 ./ENOENT.err 2>&1 |sed -e 's/chpst: fatal: unable to run: .\/ENOENT\.err:.*/ENOENT/'
+
+chpst -N012 true
+echo $?
+chpst -N2 ./ENOENT.err 2>/dev/null
+echo $?
+chpst -N012 ./ENOENT.err 2>&1 |sed -e 's/chpst: fatal: unable to run: .\/ENOENT\.err:.*/ENOENT/'
