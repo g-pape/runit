@@ -29,6 +29,8 @@
 #include "open.h"
 #include "openreadclose.h"
 #include "direntry.h"
+#include "coe.h"
+#include "fd.h"
 
 #define USAGE_MAIN " [-vVPFI012] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog"
 #define FATAL "chpst: fatal: "
@@ -64,6 +66,7 @@ unsigned int pgrp =0;
 unsigned int nostdin =0;
 unsigned int nostdout =0;
 unsigned int nostderr =0;
+int savederr =-1;
 unsigned int newpids =0;
 long limitd =-2;
 long limits =-2;
@@ -427,14 +430,23 @@ int main(int argc, char **argv) {
   if (env_user) euidgid(env_user, 1);
   if (set_user) suidgid(set_user, 1);
   if (lock) slock(lock, lockdelay, 0);
-  if (nostdin) if (close(0) == -1) fatal("unable to close stdin");
+  if (nostderr) {
+    if ((savederr = dup(2)) == -1) fatal("unable to save stderr");
+    coe(savederr);
+    if (close(2) == -1) fatal("unable to close stderr");
+  }
   if (nostdout) if (close(1) == -1) fatal("unable to close stdout");
-  if (nostderr) if (close(2) == -1) fatal("unable to close stderr");
+  if (nostdin) if (close(0) == -1) fatal("unable to close stdin");
   slimit();
 
   progname =*argv;
   if (argv0) *argv =argv0;
   pathexec_env_run(progname, argv);
+  if (savederr >= 0) {
+    int e = errno;
+    fd_move(2, savederr);
+    errno = e;
+  }
   fatal2("unable to run", *argv);
   return(0);
 }
