@@ -32,6 +32,7 @@
 #include "direntry.h"
 #include "coe.h"
 #include "fd.h"
+#include "reopen_null.h"
 
 #define USAGE_MAIN " [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog"
 #define FATAL "chpst: fatal: "
@@ -338,12 +339,8 @@ void newpid1() {
 }
 
 int dismiss_fd(int fd) {
-  int dn =-1;
-
   if (! devnull) return close(fd);
-
-  if ((dn =open("/dev/null", O_RDWR)) == -1) return -1;
-  return fd_move(fd, dn);
+  return reopen_null(fd);
 }
 
 /* argv[0] */

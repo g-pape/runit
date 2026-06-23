@@ -14,6 +14,7 @@
 #include "tai.h"
 #include "taia.h"
 #include "wait.h"
+#include "reopen_null.h"
 
 #define USAGE " [-v] [-w sec] command service ..."
 #define USAGELSB " [-w sec] command"
@@ -196,7 +197,7 @@ int checkscript() {
   if (!pid) {
     prog[0] ="./check";
     prog[1] =0;
-    close(1);
+    reopen_null(1);
     execve("check", prog, environ);
     outs2(WARN); outs2("unable to run "); outs2(*service); outs2("/check: ");
     outs2(error_str(errno)); flush2("\n");

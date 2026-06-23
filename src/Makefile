@@ -17,8 +17,8 @@ runsv: load runsv.o unix.a byte.a time.a
 runsvdir: load runsvdir.o unix.a byte.a time.a
 	./load runsvdir unix.a byte.a time.a
 
-sv: load sv.o unix.a byte.a time.a
-	./load sv unix.a byte.a time.a
+sv: load sv.o reopen_null.o unix.a byte.a time.a
+	./load sv reopen_null.o unix.a byte.a time.a
 
 runsvchdir: load runsvchdir.o unix.a byte.a
 	./load runsvchdir unix.a byte.a
@@ -27,8 +27,8 @@ svlogd: load svlogd.o pmatch.o fmt_ptime.o unix.a byte.a time.a socket.lib
 	./load svlogd pmatch.o fmt_ptime.o unix.a byte.a time.a \
 	`cat socket.lib`
 
-chpst: load chpst.o uidgid.o unix.a byte.a
-	./load chpst uidgid.o unix.a byte.a
+chpst: load chpst.o uidgid.o reopen_null.o unix.a byte.a
+	./load chpst uidgid.o reopen_null.o unix.a byte.a
 
 runit.o: compile sysdeps runit.c
 	./compile runit.c
@@ -60,6 +60,9 @@ uidgid.o: compile uidgid.c uidgid.h
 
 pmatch.o: compile pmatch.c
 	./compile pmatch.c
+
+reopen_null.o: compile reopen_null.c
+	./compile reopen_null.c
 
 fmt_ptime.o: compile sysdeps fmt_ptime.c
 	./compile fmt_ptime.c

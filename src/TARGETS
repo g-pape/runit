@@ -74,6 +74,7 @@ openreadclose.o
 pathexec_env.o
 pathexec_run.o
 readclose.o
+reopen_null.o
 scan_ulong.o
 seek_set.o
 select.h
