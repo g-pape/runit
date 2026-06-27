@@ -8,7 +8,7 @@ chpst - runs a program with a changed process state
 
 **chpst** \[-vVPFI012\] \[-u *user*\] \[-U *user*\] \[-b *argv0*\] \[-e
 *dir*\] \[-/ *root*\] \[-C *pwd*\] \[-n *inc*\] \[-l\|-L *lock*\] \[-A
-*secs*\] \[-m *bytes*\] \[-d *bytes*\] \[-o *n*\] \[-p *n*\] \[-f
+*seconds*\] \[-m *bytes*\] \[-d *bytes*\] \[-o *n*\] \[-p *n*\] \[-f
 *bytes*\] \[-c *bytes*\] \[-t *seconds*\] *prog*
 
 # DESCRIPTION
@@ -74,9 +74,9 @@ runs *prog*.
 :   The same as -l, but fail immediately if *lock* is locked by another
     process.
 
-**-A** *secs*
-:   Run *prog* under an alarm, delivering a SIGALRM after *secs*
-    seconds. If *secs* is zero, clear any inherited alarm.
+**-A** *seconds*
+:   Run *prog* under an alarm, delivering a SIGALRM after *seconds*
+    seconds. If *seconds* is zero, clear any inherited alarm.
 
 **-m** *bytes*
 :   limit memory. Limit the data segment, stack segment, locked physical
