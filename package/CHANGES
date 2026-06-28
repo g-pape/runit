@@ -1,3 +1,4 @@
+  * doc/*.html: add color-scheme.
   * runsvdir.c: use inotify(7) (if available) to watch services directory;
     remove overcautious delay; cleanup removed services more quickly.
   * Makefile, TARGETS: add test for inotify_init() system call.
