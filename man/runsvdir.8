@@ -20,7 +20,7 @@ subdirectory, or symlink to a directory, in the services directory
 At least every five seconds \f[B]runsvdir\f[R] checks whether the time
 of last modification, the inode, or the device, of the services
 directory \f[I]dir\f[R] has changed.
-If so, it re\-scans the service directory, and if it sees a new
+If so, it re\-scans the services directory, and if it sees a new
 subdirectory, or new symlink to a directory, in \f[I]dir\f[R], it starts
 a new \f[B]runsv\f[R](8) process; if \f[B]runsvdir\f[R] sees a
 subdirectory being removed that was previously there, it sends the

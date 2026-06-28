@@ -21,7 +21,7 @@ terminates. **runsvdir** skips subdirectory names starting with dots.
 
 At least every five seconds **runsvdir** checks whether the time of last
 modification, the inode, or the device, of the services directory *dir*
-has changed. If so, it re-scans the service directory, and if it sees a
+has changed. If so, it re-scans the services directory, and if it sees a
 new subdirectory, or new symlink to a directory, in *dir*, it starts a
 new **runsv**(8) process; if **runsvdir** sees a subdirectory being
 removed that was previously there, it sends the corresponding
