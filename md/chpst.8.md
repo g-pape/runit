@@ -6,7 +6,7 @@ chpst - runs a program with a changed process state
 
 # SYNOPSIS
 
-**chpst** \[-vVPFI012\] \[-u *user*\] \[-U *user*\] \[-b *argv0*\] \[-e
+**chpst** \[-vVPFI012N\] \[-u *user*\] \[-U *user*\] \[-b *argv0*\] \[-e
 *dir*\] \[-/ *root*\] \[-C *pwd*\] \[-n *inc*\] \[-l\|-L *lock*\] \[-m
 *bytes*\] \[-d *bytes*\] \[-o *n*\] \[-p *n*\] \[-f *bytes*\] \[-c
 *bytes*\] \[-t *seconds*\] *prog*
@@ -137,6 +137,10 @@ runs *prog*.
 
 **-2**
 :   Close standard error before starting *prog*.
+
+**-N**
+:   /dev/null. Instead of closing standard streams with -012, re-open
+    the descriptors to /dev/null.
 
 # EXIT CODES
 

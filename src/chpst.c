@@ -14,6 +14,7 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #include <grp.h>
+#include <fcntl.h>
 #include "sgetopt.h"
 #include "error.h"
 #include "strerr.h"
@@ -29,8 +30,10 @@
 #include "open.h"
 #include "openreadclose.h"
 #include "direntry.h"
+#include "coe.h"
+#include "fd.h"
 
-#define USAGE_MAIN " [-vVPFI012] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog"
+#define USAGE_MAIN " [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog"
 #define FATAL "chpst: fatal: "
 #define WARNING "chpst: warning: "
 
@@ -61,9 +64,11 @@ char *argv0 =0;
 const char *env_dir =0;
 unsigned int verbose =0;
 unsigned int pgrp =0;
+unsigned int devnull =0;
 unsigned int nostdin =0;
 unsigned int nostdout =0;
 unsigned int nostderr =0;
+int savederr =-1;
 unsigned int newpids =0;
 long limitd =-2;
 long limits =-2;
@@ -332,6 +337,15 @@ void newpid1() {
 #endif
 }
 
+int dismiss_fd(int fd) {
+  int dn;
+
+  if (! devnull) return close(fd);
+
+  if ((dn =open("/dev/null", O_RDWR)) == -1) return -1;
+  return fd_move(fd, dn);
+}
+
 /* argv[0] */
 void setuidgid(int, char *const *);
 void envuidgid(int, char *const *);
@@ -361,7 +375,7 @@ int main(int argc, char **argv) {
   if (str_equal(progname, "setlock")) setlock(argc, argv);
   if (str_equal(progname, "softlimit")) softlimit(argc, argv);
 
-  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012FIV"))
+  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012NFIV"))
          != opteof)
     switch(opt) {
     case 'u': set_user =(char*)optarg; break;
@@ -398,6 +412,7 @@ int main(int argc, char **argv) {
     case 'l': if (lock) usage(); lock =optarg; lockdelay =1; break;
     case 'L': if (lock) usage(); lock =optarg; lockdelay =0; break;
     case 'v': verbose =1; break;
+    case 'N': devnull =1; break;
     case 'P': pgrp =1; break;
     case '0': nostdin =1; break;
     case '1': nostdout =1; break;
@@ -427,14 +442,23 @@ int main(int argc, char **argv) {
   if (env_user) euidgid(env_user, 1);
   if (set_user) suidgid(set_user, 1);
   if (lock) slock(lock, lockdelay, 0);
-  if (nostdin) if (close(0) == -1) fatal("unable to close stdin");
-  if (nostdout) if (close(1) == -1) fatal("unable to close stdout");
-  if (nostderr) if (close(2) == -1) fatal("unable to close stderr");
+  if (nostderr) {
+    if ((savederr = dup(2)) == -1) fatal("unable to save stderr");
+    coe(savederr);
+    if (dismiss_fd(2) == -1) fatal("unable to close stderr");
+  }
+  if (nostdout) if (dismiss_fd(1) == -1) fatal("unable to close stdout");
+  if (nostdin) if (dismiss_fd(0) == -1) fatal("unable to close stdin");
   slimit();
 
   progname =*argv;
   if (argv0) *argv =argv0;
   pathexec_env_run(progname, argv);
+  if (savederr >= 0) {
+    int e = errno;
+    fd_move(2, savederr);
+    errno = e;
+  }
   fatal2("unable to run", *argv);
   return(0);
 }
