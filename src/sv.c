@@ -96,7 +96,10 @@ int svstatus_get() {
       *acts == 'x' ? ok("runsv not running") : failx("runsv not running");
       return(0);
     }
-    warn("unable to open supervise/ok");
+    if (islog && (errno == error_noent))
+      warnx("supervise/ok not found, exit and restart runsv to enable log");
+    else
+      warn("unable to open supervise/ok");
     return(-1);
   }
   close(fd);

@@ -1,3 +1,5 @@
+  * sv.c: improve warning if ./log exists but not ./log/supervise/ok (thx
+    github/Swiddis).
   * chpst.c, man/chpst.8: add new option -N: with -012 reopen to /dev/null;
     -2: dup() and coe() stderr, restore on failed exec (github/pilcrow).
   * man/runsvdir.8: typo.
