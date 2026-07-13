@@ -76,7 +76,10 @@ runs *prog*.
 
 **-A** *seconds*
 :   Run *prog* under an alarm, delivering a SIGALRM after *seconds*
-    seconds. If *seconds* is zero, clear any inherited alarm.
+    seconds. If *seconds* is zero, clear any inherited alarm. When
+    combined with **-F**, the alarm is set before entering the new
+    namespace, so SIGALRM is relayed through **chpst** to all
+    processes in *prog*\'s namespace, including its children.
 
 **-m** *bytes*
 :   limit memory. Limit the data segment, stack segment, locked physical
