@@ -440,6 +440,7 @@ int main(int argc, char **argv) {
     errno =0;
     if (nice(nicelvl) == -1) if (errno) fatal("unable to set nice level");
   }
+  if (alrmsecs >= 0) alarm((unsigned int)alrmsecs);
   if (newpids) newpid1();
   if (env_user) euidgid(env_user, 1);
   if (set_user) suidgid(set_user, 1);
@@ -452,7 +453,6 @@ int main(int argc, char **argv) {
   if (nostdout) if (dismiss_fd(1) == -1) fatal("unable to close stdout");
   if (nostdin) if (dismiss_fd(0) == -1) fatal("unable to close stdin");
   slimit();
-  if (alrmsecs >= 0) alarm((unsigned int)alrmsecs);
 
   progname =*argv;
   if (argv0) *argv =argv0;
