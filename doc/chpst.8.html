@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="generator" content="pandoc" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<meta name="color-scheme" content="light dark" />
 <title>chpst(8)</title>
 </head>
 <body>
@@ -13,7 +14,7 @@
 <h3 id="name">NAME</h3>
 <p>chpst - runs a program with a changed process state</p>
 <h3 id="synopsis">SYNOPSIS</h3>
-<p><strong>chpst</strong> [-vVPFI012] [-u <em>user</em>] [-U
+<p><strong>chpst</strong> [-vVPFI012N] [-u <em>user</em>] [-U
 <em>user</em>] [-b <em>argv0</em>] [-e <em>dir</em>] [-/ <em>root</em>]
 [-C <em>pwd</em>] [-n <em>inc</em>] [-l|-L <em>lock</em>] [-m
 <em>bytes</em>] [-d <em>bytes</em>] [-o <em>n</em>] [-p <em>n</em>] [-f
@@ -175,6 +176,11 @@ Close standard output before starting <em>prog</em>.
 <dt><strong>-2</strong></dt>
 <dd>
 Close standard error before starting <em>prog</em>.
+</dd>
+<dt><strong>-N</strong></dt>
+<dd>
+/dev/null. Instead of closing standard streams with -012, re-open the
+descriptors to /dev/null.
 </dd>
 </dl>
 <h3 id="exit-codes">EXIT CODES</h3>

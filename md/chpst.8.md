@@ -142,6 +142,10 @@ runs *prog*.
 **-2**
 :   Close standard error before starting *prog*.
 
+**-N**
+:   /dev/null. Instead of closing standard streams with -012, re-open
+    the descriptors to /dev/null.
+
 # EXIT CODES
 
 **chpst** exits 100 when called with wrong options. It prints an error

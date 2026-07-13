@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="generator" content="pandoc" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<meta name="color-scheme" content="light dark" />
 <title>runsvdir(8)</title>
 </head>
 <body>
@@ -27,7 +28,7 @@ restarts a <strong>runsv</strong>(8) process if it terminates.
 PATH.</p>
 <p>At least every five seconds <strong>runsvdir</strong> checks whether
 the time of last modification, the inode, or the device, of the services
-directory <em>dir</em> has changed. If so, it re-scans the service
+directory <em>dir</em> has changed. If so, it re-scans the services
 directory, and if it sees a new subdirectory, or new symlink to a
 directory, in <em>dir</em>, it starts a new <strong>runsv</strong>(8)
 process; if <strong>runsvdir</strong> sees a subdirectory being removed

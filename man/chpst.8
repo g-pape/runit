@@ -4,7 +4,7 @@
 .SH NAME
 chpst \- runs a program with a changed process state
 .SH SYNOPSIS
-\f[B]chpst\f[R] [\-vVPFI012] [\-u \f[I]user\f[R]] [\-U \f[I]user\f[R]]
+\f[B]chpst\f[R] [\-vVPFI012N] [\-u \f[I]user\f[R]] [\-U \f[I]user\f[R]]
 [\-b \f[I]argv0\f[R]] [\-e \f[I]dir\f[R]] [\-/ \f[I]root\f[R]] [\-C
 \f[I]pwd\f[R]] [\-n \f[I]inc\f[R]] [\-l|\-L \f[I]lock\f[R]] [\-m
 \f[I]bytes\f[R]] [\-d \f[I]bytes\f[R]] [\-o \f[I]n\f[R]] [\-p
@@ -167,6 +167,11 @@ Close standard output before starting \f[I]prog\f[R].
 .TP
 \f[B]\-2\f[R]
 Close standard error before starting \f[I]prog\f[R].
+.TP
+\f[B]\-N\f[R]
+/dev/null.
+Instead of closing standard streams with \-012, re\-open the descriptors
+to /dev/null.
 .SH EXIT CODES
 \f[B]chpst\f[R] exits 100 when called with wrong options.
 It prints an error message and exits 111 if it has trouble changing the
