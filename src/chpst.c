@@ -33,7 +33,7 @@
 #include "coe.h"
 #include "fd.h"
 
-#define USAGE_MAIN " [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog"
+#define USAGE_MAIN " [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-A n] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog"
 #define FATAL "chpst: fatal: "
 #define WARNING "chpst: warning: "
 
@@ -84,6 +84,7 @@ long nicelvl =0;
 const char *lock =0;
 const char *root =0;
 const char *pwd =0;
+long alrmsecs =-1;
 unsigned int lockdelay;
 
 void suidgid(char *user, unsigned int ext) {
@@ -375,7 +376,7 @@ int main(int argc, char **argv) {
   if (str_equal(progname, "setlock")) setlock(argc, argv);
   if (str_equal(progname, "softlimit")) softlimit(argc, argv);
 
-  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:vP012NFIV"))
+  while ((opt =getopt(argc, argv, "u:U:b:e:m:d:o:p:f:c:r:t:/:C:n:l:L:A:vP012NFIV"))
          != opteof)
     switch(opt) {
     case 'u': set_user =(char*)optarg; break;
@@ -393,6 +394,7 @@ int main(int argc, char **argv) {
     case 'c': if (optarg[scan_ulong(optarg, &ul)]) usage(); limitc =ul; break;
     case 'r': if (optarg[scan_ulong(optarg, &ul)]) usage(); limitr =ul; break;
     case 't': if (optarg[scan_ulong(optarg, &ul)]) usage(); limitt =ul; break;
+    case 'A': if (optarg[scan_ulong(optarg, &ul)]) usage(); alrmsecs =(long)ul; break;
     case '/': root =optarg; break;
     case 'C': pwd =optarg; break;
     case 'n':
@@ -438,6 +440,7 @@ int main(int argc, char **argv) {
     errno =0;
     if (nice(nicelvl) == -1) if (errno) fatal("unable to set nice level");
   }
+  if (alrmsecs >= 0) alarm((unsigned int)alrmsecs);
   if (newpids) newpid1();
   if (env_user) euidgid(env_user, 1);
   if (set_user) suidgid(set_user, 1);

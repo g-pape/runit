@@ -7,9 +7,9 @@ chpst - runs a program with a changed process state
 # SYNOPSIS
 
 **chpst** \[-vVPFI012N\] \[-u *user*\] \[-U *user*\] \[-b *argv0*\] \[-e
-*dir*\] \[-/ *root*\] \[-C *pwd*\] \[-n *inc*\] \[-l\|-L *lock*\] \[-m
-*bytes*\] \[-d *bytes*\] \[-o *n*\] \[-p *n*\] \[-f *bytes*\] \[-c
-*bytes*\] \[-t *seconds*\] *prog*
+*dir*\] \[-/ *root*\] \[-C *pwd*\] \[-n *inc*\] \[-l\|-L *lock*\] \[-A
+*seconds*\] \[-m *bytes*\] \[-d *bytes*\] \[-o *n*\] \[-p *n*\] \[-f
+*bytes*\] \[-c *bytes*\] \[-t *seconds*\] *prog*
 
 # DESCRIPTION
 
@@ -73,6 +73,13 @@ runs *prog*.
 **-L** *lock*
 :   The same as -l, but fail immediately if *lock* is locked by another
     process.
+
+**-A** *seconds*
+:   alarm signal. Run *prog* under an alarm, delivering a SIGALRM after
+    *seconds* seconds. If *seconds* is zero, clear any inherited alarm.
+    When combined with **-F**, the alarm is set before entering the new
+    namespace, so SIGALRM is relayed through **chpst** to all processes
+    in *prog*\'s namespace, including its children.
 
 **-m** *bytes*
 :   limit memory. Limit the data segment, stack segment, locked physical

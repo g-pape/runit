@@ -16,10 +16,10 @@
 <h3 id="synopsis">SYNOPSIS</h3>
 <p><strong>chpst</strong> [-vVPFI012N] [-u <em>user</em>] [-U
 <em>user</em>] [-b <em>argv0</em>] [-e <em>dir</em>] [-/ <em>root</em>]
-[-C <em>pwd</em>] [-n <em>inc</em>] [-l|-L <em>lock</em>] [-m
-<em>bytes</em>] [-d <em>bytes</em>] [-o <em>n</em>] [-p <em>n</em>] [-f
-<em>bytes</em>] [-c <em>bytes</em>] [-t <em>seconds</em>]
-<em>prog</em></p>
+[-C <em>pwd</em>] [-n <em>inc</em>] [-l|-L <em>lock</em>] [-A
+<em>seconds</em>] [-m <em>bytes</em>] [-d <em>bytes</em>] [-o
+<em>n</em>] [-p <em>n</em>] [-f <em>bytes</em>] [-c <em>bytes</em>] [-t
+<em>seconds</em>] <em>prog</em></p>
 <h3 id="description">DESCRIPTION</h3>
 <p><em>prog</em> consists of one or more arguments.</p>
 <p><strong>chpst</strong> changes the process state according to the
@@ -94,6 +94,15 @@ obtained.
 <dd>
 The same as -l, but fail immediately if <em>lock</em> is locked by
 another process.
+</dd>
+<dt><strong>-A</strong> <em>seconds</em></dt>
+<dd>
+alarm signal. Run <em>prog</em> under an alarm, delivering a SIGALRM
+after <em>seconds</em> seconds. If <em>seconds</em> is zero, clear any
+inherited alarm. When combined with <strong>-F</strong>, the alarm is
+set before entering the new namespace, so SIGALRM is relayed through
+<strong>chpst</strong> to all processes in <em>prog</em>'s namespace,
+including its children.
 </dd>
 <dt><strong>-m</strong> <em>bytes</em></dt>
 <dd>

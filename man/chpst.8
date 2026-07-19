@@ -6,10 +6,10 @@ chpst \- runs a program with a changed process state
 .SH SYNOPSIS
 \f[B]chpst\f[R] [\-vVPFI012N] [\-u \f[I]user\f[R]] [\-U \f[I]user\f[R]]
 [\-b \f[I]argv0\f[R]] [\-e \f[I]dir\f[R]] [\-/ \f[I]root\f[R]] [\-C
-\f[I]pwd\f[R]] [\-n \f[I]inc\f[R]] [\-l|\-L \f[I]lock\f[R]] [\-m
-\f[I]bytes\f[R]] [\-d \f[I]bytes\f[R]] [\-o \f[I]n\f[R]] [\-p
-\f[I]n\f[R]] [\-f \f[I]bytes\f[R]] [\-c \f[I]bytes\f[R]] [\-t
-\f[I]seconds\f[R]] \f[I]prog\f[R]
+\f[I]pwd\f[R]] [\-n \f[I]inc\f[R]] [\-l|\-L \f[I]lock\f[R]] [\-A
+\f[I]seconds\f[R]] [\-m \f[I]bytes\f[R]] [\-d \f[I]bytes\f[R]] [\-o
+\f[I]n\f[R]] [\-p \f[I]n\f[R]] [\-f \f[I]bytes\f[R]] [\-c
+\f[I]bytes\f[R]] [\-t \f[I]seconds\f[R]] \f[I]prog\f[R]
 .SH DESCRIPTION
 \f[I]prog\f[R] consists of one or more arguments.
 .PP
@@ -89,6 +89,15 @@ can be obtained.
 \f[B]\-L\f[R] \f[I]lock\f[R]
 The same as \-l, but fail immediately if \f[I]lock\f[R] is locked by
 another process.
+.TP
+\f[B]\-A\f[R] \f[I]seconds\f[R]
+alarm signal.
+Run \f[I]prog\f[R] under an alarm, delivering a SIGALRM after
+\f[I]seconds\f[R] seconds.
+If \f[I]seconds\f[R] is zero, clear any inherited alarm.
+When combined with \f[B]\-F\f[R], the alarm is set before entering the
+new namespace, so SIGALRM is relayed through \f[B]chpst\f[R] to all
+processes in \f[I]prog\f[R]\[aq]s namespace, including its children.
 .TP
 \f[B]\-m\f[R] \f[I]bytes\f[R]
 limit memory.

@@ -1,8 +1,8 @@
-usage: chpst [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
+usage: chpst [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-A n] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
 
 100
-$Id: 9c4e1ef872f38121ae978ce2290739d9075225db $
-usage: chpst [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
+$Id: e9e0db8b3da6a77c3b6e8c8d6a1e4ca9011b9782 $
+usage: chpst [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-A n] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
 
 100
 test=1
@@ -16,3 +16,5 @@ ENOENT
 0
 111
 ENOENT
+ALRM
+0
