@@ -45,11 +45,11 @@ chpst -N2 ./ENOENT.err 2>/dev/null
 echo $?
 chpst -N012 ./ENOENT.err 2>&1 |sed -e 's/chpst: fatal: unable to run: .\/ENOENT\.err:.*/ENOENT/'
 
-/bin/sh -c 'kill -s ALRM $$' 2>/dev/null
+/bin/sh -c 'kill -s ALRM $$ 2>/dev/null' 2>/dev/null
 EC_ALRM=$?
 
 # POSIX allows sleep(1) to exit 0 on ALRM, so we wait for it
-chpst -A 2 /bin/sh -c 'sleep 10 & wait $!' 2>/dev/null
+chpst -A 2 /bin/sh -c 'sleep 10 & wait $! 2>/dev/null' 2>/dev/null
 test $? -eq $EC_ALRM && echo ALRM
 
 chpst -A 2 chpst -A 0 /bin/sh -c 'sleep 2 & wait $!'
