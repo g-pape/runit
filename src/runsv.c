@@ -1,3 +1,4 @@
+#include "runit.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -392,7 +393,7 @@ int main(int argc, char **argv) {
   struct stat s;
   int fd;
   int r;
-  char buf[256];
+  char buf[BUFSIZE];
 
   progname =argv[0];
   if (! argv[1] || argv[2]) usage();
@@ -443,8 +444,8 @@ int main(int argc, char **argv) {
   }
 
   if (mkdir("supervise", 0700) == -1) {
-    if ((r =readlink("supervise", buf, 256)) != -1) {
-      if (r == 256)
+    if ((r =readlink("supervise", buf, BUFSIZE)) != -1) {
+      if (r == BUFSIZE)
         fatalx("unable to readlink ./supervise: ", "name too long");
       buf[r] =0;
       mkdir(buf, 0700);
@@ -460,8 +461,8 @@ int main(int argc, char **argv) {
   coe(svd[0].fdlock);
   if (haslog) {
     if (mkdir("log/supervise", 0700) == -1) {
-      if ((r =readlink("log/supervise", buf, 256)) != -1) {
-        if (r == 256)
+      if ((r =readlink("log/supervise", buf, BUFSIZE)) != -1) {
+        if (r == BUFSIZE)
           fatalx("unable to readlink ./log/supervise: ", "name too long");
         buf[r] =0;
         if ((fd =open_read(".")) == -1)

@@ -30,16 +30,16 @@ svlogd: load svlogd.o pmatch.o fmt_ptime.o unix.a byte.a time.a socket.lib
 chpst: load chpst.o uidgid.o unix.a byte.a
 	./load chpst uidgid.o unix.a byte.a
 
-runit.o: compile sysdeps runit.c
+runit.o: compile sysdeps runit.c runit.h
 	./compile runit.c
 
-runit-init.o: compile runit-init.c
+runit-init.o: compile runit-init.c runit.h
 	./compile runit-init.c
 
-runsv.o: compile sysdeps runsv.c
+runsv.o: compile sysdeps runsv.c runit.h
 	./compile runsv.c
 
-runsvdir.o: compile sysdeps runsvdir.c
+runsvdir.o: compile sysdeps runsvdir.c runit.h
 	./compile runsvdir.c
 
 sv.o: compile sysdeps sv.c

@@ -1,3 +1,5 @@
+  * runit.h, runsv.c, runsvdir.c, Makefile: buffer size PATH_MAX instead of
+    256 if RUNSV_USE_SYSLIMITS is defined.
   * chpst.c, chpst.check, man/chpst.8: add new option -A: alarm(2) support
     (github/pilcrow).
   * sv.c: improve warning if ./log exists but not ./log/supervise/ok (thx

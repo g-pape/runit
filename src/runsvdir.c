@@ -1,3 +1,4 @@
+#include "runit.h"
 #include "hasinotify.h"
 #ifdef HASINOTIFY
 #include <sys/inotify.h>
@@ -44,12 +45,12 @@ char *rplog =0;
 int rploglen;
 int logpipe[2];
 #ifdef HASINOTIFY
-#define INBUFSIZE (sizeof(struct inotify_event) +NAME_MAX +1 > 256 ? \
-                   sizeof(struct inotify_event) +NAME_MAX +1 : 256)
+#define INBUFSIZE (sizeof(struct inotify_event) +NAME_MAX +1 > BUFSIZE ? \
+                   sizeof(struct inotify_event) +NAME_MAX +1 : BUFSIZE)
 #define IONUM 2
 int watch[3];
 #else
-#define INBUFSIZE 256
+#define INBUFSIZE BUFSIZE
 #define IONUM 1
 #endif
 char inbuf[INBUFSIZE];
@@ -196,8 +197,8 @@ unsigned int watch_inotify() {
   if (watch[1] != w) inotify_rm_watch(io[1].fd, watch[1]);
   watch[1] =w;
   if (watch[0] != watch[1]) {
-    if ((w =readlink(svdir, inbuf, 256)) != -1) {
-      if (w < 256) {
+    if ((w =readlink(svdir, inbuf, BUFSIZE)) != -1) {
+      if (w < BUFSIZE) {
         inbuf[w] =0;
         if (*inbuf == '/') {
           if ((w =inotify_add_watch(io[1].fd, inbuf, IN_DONT_FOLLOW|
@@ -365,7 +366,7 @@ int main(int argc, char **argv) {
     }
 #endif
     if (rplog && io[IONUM].revents)
-      while ((i =read(logpipe[0], inbuf, 256)) > 0) {
+      while ((i =read(logpipe[0], inbuf, BUFSIZE)) > 0) {
         int j;
         if (i < rploglen)
           for (j =0; j < rploglen -i; ++j) rplog[j] =rplog[j +i];
