@@ -37,19 +37,15 @@ echo $?
 
 chpst -2 ./ENOENT.err 2>/dev/null
 echo $?
-chpst -012 ./ENOENT.err 2>&1 |sed -e 's/chpst: fatal: unable to run: .\/ENOENT\.err:.*/ENOENT/'
+chpst -012 ./ENOENT.err
 
 chpst -N012 true
 echo $?
 chpst -N2 ./ENOENT.err 2>/dev/null
 echo $?
-chpst -N012 ./ENOENT.err 2>&1 |sed -e 's/chpst: fatal: unable to run: .\/ENOENT\.err:.*/ENOENT/'
+chpst -N012 ./ENOENT.err
 
-/bin/sh -c 'kill -s ALRM $$' 2>/dev/null
-EC_ALRM=$?
+chpst -A 2 /bin/sh -c 'trap "echo ALRM" ALRM; sleep 5 & wait $!'
 
-/bin/sh -c 'chpst -A 2 sleep 10' 2>/dev/null
-test $? -eq $EC_ALRM && echo ALRM
-
-chpst -A 2 chpst -A 0 sleep 2
+chpst -A 1 chpst -A 0 /bin/sh -c 'trap "echo ALRM" ALRM; sleep 2 & wait $!'
 echo $?

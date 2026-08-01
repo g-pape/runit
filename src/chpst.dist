@@ -12,9 +12,9 @@ test=1
 0
 0
 111
-ENOENT
+chpst: fatal: unable to run: ./ENOENT.err: file does not exist
 0
 111
-ENOENT
+chpst: fatal: unable to run: ./ENOENT.err: file does not exist
 ALRM
 0
