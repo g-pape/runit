@@ -18,6 +18,7 @@
 
 [Runlevels](runlevels.html)\
 [Service dependencies](dependencies.html)\
+[Experiment with Linux control groups (cgroup v2)](cgroups.html)\
 [A collection of run scripts](runscripts.html)
 
 [The `runit` program](runit.8.html)\
