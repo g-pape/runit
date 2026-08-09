@@ -64,10 +64,11 @@ getty-default service directory now:
 Run the `tty` command to get the name of the current terminal, and
 create the corresponding `getty-default` run script:
 
-    TTYNAME=$(tty); tee /etc/sv/getty-default/run <<EOT && chmod 755 $_
+    TTYNAME=$(tty); cat >/etc/sv/getty-default/run <<EOT
     #!/bin/sh
     exec agetty ${TTYNAME##*/}
     EOT
+    chmod 0755 /etc/sv/getty-default/run
 
 Check `/etc/inittab` again, now for the default invocation of a `getty`
 program on your system, and if it's not `agetty`, adapt
@@ -149,10 +150,11 @@ service.
 #### Example: `sshd`
 
     mkdir -p /etc/sv/sshd
-    tee /etc/sv/sshd/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/sshd/run <<\EOT
     #!/bin/sh
     exec /usr/sbin/sshd -D
     EOT
+    chmod 0755 /etc/sv/sshd/run
     /etc/init.d/sshd stop
     ln -s /etc/sv/sshd /service/
 
@@ -163,10 +165,11 @@ Check the status of the *runit* `sshd` service:
 #### Example: `cron`
 
     mkdir -p /etc/sv/cron
-    tee /etc/sv/cron/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/cron/run <<\EOT
     #!/bin/sh
     exec cron -f
     EOT
+    chmod 0755 /etc/sv/cron/run
     /etc/init.d/cron stop
     ln -s /etc/sv/cron /service/
 
@@ -215,10 +218,11 @@ stage 2 so that you are able to login to the terminal. Create the
 Run the `tty` command to get the name of the current terminal, and create
 the corresponding `getty-default` run script:
 
-    TTYNAME=$(tty); tee /etc/sv/getty-default/run <<EOT && chmod 755 $_
+    TTYNAME=$(tty); cat >/etc/sv/getty-default/run <<EOT
     #!/bin/sh
     exec /usr/libexec/getty Pc ${TTYNAME##*/}
     EOT
+    chmod 0755 /etc/sv/getty-default/run
 
 Tell *runit* about the `getty-default` service:
 
@@ -288,10 +292,11 @@ runit](faq.html#tell) about the new service.
 #### Example: `sshd`
 
     mkdir -p /etc/sv/sshd
-    tee /etc/sv/sshd/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/sshd/run <<\EOT
     #!/bin/sh
     exec /usr/sbin/sshd -D
     EOT
+    chmod 0755 /etc/sv/sshd/run
     /etc/rc.d/sshd stop
 
 Edit `/etc/rc.conf` and disable `sshd` (ie. set to "`NO`") to prevent it
@@ -306,10 +311,11 @@ Check the status of the *runit* `sshd` service:
 #### Example: `cron`
 
     mkdir -p /etc/sv/cron
-    tee /etc/sv/cron/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/cron/run <<\EOT
     #!/bin/sh
     exec cron -n
     EOT
+    chmod 0755 /etc/sv/cron/run
     /etc/rc.d/cron stop
 
 Edit `/etc/rc.conf` or `/etc/defaults/rc.conf` and disable `cron` (ie.

@@ -57,10 +57,11 @@ to the terminal. Create the getty-default service directory now:</p>
 <p>Run the <code>tty</code> command to get the name of the current
 terminal, and create the corresponding <code>getty-default</code> run
 script:</p>
-<pre><code>TTYNAME=$(tty); tee /etc/sv/getty-default/run &lt;&lt;EOT &amp;&amp; chmod 755 $_
+<pre><code>TTYNAME=$(tty); cat &gt;/etc/sv/getty-default/run &lt;&lt;EOT
 #!/bin/sh
 exec agetty ${TTYNAME##*/}
-EOT</code></pre>
+EOT
+chmod 0755 /etc/sv/getty-default/run</code></pre>
 <p>Check <code>/etc/inittab</code> again, now for the default invocation
 of a <code>getty</code> program on your system, and if it’s not
 <code>agetty</code>, adapt <code>/etc/sv/getty-default/run</code>
@@ -124,20 +125,22 @@ directory</a>, stop the service again, and <a href="faq.html#tell">tell
 runit</a> about the new service.</p>
 <h4 id="example-sshd">Example: <code>sshd</code></h4>
 <pre><code>mkdir -p /etc/sv/sshd
-tee /etc/sv/sshd/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/sshd/run &lt;&lt;\EOT
 #!/bin/sh
 exec /usr/sbin/sshd -D
 EOT
+chmod 0755 /etc/sv/sshd/run
 /etc/init.d/sshd stop
 ln -s /etc/sv/sshd /service/</code></pre>
 <p>Check the status of the <em>runit</em> <code>sshd</code> service:</p>
 <pre><code>sv status sshd</code></pre>
 <h4 id="example-cron">Example: <code>cron</code></h4>
 <pre><code>mkdir -p /etc/sv/cron
-tee /etc/sv/cron/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/cron/run &lt;&lt;\EOT
 #!/bin/sh
 exec cron -f
 EOT
+chmod 0755 /etc/sv/cron/run
 /etc/init.d/cron stop
 ln -s /etc/sv/cron /service/</code></pre>
 <p>Check the status of the <em>runit</em> <code>cron</code> service:</p>
@@ -172,10 +175,11 @@ now:</p>
 <p>Run the <code>tty</code> command to get the name of the current
 terminal, and create the corresponding <code>getty-default</code> run
 script:</p>
-<pre><code>TTYNAME=$(tty); tee /etc/sv/getty-default/run &lt;&lt;EOT &amp;&amp; chmod 755 $_
+<pre><code>TTYNAME=$(tty); cat &gt;/etc/sv/getty-default/run &lt;&lt;EOT
 #!/bin/sh
 exec /usr/libexec/getty Pc ${TTYNAME##*/}
-EOT</code></pre>
+EOT
+chmod 0755 /etc/sv/getty-default/run</code></pre>
 <p>Tell <em>runit</em> about the <code>getty-default</code> service:</p>
 <pre><code>mkdir -p /service
 ln -s /etc/sv/getty-default /service/</code></pre>
@@ -230,10 +234,11 @@ directory</a>, stop the service if it is running, disable the service in
 runit</a> about the new service.</p>
 <h4 id="example-sshd-1">Example: <code>sshd</code></h4>
 <pre><code>mkdir -p /etc/sv/sshd
-tee /etc/sv/sshd/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/sshd/run &lt;&lt;\EOT
 #!/bin/sh
 exec /usr/sbin/sshd -D
 EOT
+chmod 0755 /etc/sv/sshd/run
 /etc/rc.d/sshd stop</code></pre>
 <p>Edit <code>/etc/rc.conf</code> and disable <code>sshd</code> (ie. set
 to “<code>NO</code>”) to prevent it from being started again. Then
@@ -243,10 +248,11 @@ enable the <em>runit</em> <code>sshd</code> service:</p>
 <pre><code>sv status sshd</code></pre>
 <h4 id="example-cron-1">Example: <code>cron</code></h4>
 <pre><code>mkdir -p /etc/sv/cron
-tee /etc/sv/cron/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/cron/run &lt;&lt;\EOT
 #!/bin/sh
 exec cron -n
 EOT
+chmod 0755 /etc/sv/cron/run
 /etc/rc.d/cron stop</code></pre>
 <p>Edit <code>/etc/rc.conf</code> or <code>/etc/defaults/rc.conf</code>
 and disable <code>cron</code> (ie. set to “<code>NO</code>”) to prevent
