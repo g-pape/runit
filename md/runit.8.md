@@ -57,6 +57,12 @@ shutdown the system.
 If **runit** receives an INT signal, a ctrl-alt-del keyboard request is
 triggered.
 
+If **runit** receives a PWR signal and the file */etc/runit/pwrfail*
+exists and has the execute by owner permission set, **runit** sets the
+execute by owner permission on */etc/runit/stopit*; then it runs
+*/etc/runit/pwrfail*, waits for it to terminate, and sends itself a CONT
+signal. On platforms where PWR is not defined, USR2 is used instead.
+
 # SEE ALSO
 
 runit-init(8), runsvdir(8), runsvchdir(8), sv(8), runsv(8), chpst(8),

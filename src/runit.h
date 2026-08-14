@@ -3,6 +3,7 @@
 #define REBOOT "/etc/runit/reboot"
 #define NOSYNC "/etc/runit/nosync"
 #define CTRLALTDEL "/etc/runit/ctrlaltdel"
+#define PWRFAIL "/etc/runit/pwrfail"
 
 #ifdef RUNSV_USE_SYSLIMITS
 #include <limits.h>

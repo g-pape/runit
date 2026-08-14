@@ -9,6 +9,7 @@ extern int sig_cont;
 extern int sig_hangup;
 extern int sig_int;
 extern int sig_pipe;
+extern int sig_pwr;
 extern int sig_term;
 
 extern void (*sig_defaulthandler)(int);
