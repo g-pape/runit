@@ -54,12 +54,12 @@ install -m0755 command/* /bin/
 mv /bin/runit* /sbin/</code></pre>
 <p>Create a minimal <em>runit</em> configuration</p>
 <pre><code>mkdir -p /etc/runit
-tee /etc/runit/1 &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/runit/1 &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/runit/1
 #!/bin/sh
 mount -oremount,rw /
 EOT
 cp -p etc/2 /etc/runit/
-tee /etc/runit/3 &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/runit/3 &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/runit/3
 #!/bin/sh
 sv force-shutdown /service/*
 mount -oremount,ro /
@@ -73,7 +73,7 @@ subinit</span></h2>
 <em>runit</em> <code>sshd</code> service listening on port 2217 to be
 able to login to the <em>runit</em> subinit</p>
 <pre><code>mkdir -p /etc/sv/sshd
-tee /etc/sv/sshd/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/sshd/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/sshd/run
 #!/bin/sh
 exec /usr/sbin/sshd -D -p2217
 EOT
@@ -103,7 +103,7 @@ test bed with runit</span></h2>
 <p><a href="#install">Install the Debian test bed</a>, and create a
 <code>getty</code> service for <code>/dev/console</code></p>
 <pre><code>mkdir -p /etc/sv/getty-console
-tee /etc/sv/getty-console/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/getty-console/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/getty-console/run
 #!/bin/sh
 exec agetty console
 EOT
@@ -149,7 +149,7 @@ up the <code>/run/it</code> filesystem as tmpfs</p>
 <code>/etc/runit/runsvdir/</code> into <code>/run/it/sv/</code> and add
 these services directories to <code>/run/it/svdir/</code>.</p>
 <p>Create the prototype <em>runit-fs</em> program</p>
-<pre><code>tee /sbin/runit-fs &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+<pre><code>cat &gt;/sbin/runit-fs &lt;&lt;\EOT &amp;&amp; chmod 0755 /sbin/runit-fs
 #!/bin/sh
 set -e
 rc=0
@@ -219,7 +219,7 @@ exit $rc
 EOT</code></pre>
 <p>Replace <em>stage 1</em> to use the prototype <em>runit-fs</em>
 program:</p>
-<pre><code>tee /etc/runit/1 &lt;&lt;\EOT
+<pre><code>cat &gt;/etc/runit/1 &lt;&lt;\EOT
 #!/bin/sh
 runit-fs setup /run/it
 runit-fs enable-sv /service/*
@@ -262,7 +262,7 @@ step aside.</p>
 <pre><code>mount -oremount,rw /</code></pre>
 <p>Create a service <code>subsystemd</code></p>
 <pre><code>mkdir -p /etc/sv/subsystemd
-tee /etc/sv/subsystemd/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/subsystemd/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/subsystemd/run
 #!/bin/sh
 exec chpst -b /sbin/init -vI sh -ec &#39;
 umount /dev/pts /dev /sys
@@ -271,7 +271,7 @@ exec /sbin/init.sysd
 &#39;
 EOT
 mkdir -p /etc/sv/subsystemd/control
-tee /etc/sv/subsystemd/control/t &lt;&lt;\EOT  &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/subsystemd/control/t &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/subsystemd/control/t
 #!/bin/sh
 exec kill -SIGRTMIN+3 &quot;$1&quot;
 EOT
@@ -302,7 +302,7 @@ href="#runit">boot the Debian test bed with runit</a>.</p>
 <p>Login as <code>root</code> on console.</p>
 <p>Connect to the network</p>
 <pre><code>mkdir -p /etc/sv/dhcpcd
-tee /etc/sv/dhcpcd/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/dhcpcd/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/dhcpcd/run
 #!/bin/sh
 exec dhcpcd -B
 EOT
@@ -320,7 +320,7 @@ ln -s runit-init /sbin/init</code></pre>
 touch /etc/sv/dhcpcd/down</code></pre>
 <p>Create a service <code>subsysv</code></p>
 <pre><code>mkdir -p /etc/sv/subsysv
-tee /etc/sv/subsysv/run &lt;&lt;\EOT &amp;&amp; chmod 755 $_
+cat &gt;/etc/sv/subsysv/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/subsysv/run
 #!/bin/sh
 exec chpst -b /sbin/init -I /sbin/init.sysv
 EOT

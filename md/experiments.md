@@ -62,12 +62,12 @@ Install the *runit* programs
 Create a minimal *runit* configuration
 
     mkdir -p /etc/runit
-    tee /etc/runit/1 <<\EOT && chmod 755 $_
+    cat >/etc/runit/1 <<\EOT && chmod 0755 /etc/runit/1
     #!/bin/sh
     mount -oremount,rw /
     EOT
     cp -p etc/2 /etc/runit/
-    tee /etc/runit/3 <<\EOT && chmod 755 $_
+    cat >/etc/runit/3 <<\EOT && chmod 0755 /etc/runit/3
     #!/bin/sh
     sv force-shutdown /service/*
     mount -oremount,ro /
@@ -85,7 +85,7 @@ service listening on port 2217 to be able to login to the *runit*
 subinit
 
     mkdir -p /etc/sv/sshd
-    tee /etc/sv/sshd/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/sshd/run <<\EOT && chmod 0755 /etc/sv/sshd/run
     #!/bin/sh
     exec /usr/sbin/sshd -D -p2217
     EOT
@@ -122,7 +122,7 @@ init](useinit.html), and experiment with the differences.
 for `/dev/console`
 
     mkdir -p /etc/sv/getty-console
-    tee /etc/sv/getty-console/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/getty-console/run <<\EOT && chmod 0755 /etc/sv/getty-console/run
     #!/bin/sh
     exec agetty console
     EOT
@@ -179,7 +179,7 @@ directories to `/run/it/svdir/`.
 
 Create the prototype *runit-fs* program
 
-    tee /sbin/runit-fs <<\EOT && chmod 755 $_
+    cat >/sbin/runit-fs <<\EOT && chmod 0755 /sbin/runit-fs
     #!/bin/sh
     set -e
     rc=0
@@ -250,7 +250,7 @@ Create the prototype *runit-fs* program
 
 Replace *stage 1* to use the prototype *runit-fs* program:
 
-    tee /etc/runit/1 <<\EOT
+    cat >/etc/runit/1 <<\EOT
     #!/bin/sh
     runit-fs setup /run/it
     runit-fs enable-sv /service/*
@@ -309,7 +309,7 @@ Make sure the root filesystem is writable
 Create a service `subsystemd`
 
     mkdir -p /etc/sv/subsystemd
-    tee /etc/sv/subsystemd/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/subsystemd/run <<\EOT && chmod 0755 /etc/sv/subsystemd/run
     #!/bin/sh
     exec chpst -b /sbin/init -vI sh -ec '
     umount /dev/pts /dev /sys
@@ -318,7 +318,7 @@ Create a service `subsystemd`
     '
     EOT
     mkdir -p /etc/sv/subsystemd/control
-    tee /etc/sv/subsystemd/control/t <<\EOT  && chmod 755 $_
+    cat >/etc/sv/subsystemd/control/t <<\EOT && chmod 0755 /etc/sv/subsystemd/control/t
     #!/bin/sh
     exec kill -SIGRTMIN+3 "$1"
     EOT
@@ -363,7 +363,7 @@ Login as `root` on console.
 Connect to the network
 
     mkdir -p /etc/sv/dhcpcd
-    tee /etc/sv/dhcpcd/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/dhcpcd/run <<\EOT && chmod 0755 /etc/sv/dhcpcd/run
     #!/bin/sh
     exec dhcpcd -B
     EOT
@@ -388,7 +388,7 @@ Stop the dhcpcd service again and don't start it automatically
 Create a service `subsysv`
 
     mkdir -p /etc/sv/subsysv
-    tee /etc/sv/subsysv/run <<\EOT && chmod 755 $_
+    cat >/etc/sv/subsysv/run <<\EOT && chmod 0755 /etc/sv/subsysv/run
     #!/bin/sh
     exec chpst -b /sbin/init -I /sbin/init.sysv
     EOT
