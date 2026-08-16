@@ -1,7 +1,7 @@
 usage: chpst [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-A n] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
 
 100
-$Id: e9e0db8b3da6a77c3b6e8c8d6a1e4ca9011b9782 $
+$Id: 3e0079bf0387eec57b2ecb1123d931a5817a018c $
 usage: chpst [-vVPFI012N] [-u user[:group]] [-U user[:group]] [-b argv0] [-e dir] [-/ root] [-C pwd] [-n nice] [-l|-L lock] [-A n] [-m n] [-d n] [-o n] [-p n] [-f n] [-c n] [-t n] prog
 
 100

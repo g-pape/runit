@@ -304,7 +304,8 @@ void newpid1() {
   if (mount(NULL, "/", NULL, MS_PRIVATE|MS_REC, NULL) == -1)
     if (!root) fatal("pid1: unable to set root mount propagation");
   if (umount2("/proc", MNT_DETACH) == -1)
-    if (errno != EINVAL) fatal("pid1: unable to umount /proc");
+    if ((errno != ENOENT) && (errno != EINVAL))
+      fatal("pid1: unable to umount /proc");
   if (newpids > 1) {
     for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
 #ifdef SIGRTMIN
