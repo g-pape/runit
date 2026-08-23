@@ -328,11 +328,13 @@ touch /etc/sv/subsysv/down
 ln -s /etc/sv/subsysv /service/</code></pre>
 <p>Start Debian’s sysv init as subinit</p>
 <pre><code>sv once subsysv</code></pre>
-<p>Unfortunately this experiment is not that successful as for some
-reason the attempt to login through Debian’s default <code>sshd</code>
+<p>Apparently sysv init reconfigures the <code>/dev/console</code>
+device when started. To have <code>agetty</code> configure it correctly
+again, logout and re-login as <code>root</code> on console.</p>
+<p>To login to the subsysv, use Debian’s default <code>sshd</code>
 service</p>
-<pre><code>ssh -luser localhost</code></pre>
-<p>prints “<code>Host key verification failed.</code>” and fails.</p>
+<pre><code>ssh -luser localhost
+su -</code></pre>
 <p>To stop sysv subinit forcibly, do</p>
 <pre><code>sv quit subsysv</code></pre>
 <p>The sysv subinit and all its children exit immediately.</p>

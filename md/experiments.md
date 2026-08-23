@@ -399,12 +399,14 @@ Start Debian's sysv init as subinit
 
     sv once subsysv
 
-Unfortunately this experiment is not that successful as for some reason
-the attempt to login through Debian's default `sshd` service
+Apparently sysv init reconfigures the `/dev/console` device when
+started. To have `agetty` configure it correctly again, logout and
+re-login as `root` on console.
+
+To login to the subsysv, use Debian's default `sshd` service
 
     ssh -luser localhost
-
-prints "`Host key verification failed.`" and fails.
+    su -
 
 To stop sysv subinit forcibly, do
 
