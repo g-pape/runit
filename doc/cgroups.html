@@ -171,7 +171,7 @@ test -n &quot;$1&quot; || usage
 case &quot;$1&quot; in
   setup) setup ;;
   create|control|remove|destroy)
-    test -d &quot;$cg&quot;/service || fail &quot;$cgroot/service: not a directory&quot;
+    test -d &quot;$cg&quot;/service || fail &quot;$cg/service: not a directory&quot;
     test -d supervise || fail &quot;must run in service directory&quot;
     test -x run || fail &quot;must run in service directory&quot;
     test -d cgroup || fail &quot;./cgroup: not a directory&quot;

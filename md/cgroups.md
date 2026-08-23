@@ -195,7 +195,7 @@ Create the prototype *runsv-cg* program
     case "$1" in
       setup) setup ;;
       create|control|remove|destroy)
-        test -d "$cg"/service || fail "$cgroot/service: not a directory"
+        test -d "$cg"/service || fail "$cg/service: not a directory"
         test -d supervise || fail "must run in service directory"
         test -x run || fail "must run in service directory"
         test -d cgroup || fail "./cgroup: not a directory"
