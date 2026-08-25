@@ -258,7 +258,6 @@ int main (int argc, const char * const *argv, char * const *envp) {
       if (sigp && (stat(PWRFAIL, &s) != -1) && (s.st_mode & S_IXUSR)) {
         strerr_warn2(INFO, "powerfail event...", 0);
         prog[0] =PWRFAIL; prog[1] =0;
-        if (stat(STOPIT, &s) != -1) chmod(STOPIT, 0100);
         while ((pid2 =fork()) == -1) {
           strerr_warn4(FATAL, "unable to fork for \"", PWRFAIL,
                        "\" pausing: ", &strerr_sys);

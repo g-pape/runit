@@ -4,7 +4,7 @@
 #include "sig.h"
 
 #ifndef SIGPWR
-#define SIGPWR SIGUSR2 /* as in sysvinit */
+#define SIGPWR SIGUSR2 /* as in sysvinit's init.c */
 #endif
 
 int sig_alarm = SIGALRM;
