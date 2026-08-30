@@ -30,6 +30,7 @@ const char * const stage[3] ={
 int selfpipe[2];
 int sigc =0;
 int sigi =0;
+int sigp =0;
 
 void sig_cont_handler (int unused) {
   sigc++;
@@ -37,6 +38,10 @@ void sig_cont_handler (int unused) {
 }
 void sig_int_handler (int unused) {
   sigi++;
+  write(selfpipe[1], "", 1);
+}
+void sig_pwr_handler (int unused) {
+  sigp++;
   write(selfpipe[1], "", 1);
 }
 void sig_child_handler (int unused) { write(selfpipe[1], "", 1); }
@@ -71,6 +76,8 @@ int main (int argc, const char * const *argv, char * const *envp) {
   sig_block(sig_hangup);
   sig_block(sig_int);
   sig_catch(sig_int, sig_int_handler);
+  sig_block(sig_pwr);
+  sig_catch(sig_pwr, sig_pwr_handler);
   sig_block(sig_pipe);
   sig_block(sig_term);
 
@@ -135,6 +142,8 @@ int main (int argc, const char * const *argv, char * const *envp) {
       sig_unblock(sig_int);
       sig_uncatch(sig_int);
       sig_unblock(sig_pipe);
+      sig_unblock(sig_pwr);
+      sig_uncatch(sig_pwr);
       sig_unblock(sig_term);
             
       strerr_warn3(INFO, "enter stage: ", stage[st], 0);
@@ -150,6 +159,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
       sig_unblock(sig_child);
       sig_unblock(sig_cont);
       sig_unblock(sig_int);
+      sig_unblock(sig_pwr);
 #ifdef IOPAUSE_POLL
       poll(&x, 1, 14000);
 #else
@@ -161,6 +171,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
       sig_block(sig_cont);
       sig_block(sig_child);
       sig_block(sig_int);
+      sig_block(sig_pwr);
       
       while (read(selfpipe[0], &ch, 1) == 1) {}
       while ((child =wait_nohang(&wstat)) > 0)
@@ -211,7 +222,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
       }
 
       /* sig? */
-      if (!sigc  && !sigi) {
+      if (!sigc && !sigi && !sigp) {
 #ifdef DEBUG
         strerr_warn2(WARNING, "poll: ", &strerr_sys);
 #endif
@@ -219,7 +230,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
       }
       if (st != 1) {
         strerr_warn2(WARNING, "signals only work in stage 2.", 0);
-        sigc =sigi =0;
+        sigc =sigi =sigp =0;
         continue;
       }
       if (sigi && (stat(CTRLALTDEL, &s) != -1) && (s.st_mode & S_IXUSR)) {
@@ -242,6 +253,28 @@ int main (int argc, const char * const *argv, char * const *envp) {
           strerr_warn3(WARNING, "child crashed: ", CTRLALTDEL, 0);
         strerr_warn3(INFO, "leave stage: ", prog[0], 0);
         sigi =0;
+        sigc++;
+      }
+      if (sigp && (stat(PWRFAIL, &s) != -1) && (s.st_mode & S_IXUSR)) {
+        strerr_warn2(INFO, "powerfail event...", 0);
+        prog[0] =PWRFAIL; prog[1] =0;
+        while ((pid2 =fork()) == -1) {
+          strerr_warn4(FATAL, "unable to fork for \"", PWRFAIL,
+                       "\" pausing: ", &strerr_sys);
+          sleep(5);
+        }
+        if (!pid2) {
+          /* child */
+          strerr_warn3(INFO, "enter stage: ", prog[0], 0);
+          execve(*prog, (char *const *) prog, envp);
+          strerr_die4sys(0, FATAL, "unable to start child: ", prog[0], ": ");
+        }
+        if (wait_pid(&wstat, pid2) == -1)
+          strerr_warn2(FATAL, "wait_pid: ", &strerr_sys);
+        if (wait_crashed(wstat))
+          strerr_warn3(WARNING, "child crashed: ", PWRFAIL, 0);
+        strerr_warn3(INFO, "leave stage: ", prog[0], 0);
+        sigp =0;
         sigc++;
       }
       if (sigc && (stat(STOPIT, &s) != -1) && (s.st_mode & S_IXUSR)) {
@@ -286,7 +319,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
         /* enter stage 3 */
         break;
       }
-      sigc =sigi =0;
+      sigc =sigi =sigp =0;
 #ifdef DEBUG
       strerr_warn2(WARNING, "no request.", 0);
 #endif

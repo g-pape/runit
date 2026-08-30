@@ -51,6 +51,12 @@ permission set, \f[B]runit\f[R] is told to shutdown the system.
 .PP
 If \f[B]runit\f[R] receives an INT signal, a ctrl\-alt\-del keyboard
 request is triggered.
+.PP
+If \f[B]runit\f[R] receives a PWR signal and the file
+\f[I]/etc/runit/pwrfail\f[R] exists and has the execute by owner
+permission set, \f[B]runit\f[R] runs \f[I]/etc/runit/pwrfail\f[R], waits
+for it to terminate, and then sends itself a CONT signal.
+On platforms where PWR is not defined, USR2 is used instead.
 .SH SEE ALSO
 runit\-init(8), runsvdir(8), runsvchdir(8), sv(8), runsv(8), chpst(8),
 svlogd(8)
