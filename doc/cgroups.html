@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<meta name="color-scheme" content="light dark" />
+<title>runit - experiment with Linux control groups (cgroup v2)</title>
+<style type="text/css">pre { padding: 0em 1em; overflow: auto; }</style>
+</head>
+<body>
+<p><a href="https://smarden.org/pape/">G. Pape</a><br />
+<a href="index.html">runit</a></p>
+<hr />
+<h1 id="runit---experiment-with-linux-control-groups-cgroup-v2">runit -
+experiment with Linux control groups (cgroup v2)</h1>
+<hr />
+<p>When using <em>runit</em> service supervision on Linux, <a
+href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html">control
+groups (cgroup v2)</a> can be used to control system resources for
+service daemons that run under <a href="runsv.8.html">runsv</a>. In
+contrast to resource limits set with the <a
+href="chpst.8.html">chpst</a> program, <a
+href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html">cgroup
+v2</a> provides additional controls, can be applied to a group of
+processes started separately, and more.</p>
+<p>The <em>runit</em> programs do not need to change to utilize <a
+href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html">Linux
+control groups (cgroup v2)</a>.</p>
+<hr />
+<p><a href="#prepare">Prepare for cgroups</a></p>
+<p><a href="#create">Create a cgroup specific to a service</a><br />
+<a href="#control">Control resource settings for a service-specific
+cgroup</a><br />
+<a href="#remove">Remove a cgroup after a service stops</a></p>
+<p><a href="#add">Add a service to an existing cgroup</a></p>
+<p><a href="#runsv-cg">A prototype <em>runsv-cg</em> program for
+convenience</a></p>
+<hr />
+<h2 id="prepare-the-linux-systems-for-cgroups"><span
+id="prepare">Prepare the Linux systems for cgroups</span></h2>
+<p>To use <a
+href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html">cgroup
+v2</a> on a Linux system, the cgroup hierarchy needs to be mounted and
+controllers must be enabled.</p>
+<p>Add</p>
+<pre><code>mount -t cgroup2 none /sys/fs/cgroup
+for i in $(cat /sys/fs/cgroup/cgroup.controllers); do
+  echo +$i &gt;/sys/fs/cgroup/cgroup.subtree_control
+done</code></pre>
+<p>to the end of <code>/etc/runit/1</code>. The mount point
+<code>/sys/fs/cgroup</code> normally exists when the <a
+href="https://www.kernel.org/doc/html/latest/filesystems/sysfs.html">sysfs</a>
+filesystem is mounted. Any other mount point works too.</p>
+<p>To create a child cgroup for <em>runit</em> services with all
+available controllers enabled, add</p>
+<pre><code>mkdir /sys/fs/cgroup/service
+for i in $(cat /sys/fs/cgroup/service/cgroup.controllers); do
+  echo +$i &gt;/sys/fs/cgroup/service/cgroup.subtree_control
+done</code></pre>
+<p>to the end of <code>/etc/runit/1</code> and reboot the system.</p>
+<p>The system now is prepared to control system resources for
+<em>runit</em> services in the <code>/sys/fs/cgroup/service</code>
+cgroup. Take a look</p>
+<pre><code>ls -l /sys/fs/cgroup/service</code></pre>
+<hr />
+<h2 id="create-a-new-cgroup-specific-to-a-service"><span
+id="create">Create a new cgroup specific to a service</span></h2>
+<p>In the <code>run</code> script of the service, create a child cgroup
+specific to this service and add the current process ID to this cgroup
+before replacing the shell with the service daemon using
+<code>exec</code>.</p>
+<pre><code>#!/bin/sh
+set -e
+mkdir -p /sys/fs/cgroup/service/cron
+echo $$ &gt;/sys/fs/cgroup/service/cron/cgroup.procs
+exec cron -f</code></pre>
+<hr />
+<h2 id="control-resource-settings-for-a-service-specific-cgroup"><span
+id="control">Control resource settings for a service-specific
+cgroup</span></h2>
+<p>A cgroup’s resource setting is adjusted by writing to <a
+href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html#interface-files">interface
+files</a>.</p>
+<p>As <a href="#create">above</a>, do this in the service’s
+<code>run</code> script, e.g.</p>
+<pre><code>#!/bin/sh
+set -e
+mkdir -p /sys/fs/cgroup/service/cron
+echo 14 &gt;/sys/fs/cgroup/service/cron/pids.max
+echo $$ &gt;/sys/fs/cgroup/service/cron/cgroup.procs
+exec cron -f</code></pre>
+<p>To make it more convenient to adjust settings, you can create a
+subdirectory <code>cgroup</code> in the service directory, copy the
+interface files you’re interested in to that directory, and change the
+<code>run</code> script to copy these files back when the service
+starts, e.g.</p>
+<pre><code>cd /service/cron
+mkdir cgroup
+cp /sys/fs/cgroup/service/cron/pids.max cgroup/
+echo 14 &gt;cgroup/pids.max</code></pre>
+<p>The changed <code>run</code> script:</p>
+<pre><code>#!/bin/sh
+set -e
+mkdir -p /sys/fs/cgroup/service/cron
+cp cgroup/* /sys/fs/cgroup/service/cron/
+echo $$ &gt;/sys/fs/cgroup/service/cron/cgroup.procs
+exec cron -f</code></pre>
+<hr />
+<h2 id="remove-a-cgroup-after-a-service-stops"><span id="remove">Remove
+a cgroup after a service stops</span></h2>
+<p>When using service-specific cgroups, it may be desired to remove the
+cgroup after a service stops. A cgroup cannot be removed while it still
+contains running processes. A service daemon might have forked children
+that did not exit yet. These can be forcefully killed to successfully
+remove the cgroup. Add</p>
+<pre><code>#!/bin/sh
+echo 1 &gt;/sys/fs/cgroup/service/cron/cgroup.kill
+rmdir /sys/fs/cgroup/service/cron</code></pre>
+<p>to the <code>cron</code> service’s <code>finish</code> script; if
+<code>finish</code> does not yet exist, create it and make it
+executable.</p>
+<hr />
+<h2 id="add-a-service-to-an-existing-cgroup"><span id="add">Add a
+service to an existing cgroup</span></h2>
+<p>To add a service daemon to an already existing cgroup, adjust the
+<code>run</code> script to write its process ID to the corresponding
+<code>cgroup.procs</code> file, e.g.</p>
+<pre><code>echo $$ &gt;/sys/fs/cgroup/service/existing-cgroup/cgroup.procs</code></pre>
+<p>You can prepare cgroups in <code>/etc/runit/1</code> by creating
+corresponding directories in <code>/sys/fs/cgroup/service/</code>, so
+that they exist when <em>runit</em> services start, e.g.</p>
+<pre><code>mkdir /sys/fs/cgroup/service/existing-cgroup</code></pre>
+<p>and control the resource settings similar to <a
+href="#control">Control resource settings for a service-specific
+cgroup</a>.</p>
+<p>In contrast to service-specific cgroups, this way <em>runit</em>
+services can be grouped flexibly in one or more existing cgroups,
+optionally organizing them hierarchically.</p>
+<hr />
+<h2 id="a-prototype-runsv-cg-program-for-some-convenience"><span
+id="runsv-cg">A prototype <em>runsv-cg</em> program for some
+convenience</span></h2>
+<p>A small program can help to manage service-specific cgroups for
+<em>runit</em> services. Here’s an example.</p>
+<p>Create the prototype <em>runsv-cg</em> program</p>
+<pre><code>cat &gt;/bin/runsv-cg &lt;&lt;\EOT
+#!/bin/sh
+set -e
+USAGE=&#39;runsv-cg create|control|remove|destroy|setup&#39;
+usage() { echo usage: $USAGE &gt;&amp;2; exit 100; }
+fail() { echo $1 &gt;&amp;2; exit 111; }
+cg=/sys/fs/cgroup
+sv=$(pwd); sv=${sv##*/}
+setup() {
+  mount -t cgroup2 none &quot;$cg&quot;
+  for i in $(cat &quot;$cg&quot;/cgroup.controllers ); do
+    echo +$i &gt;&quot;$cg&quot;/cgroup.subtree_control
+  done
+  mkdir &quot;$cg&quot;/service
+  for i in $(cat &quot;$cg&quot;/service/cgroup.controllers ); do
+    echo +$i &gt;&quot;$cg&quot;/service/cgroup.subtree_control
+  done
+}
+add() { echo $PPID &gt;&quot;$cg&quot;/service/&quot;$sv&quot;/cgroup.procs; }
+control() { cp cgroup/* &quot;$cg&quot;/service/&quot;$sv&quot;/ || :; }
+create() { mkdir &quot;$cg&quot;/service/&quot;$sv&quot; || :; control; add; }
+remove() { rmdir &quot;$cg&quot;/service/&quot;$sv&quot;; }
+destroy() { echo 1 &gt;&quot;$cg&quot;/service/&quot;$sv&quot;/cgroup.kill; remove; }
+test -n &quot;$1&quot; || usage
+case &quot;$1&quot; in
+  setup) setup ;;
+  create|control|remove|destroy)
+    test -d &quot;$cg&quot;/service || fail &quot;$cg/service: not a directory&quot;
+    test -d supervise || fail &quot;must run in service directory&quot;
+    test -x run || fail &quot;must run in service directory&quot;
+    test -d cgroup || fail &quot;./cgroup: not a directory&quot;
+    test -n &quot;$sv&quot; || fail &quot;unable to get service name&quot;
+    &quot;$1&quot;
+    ;;
+  *) usage ;;
+esac
+exit 0
+EOT
+chmod 0755 /bin/runsv-cg</code></pre>
+<p>Instead of <a href="#prepare">above</a>, in <code>/etc/runit/1</code>
+just add</p>
+<pre><code>runsv-cg setup</code></pre>
+<p>after the <code>sysfs</code> filesystem is mounted.</p>
+<p>The example cron <code>run</code> script is</p>
+<pre><code>#!/bin/sh
+set -e
+runsv-cg create
+exec cron -f</code></pre>
+<p>And the corresponding <code>finish</code> script</p>
+<pre><code>#!/bin/sh
+runsv-cg remove</code></pre>
+<p>Optionally you can use <code>runsv-cg destroy</code> instead to kill
+forked children that did not exit yet, if any.</p>
+<p>Create the <code>cgroup</code> directory in the service directory,
+where also the <code>run</code> script resides, and copy the
+controllers’ interface files you’re interested in</p>
+<pre><code>cd /service/cron
+mkdir cgroup
+cp /sys/fs/cgroup/service/pids.max cgroup/</code></pre>
+<p>Now control the system resources for the service-specific cgroup
+through the files in the <code>cgroup</code> directory in the service
+directory. After changing files, use <code>runsv-cg</code> to put them
+into effect</p>
+<pre><code>cd /service/cron
+runsv-cg control</code></pre>
+<p>or restart the service.</p>
+<hr />
+<p><a href="mailto:pape@smarden.org">Gerrit Pape
+&lt;pape@smarden.org&gt;</a></p>
+</body>
+</html>
