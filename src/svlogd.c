@@ -719,11 +719,11 @@ int main(int argc, char **argv) {
   coe(fdwdir);
   dir =(struct logdir*)alloc(dirn *sizeof(struct logdir));
   if (! dir) die_nomem();
+  byte_zero((char *)dir, dirn *sizeof(struct logdir));
   for (i =0; i < dirn; ++i) {
     dir[i].fddir =-1; dir[i].fdcur =-1;
     dir[i].btmp =(char*)alloc(buflen *sizeof(char));
     if (! dir[i].btmp) die_nomem();
-    dir[i].ppid =0;
   }
   databuf =(char*)alloc(buflen *sizeof(char));
   if (! databuf) die_nomem();
