@@ -66,6 +66,7 @@ buffer data;
 char *line;
 char stamp[FMT_PTIME];
 unsigned int exitasap =0;
+unsigned int reapasap =0;
 unsigned int rotateasap =0;
 unsigned int reopenasap =0;
 unsigned int linecomplete =1;
@@ -586,9 +587,19 @@ void logdirs_reopen(void) {
 }
 
 int buffer_pread(int fd, char *s, unsigned int len) {
-  int i;
+  int i, pid;
 
   for (i =0; i < dirn; ++i) buffer_flush(&dir[i].b);
+  if (reapasap) {
+    while ((pid =wait_nohang(&wstat)) > 0)
+      for (i =0; i < dirn; ++i)
+        if (dir[i].ppid == pid) {
+          dir[i].ppid =0;
+          processorstop(&dir[i]);
+          break;
+        }
+    reapasap =0;
+  }
   if (rotateasap) {
     for (i =0; i < dirn; ++i) rotate(dir +i);
     rotateasap =0;
@@ -631,16 +642,8 @@ void sig_term_handler(int unused) {
   exitasap =1;
 }
 void sig_child_handler(int unused) {
-  int pid, l;
-
   if (verbose) strerr_warn2(INFO, "sigchild received.", 0);
-  while ((pid =wait_nohang(&wstat)) > 0)
-    for (l =0; l < dirn; ++l)
-      if (dir[l].ppid == pid) {
-        dir[l].ppid =0;
-        processorstop(&dir[l]);
-        break;
-      }
+  reapasap =1;
 }
 void sig_alarm_handler(int unused) {
   if (verbose) strerr_warn2(INFO, "sigalarm received.", 0);

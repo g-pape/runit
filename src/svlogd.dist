@@ -1,7 +1,7 @@
 usage: svlogd [-tttvL] [-r c] [-R abc] [-l len] [-b buflen] dir ...
 
 111
-$Id: 7688490657e7e0645452d7baa7513fa7437c7568 $
+$Id: 5cb4c24b4d258e31e394ce1a6a036c1486b7915f $
 usage: svlogd [-tttvL] [-r c] [-R abc] [-l len] [-b buflen] dir ...
 
 111

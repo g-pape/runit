@@ -1,4 +1,5 @@
-  * svlogd.c: zero-initialize allocated logdir array (thx github/ungerade).
+  * svlogd.c: zero-initialize allocated logdir array (thx github/ungerade);
+    pick up processor outside SIGCHLD handler.
   * runit.h, runit.c, sig.h, sig.c, man/runit.8: add SIGPWR handling through
     /etc/runit/pwrfail (github/jchook).
   * chpst.c: -F, -I: don't fail if /proc does not exist.
