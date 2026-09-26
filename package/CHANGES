@@ -1,3 +1,4 @@
+  * chpst.c: -F, -I: establish signal handlers after fork.
   * svlogd.c: zero-initialize allocated logdir array (thx github/ungerade);
     pick up processor outside SIGCHLD handler.
   * runit.h, runit.c, sig.h, sig.c, man/runit.8: add SIGPWR handling through

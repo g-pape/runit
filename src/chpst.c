@@ -285,16 +285,16 @@ void newpid1() {
 #ifdef HASUNSHARE
   int i, w =0;
 
-  for (i =0; i < 32; ++i) sig_catch(i, sig_handler);
-#ifdef SIGRTMIN
-  for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler);
-#endif
-  sig_catch(SIGQUIT, sig_quit_handler);
-  sig_uncatch(sig_child);
   if (unshare(CLONE_NEWPID | CLONE_NEWNS) == -1)
     fatal("unable to set namespaces");
   if ((pid =fork()) == -1) fatal("unable to fork new pid 1");
   if (pid) { /* parent, signal relay */
+    for (i =0; i < 32; ++i) sig_catch(i, sig_handler);
+#ifdef SIGRTMIN
+    for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler);
+#endif
+    sig_catch(SIGQUIT, sig_quit_handler);
+    sig_uncatch(sig_child);
     if (wait_pid(&i, pid) == -1) fatal("unable to wait for new pid 1");
     if (verbose) warn("pid1: done");
     _exit(wait_crashed(i) ? 128 + WTERMSIG(i) : wait_exitcode(i));
@@ -307,13 +307,13 @@ void newpid1() {
     if ((errno != ENOENT) && (errno != EINVAL))
       fatal("pid1: unable to umount /proc");
   if (newpids > 1) {
-    for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
-#ifdef SIGRTMIN
-    for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
-#endif
-    sig_uncatch(sig_child);
     if ((pid =fork()) == -1) fatal("pid1: unable to fork pid 2");
-    if (pid) /* parent, zombies, amialone */
+    if (pid) { /* parent, zombies, amialone */
+      for (i =0; i < 32; ++i) sig_catch(i, sig_handler_pid1);
+#ifdef SIGRTMIN
+      for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_catch(i, sig_handler_pid1);
+#endif
+      sig_uncatch(sig_child);
       for (;;) {
         pid_t p;
         if ((p =wait_pid(&i, -1)) == -1) {
@@ -328,12 +328,9 @@ void newpid1() {
           }
         }
       }
+    }
     /* pid 2 */
   }
-  for (i =0; i < 32; ++i) sig_uncatch(i);
-#ifdef SIGRTMIN
-  for (i =SIGRTMIN; i <= SIGRTMAX; ++i) sig_uncatch(i);
-#endif
 #else
   fatalx("unable to set namespaces", "system does not provide unshare()");
 #endif
