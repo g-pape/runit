@@ -14,6 +14,7 @@
 [Benefits](benefits.html)\
 [How to replace init](replaceinit.html)\
 [How to use runit with current init](useinit.html)\
+[How to experiment with runit and other init schemes](experiments.html)\
 [Frequently asked questions](faq.html)
 
 [Runlevels](runlevels.html)\

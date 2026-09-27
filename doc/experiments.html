@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<title>runit - experiment with runit and other init schemes</title>
+<style type="text/css">pre { padding: 0em 1em; overflow: auto; }</style>
+</head>
+<body>
+<p><a href="https://smarden.org/pape/">G. Pape</a><br />
+<a href="index.html">runit</a></p>
+<hr />
+<h1 id="runit---experiment-with-runit-and-other-init-schemes">runit -
+experiment with runit and other init schemes</h1>
+<hr />
+<p>Debian 13.4.0 is a good test bed to experiment with <em>runit</em>
+and other init schemes on <em>GNU/Linux</em>. The experiments below are
+reproduced in the <a href="#install">Debian test bed</a> on arm64 in
+qemu (UTM, MacBook M4).</p>
+<hr />
+<p><a href="#install">Install Debian 13.4 test bed</a></p>
+<p><a href="#subrunit">Run runit as subinit</a><br />
+<a href="#runit">Boot Debian test bed with runit</a><br />
+<a href="#runit-fs">Boot Debian test bed with runit and
+<code>/run/it</code> filesystem</a></p>
+<p><a href="#subsystemd">Run Debian’s systemd init as subinit</a><br />
+<a href="#subsysv">Run Debian’s sysv init as subinit</a><br />
+<a href="#subother">Run an other init as subinit</a></p>
+<hr />
+<h2 id="install-debian-13.4-test-bed"><span id="install">Install Debian
+13.4 test bed</span></h2>
+<p>Connect a (serial) operator console.</p>
+<p>Make a standard Debian install using
+<code>debian-13.4.0-arm64-netinst.iso</code>, basically</p>
+<pre><code>Enter, Enter, Enter, Enter
+Enter, Enter, root, root, user, Enter, user, user, Enter
+Enter, Enter, Enter, Enter, Yes
+Enter, Enter, Enter, Enter
+Enter
+Enter
+Remove iso
+Enter</code></pre>
+<p>Login as <code>root</code> on console.</p>
+<p>Prepare the system</p>
+<pre><code>apt update
+apt install -y build-essential psmisc git</code></pre>
+<p>Install the <em>runit</em> programs</p>
+<pre><code>git clone -b next https://github.com/g-pape/runit
+cd runit
+package/compile
+package/check
+install -m0755 command/* /bin/
+mv /bin/runit* /sbin/</code></pre>
+<p>Create a minimal <em>runit</em> configuration</p>
+<pre><code>mkdir -p /etc/runit
+cat &gt;/etc/runit/1 &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/runit/1
+#!/bin/sh
+mount -oremount,rw /
+EOT
+cp -p etc/2 /etc/runit/
+cat &gt;/etc/runit/3 &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/runit/3
+#!/bin/sh
+sv force-shutdown /service/*
+mount -oremount,ro /
+EOT
+mkdir -p /service</code></pre>
+<p>The test bed is ready for experiments now.</p>
+<hr />
+<h2 id="run-runit-as-subinit"><span id="subrunit">Run runit as
+subinit</span></h2>
+<p><a href="#install">Install the Debian test bed</a>, and create a
+<em>runit</em> <code>sshd</code> service listening on port 2217 to be
+able to login to the <em>runit</em> subinit</p>
+<pre><code>mkdir -p /etc/sv/sshd
+cat &gt;/etc/sv/sshd/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/sshd/run
+#!/bin/sh
+exec /usr/sbin/sshd -D -p2217
+EOT
+touch /etc/sv/sshd/down
+ln -s /etc/sv/sshd /service/</code></pre>
+<p>Run <code>runit-init</code> with <code>chpst -I</code> to start the
+<em>runit</em> subinit</p>
+<pre><code>chpst -I /sbin/runit-init &amp;</code></pre>
+<p>You can now <a href="faq.html#run">add new services</a> to the
+<em>runit</em> subinit and experiment with the <em>runit</em>
+configuration.</p>
+<p>To login to the <em>runit</em> subinit, start the <em>runit</em>
+<code>sshd</code> service</p>
+<pre><code>sv start sshd
+ssh -luser -p2217 localhost
+su -</code></pre>
+<p>To stop the <em>runit</em> subinit again, login to the <em>runit</em>
+subinit, become root, and halt the system</p>
+<pre><code>runit-init 0</code></pre>
+<p>You can create a Debian systemd service for
+“<code>chpst -I /sbin/runit-init</code>”, just instead of <a
+href="useinit.html">using runit with current init</a>, and experiment
+with the differences.</p>
+<hr />
+<h2 id="boot-debian-test-bed-with-runit"><span id="runit">Boot Debian
+test bed with runit</span></h2>
+<p><a href="#install">Install the Debian test bed</a>, and create a
+<code>getty</code> service for <code>/dev/console</code></p>
+<pre><code>mkdir -p /etc/sv/getty-console
+cat &gt;/etc/sv/getty-console/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/getty-console/run
+#!/bin/sh
+exec agetty console
+EOT
+ln -s /etc/sv/getty-console /service/</code></pre>
+<p>Reboot with <code>runit-init</code> in place of Debian’s
+<code>/sbin/init</code></p>
+<pre><code>mv /sbin/init /sbin/init.sysd
+ln -s runit-init /sbin/init
+reboot</code></pre>
+<p>Login as <code>root</code> on console, type</p>
+<pre><code>pstree</code></pre>
+<p>It should print
+“<code>runit---runsvdir---runsv---login---bash---pstree</code>”, a
+minimal runit system with just one service running.</p>
+<p>You can now <a href="faq.html#run">add new services</a> to the
+<em>runit</em> service supervision and experiment with the
+<em>runit</em> configuration.</p>
+<hr />
+<h2 id="boot-debian-test-bed-with-runit-and-runit-filesystem"><span
+id="runit-fs">Boot Debian test bed with runit and <code>/run/it</code>
+filesystem</span></h2>
+<p>First <a href="#install">install the Debian test bed</a>, and <a
+href="#runit">boot the Debian test bed with runit</a>.</p>
+<p>Login as <code>root</code> on console.</p>
+<p>Using the <code>/run/it</code> filesystem enables <em>runit</em> to
+maintain all runtime data in that filesystem only, so that it doesn’t
+require any other writable storage.</p>
+<p>The prototype <code>runit-fs</code> program in <em>stage 1</em> sets
+up the <code>/run/it</code> filesystem as tmpfs</p>
+<pre><code>/run/it size=42mb
+/run/it/service -&gt; svdir/default
+/run/it/svdir/default/
+/run/it/sv/
+/run/it/etc/ctrlaltdel
+/run/it/etc/nosync
+/run/it/etc/reboot
+/run/it/etc/stopit
+/run/it/log/</code></pre>
+<p>And then stores services from the default directory
+<code>/service/</code> into <code>/run/it/sv/</code> and enables them in
+<code>/run/it/service/</code>.</p>
+<p>Finally it can store services from directories found in
+<code>/etc/runit/runsvdir/</code> into <code>/run/it/sv/</code> and add
+these services directories to <code>/run/it/svdir/</code>.</p>
+<p>Create the prototype <em>runit-fs</em> program</p>
+<pre><code>cat &gt;/sbin/runit-fs &lt;&lt;\EOT &amp;&amp; chmod 0755 /sbin/runit-fs
+#!/bin/sh
+set -e
+rc=0
+USAGE=&#39;runit-fs setup|enable-sv|store-sv|store-svdir dir ...&#39;
+usage() { echo usage: $USAGE &gt;&amp;2; exit 100; }
+skip() { rc=$(($rc+1)); echo Skipping &quot;$1&quot;; }
+setup() {
+  mkdir -p -m0755 /run/it
+  mount -t tmpfs -omode=0755,size=42m,exec tmpfs /run/it
+  for i in etc log svdir/default sv; do mkdir -p -m0755 /run/it/$i; done
+  for i in stopit reboot ctrlaltdel nosync; do touch /run/it/etc/$i; done
+  ln -s svdir/default /run/it/service
+  echo Set up /run/it:
+  find /run/it
+}
+store_sv() {
+  test -d &quot;$1&quot; || { skip &quot;$1: not a directory&quot;; return; }
+  d=$(cd &quot;$1&quot; &amp;&amp; pwd -P); s=${1##*/}
+  test ! -e /run/it/sv/&quot;$s&quot; || { skip &quot;/run/it/sv/$s: already exists&quot;; return; }
+  mkdir -m0755 /run/it/sv/&quot;$s&quot;; cd /run/it/sv/&quot;$s&quot;; ln -s &quot;$d&quot; .source
+  for i in run finish down check; do cp -p &quot;$d&quot;/$i ./ ||:; done 2&gt;/dev/null
+  test ! -d &quot;$d&quot;/log || {
+    mkdir -m0755 log
+    for i in run finish down; do cp -p &quot;$d&quot;/log/$i log/ ||:; done; } 2&gt;/dev/null
+  test ! -d &quot;$d&quot;/control || {
+    mkdir -m0755 control
+    for i in &quot;$d&quot;/control/?; do cp -p &quot;$i&quot; control/ ||:; done; } 2&gt;/dev/null
+  echo &quot;Stored $d in /run/it/sv/$s:&quot;
+  find /run/it/sv/&quot;$s&quot;
+}
+enable() {
+  test -d /run/it/sv/&quot;$1&quot; || { skip &quot;/run/it/sv/$1: not a directory&quot;; return; }
+  test -d /run/it/svdir/&quot;$2&quot; || {
+    skip &quot;/run/it/svdir/$2: not a directory&quot;; return; }
+  test ! -e /run/it/svdir/&quot;$2&quot;/&quot;$1&quot; || {
+    skip &quot;/run/it/svdir/$2/$1: already exists&quot;; return; }
+  ln -s /run/it/sv/&quot;$1&quot; /run/it/svdir/&quot;$2&quot;/ || return 0;
+  echo &quot;Enabled $1 in /run/it/svdir/$2.&quot;
+}
+enable_sv() {
+  store_sv &quot;$1&quot;
+  enable &quot;${1##*/}&quot; &quot;$2&quot;
+}
+store_svdir() {
+  test -d &quot;$1&quot; || { skip &quot;$1: not a directory&quot;; return; }
+  mkdir -p -m0755 /run/it/svdir/&quot;${1##*/}&quot;
+  for i in &quot;$1&quot;/*; do enable_sv &quot;$i&quot; &quot;${1##*/}&quot;; done
+  echo &quot;Stored $1 in /run/it/svdir/${1##*/}:&quot;
+  find /run/it/svdir/&quot;${1##*/}&quot;
+}
+diff_sv() {
+  test -d /run/it/sv/&quot;$1&quot; || { skip &quot;/run/it/sv/$1: not a directory&quot;; return; }
+  test -d /run/it/sv/&quot;$1&quot;/.source || {
+    skip &quot;/run/it/sv/$1/.source: not a directory&quot;; return; }
+  diff -ur $2 &quot;$(cd /run/it/sv/&quot;$1&quot;/.source &amp;&amp; pwd -P)&quot; /run/it/sv/&quot;$1&quot;/ ||:
+}
+test -n &quot;$2&quot; || usage
+case &quot;$1&quot; in
+  setup) test &quot;$2&quot; = /run/it || usage; setup ;;
+  store-sv) shift; for i in &quot;$@&quot;; do store_sv &quot;${i%/}&quot;; done ;;
+  enable-sv) shift; for i in &quot;$@&quot;; do enable_sv &quot;${i%/}&quot; default; done ;;
+  store-svdir) shift; for i in &quot;$@&quot;; do store_svdir &quot;${i%/}&quot;; done ;;
+  diff-sv) shift; for i in &quot;$@&quot;; do diff_sv &quot;$i&quot;; done ;;
+  *) usage ;;
+esac
+exit $rc
+EOT</code></pre>
+<p>Replace <em>stage 1</em> to use the prototype <em>runit-fs</em>
+program:</p>
+<pre><code>cat &gt;/etc/runit/1 &lt;&lt;\EOT
+#!/bin/sh
+runit-fs setup /run/it
+runit-fs enable-sv /service/*
+EOT</code></pre>
+<p>Adjust <em>stage 2</em> and <em>stage 3</em> to run
+<code>runsvdir</code> in <code>/run/it/service</code> instead of
+<code>/service</code></p>
+<pre><code>sed -i &#39;s} /service} /run/it/service}&#39; /etc/runit/[23]</code></pre>
+<p>Reboot into test bed with all runtime data in the
+<code>/run/it</code> filesystem</p>
+<pre><code>init 6</code></pre>
+<p>Login as <code>root</code> on console, type</p>
+<pre><code>cat /proc/mounts</code></pre>
+<p>It should show the <code>/run/it</code> filesystem mounted read-write
+and <code>/</code> mounted read-only.</p>
+<p>Since now <code>/run/it/service</code> is used instead of the default
+<code>/service</code> directory, set the environment variable
+<code>SVDIR</code> accordingly</p>
+<pre><code>export SVDIR=/run/it/service</code></pre>
+<p>To <a href="faq.html#run">add new services</a> to the <em>runit</em>
+service supervision and experiment with the <em>runit</em>
+configuration, remount the root filesystem read-write</p>
+<pre><code>mount -oremount,rw /</code></pre>
+<p>And don’t forget the additional step to store new services into the
+<code>/run/it</code> filesystem</p>
+<pre><code>runit-fs enable-sv /service/new-service</code></pre>
+<p>It should print
+“<code>Enabled new-service in /run/it/svdir/default.</code>” as last
+line.</p>
+<hr />
+<h2 id="run-debians-systemd-init-as-subinit"><span id="subsystemd">Run
+Debian’s systemd init as subinit</span></h2>
+<p>First <a href="#install">install the Debian test bed</a>, and <a
+href="#runit">boot the Debian test bed with runit</a>. Optionally <a
+href="#runit-fs">boot the Debian test bed with runit and
+<code>/run/it</code> filesystem</a> to have <em>runit</em> even more
+step aside.</p>
+<p>Login as <code>root</code> on console.</p>
+<p>Make sure the root filesystem is writable</p>
+<pre><code>mount -oremount,rw /</code></pre>
+<p>Create a service <code>subsystemd</code></p>
+<pre><code>mkdir -p /etc/sv/subsystemd
+cat &gt;/etc/sv/subsystemd/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/subsystemd/run
+#!/bin/sh
+exec chpst -b /sbin/init -vI sh -ec &#39;
+umount /dev/pts /dev /sys
+export container=
+exec /sbin/init.sysd
+&#39;
+EOT
+mkdir -p /etc/sv/subsystemd/control
+cat &gt;/etc/sv/subsystemd/control/t &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/subsystemd/control/t
+#!/bin/sh
+exec kill -SIGRTMIN+3 &quot;$1&quot;
+EOT
+touch /etc/sv/subsystemd/down
+ln -s /etc/sv/subsystemd /service/</code></pre>
+<p>When using <code>/run/it</code> for runtime data, store the
+subsystemd service into that filesystem and adjust the environment,
+otherwise skip this</p>
+<pre><code>runit-fs enable-sv /service/subsystemd
+export SVDIR=/run/it/service</code></pre>
+<p>Remove Debian’s console getty service to prevent the subsystemd from
+taking over the console with your login</p>
+<pre><code>rm /lib/systemd/system/console-getty.service</code></pre>
+<p>Start Debian’s systemd init as subinit</p>
+<pre><code>sv once subsystemd</code></pre>
+<p>To login to the subsystemd, use Debian’s default <code>sshd</code>
+service</p>
+<pre><code>ssh -luser localhost
+su -</code></pre>
+<p>To stop it again, do</p>
+<pre><code>sv stop subsystemd</code></pre>
+<p>It should print “<code>ok: down: subsystemd: 0s</code>”.</p>
+<hr />
+<h2 id="run-debians-sysv-init-as-subinit"><span id="subsysv">Run
+Debian’s sysv init as subinit</span></h2>
+<p>First <a href="#install">install the Debian test bed</a>, and <a
+href="#runit">boot the Debian test bed with runit</a>.</p>
+<p>Login as <code>root</code> on console.</p>
+<p>Connect to the network</p>
+<pre><code>mkdir -p /etc/sv/dhcpcd
+cat &gt;/etc/sv/dhcpcd/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/dhcpcd/run
+#!/bin/sh
+exec dhcpcd -B
+EOT
+ln -s /etc/sv/dhcpcd /service/</code></pre>
+<p>Prepare Debian’s sysv init</p>
+<pre><code>rm -rf /run/systemd/system
+apt update
+apt -y --purge --allow-remove-essential install sysvinit-core libpam-elogind dbus-x11 systemd-sysv-</code></pre>
+<p>And make sure <code>runit-init</code> remains
+<code>/sbin/init</code></p>
+<pre><code>mv /sbin/init /sbin/init.sysv
+ln -s runit-init /sbin/init</code></pre>
+<p>Stop the dhcpcd service again and don’t start it automatically</p>
+<pre><code>sv stop dhcpcd
+touch /etc/sv/dhcpcd/down</code></pre>
+<p>Create a service <code>subsysv</code></p>
+<pre><code>mkdir -p /etc/sv/subsysv
+cat &gt;/etc/sv/subsysv/run &lt;&lt;\EOT &amp;&amp; chmod 0755 /etc/sv/subsysv/run
+#!/bin/sh
+exec chpst -b /sbin/init -I /sbin/init.sysv
+EOT
+touch /etc/sv/subsysv/down
+ln -s /etc/sv/subsysv /service/</code></pre>
+<p>Start Debian’s sysv init as subinit</p>
+<pre><code>sv once subsysv</code></pre>
+<p>Apparently sysv init reconfigures the <code>/dev/console</code>
+device when started. To have <code>agetty</code> configure it correctly
+again, logout and re-login as <code>root</code> on console.</p>
+<p>To login to the subsysv, use Debian’s default <code>sshd</code>
+service</p>
+<pre><code>ssh -luser localhost
+su -</code></pre>
+<p>To stop sysv subinit forcibly, do</p>
+<pre><code>sv quit subsysv</code></pre>
+<p>The sysv subinit and all its children exit immediately.</p>
+<hr />
+<h2 id="run-an-other-init-as-subinit"><span id="subother">Run an other
+init as subinit</span></h2>
+<p>Running other init schemes should be similar to <a
+href="#subrunit">running runit as subinit</a>:</p>
+<p><a href="#install">Install the Debian test bed</a>. Optionally <a
+href="#runit">boot the Debian test bed with runit</a> and <a
+href="#runit-fs">boot the Debian test bed with runit and
+<code>/run/it</code> filesystem</a> to have <em>runit</em> even more
+step aside.</p>
+<p>Install the other init scheme and create a minimal configuration for
+it if necessary.</p>
+<p>Create a <code>sshd</code> service listening on port 2217 following
+the other init’s documentation to be able to login to the other
+subinit.</p>
+<p>Install the <code>init</code> program of the other init to
+<code>/sbin/other-init</code> and run it with <code>chpst -I</code> to
+start the subinit</p>
+<pre><code>install /other/init/program /sbin/other-init
+chpst -b /sbin/init -I /sbin/other-init &amp;</code></pre>
+<p>You can now add new services to the other subinit.</p>
+<p>To login to the other subinit, use the <code>sshd</code> service on
+port 2217</p>
+<pre><code>ssh -luser -p2217 localhost
+su -</code></pre>
+<p>You should be able to run
+“<code>chpst -b /sbin/init -I /sbin/other-init</code>” under any init
+system as a service, similar to <a href="#subsystemd">running Debian’s
+systemd as subinit under runit</a>.</p>
+<hr />
+<p><a href="mailto:pape@smarden.org">Gerrit Pape
+&lt;pape@smarden.org&gt;</a></p>
+</body>
+</html>
