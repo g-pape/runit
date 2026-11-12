@@ -4,7 +4,7 @@
 .SH NAME
 runsvdir \- starts and monitors a collection of runsv(8) processes
 .SH SYNOPSIS
-\f[B]runsvdir\f[R] [\-P] \f[I]dir\f[R] [ \f[I]log\f[R] ]
+\f[B]runsvdir\f[R] [\-P] [\-H] \f[I]dir\f[R] [ \f[I]log\f[R] ]
 .SH DESCRIPTION
 \f[I]dir\f[R] must be a directory.
 \f[I]log\f[R] is a space holder for a readproctitle log, and must be at
@@ -40,9 +40,14 @@ minutes so that old error messages expire.
 \f[B]\-P\f[R]
 use \f[B]setsid\f[R](2) to run each \f[B]runsv\f[R](8) process in a new
 session and separate process group.
+.TP
+.B \-H
+Handle TERM the same as HUP, i.e. send a TERM signal to each
+.BR runsv (8)
+process, then exit with 111.
 .SH SIGNALS
 If \f[B]runsvdir\f[R] receives a TERM signal, it exits with 0
-immediately.
+immediately, unless \-H is specified in which case TERM is treated like HUP.
 .PP
 If \f[B]runsvdir\f[R] receives a HUP signal, it sends a TERM signal to
 each \f[B]runsv\f[R](8) process it is monitoring and then exits with
