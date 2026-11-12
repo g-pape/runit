@@ -23,7 +23,7 @@
 #include "sig.h"
 #include "ndelay.h"
 
-#define USAGE " [-P] dir"
+#define USAGE " [-P] [-H] dir [log]"
 #define VERSION "$Id$"
 
 #define MAXSERVICES 1000
@@ -58,6 +58,7 @@ iopause_fd io[IONUM +1];
 struct taia stamplog;
 int exitsoon =0;
 int pgrp =0;
+int termexit =1;
 
 void usage () { strerr_die4x(1, "usage: ", progname, USAGE, "\n"); }
 void fatal(char *m1, char *m2) {
@@ -69,7 +70,7 @@ void warn(char *m1, char *m2) {
 void warn3x(char *m1, char *m2, char *m3) {
   strerr_warn6("runsvdir ", svdir, ": warning: ", m1, m2, m3, 0);
 }
-void s_term(int unused) { exitsoon =1; write(selfpipe[1], "", 1); }
+void s_term(int unused) { exitsoon =termexit; write(selfpipe[1], "", 1); }
 void s_hangup(int unused) { exitsoon =2; write(selfpipe[1], "", 1); }
 void s_child(int unused) { write(selfpipe[1], "", 1); }
 
@@ -235,15 +236,16 @@ int main(int argc, char **argv) {
   int i;
 
   progname =*argv++;
-  if (! argv || ! *argv) usage();
-  if (**argv == '-') {
-    switch (*(*argv +1)) {
-    case 'P': pgrp =1;
-    case '-': ++argv;
+  while (*argv && (*argv)[0] == '-') {
+    switch ((*argv)[1]) {
+    case 'P': pgrp =1; break;
+    case 'H': termexit =2; break;
+    case '-': break;
+    default: usage();
     }
-    if (! argv || ! *argv) usage();
-  }
-  svdir =*argv++;
+    argv++;
+   }
+  if (!*argv) usage();
 
   if (pipe(selfpipe) == -1) fatal("unable to create selfpipe", 0);
   coe(selfpipe[0]);
