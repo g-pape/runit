@@ -74,8 +74,12 @@ down, <strong>runsv</strong>(8) exits. This command is ignored if it is
 given to an appendant log service.
 </dd>
 </dl>
-<p><strong>sv</strong> actually looks only at the first character of
-these <em>command</em>s.</p>
+<p>Each of these <em>command</em>s can be abbreviated to its first
+character, and <em>exit</em> also to <strong>x</strong>. The characters
+<strong>D</strong>, <strong>T</strong>, and <strong>X</strong> or
+<strong>E</strong> are short for force-stop, force-reload, and
+force-shutdown, see below. No other abbreviation or longer form of a
+<em>command</em> is accepted.</p>
 <h4 id="commands-compatible-to-lsb-init-script-actions">Commands
 compatible to LSB init script actions</h4>
 <dl>

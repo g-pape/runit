@@ -25,3 +25,34 @@ sv exit "${ctmp}"
 echo $?
 wait
 echo $?
+
+# command resolution: exact names and single characters only
+rm -rf "${ctmp}"/supervise
+mkdir "${ctmp}"/supervise "${ctmp}"/init.d
+for i in u up d down s status o once p pause c cont h hup a alarm \
+  i interrupt q quit 1 2 t term k kill x e exit start stop reload restart \
+  shutdown D force-stop T force-reload force-restart X E force-shutdown \
+  try-restart check; do
+  : >"${ctmp}"/supervise/control
+  sv $i "${ctmp}" >/dev/null 2>&1
+  echo "$i $? `cat "${ctmp}"/supervise/control`"
+done
+for i in '' do stat continue Down U C r f ex 11 statusx force; do
+  sv "$i" "${ctmp}" >/dev/null 2>&1
+  echo "$i $?"
+done
+# wait for the command to take effect, force: kill on timeout
+: >"${ctmp}"/supervise/ok
+printf '\0\0\0\0\0\0\0\0\0\0\0\0\001\0\0\0\0u\0\001' >"${ctmp}"/supervise/status
+for i in stop D force-stop T force-reload force-restart X E force-shutdown; do
+  : >"${ctmp}"/supervise/control
+  sv -w 0 $i "${ctmp}" >/dev/null 2>&1
+  echo "$i $? `cat "${ctmp}"/supervise/control`"
+done
+rm "${ctmp}"/supervise/ok "${ctmp}"/supervise/status
+ln -s "`command -v sv`" "${ctmp}"/init.d/"${ctmp##*/}"
+for i in d s stat; do
+  : >"${ctmp}"/supervise/control
+  SVDIR="${ctmp}"/.. "${ctmp}"/init.d/"${ctmp##*/}" $i >/dev/null 2>&1
+  echo "lsb $i $? `cat "${ctmp}"/supervise/control`"
+done

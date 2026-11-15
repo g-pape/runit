@@ -62,8 +62,12 @@ terminate.
 If the log service is down, \f[B]runsv\f[R](8) exits.
 This command is ignored if it is given to an appendant log service.
 .PP
-\f[B]sv\f[R] actually looks only at the first character of these
-\f[I]command\f[R]s.
+Each of these \f[I]command\f[R]s can be abbreviated to its first
+character, and \f[I]exit\f[R] also to \f[B]x\f[R].
+The characters \f[B]D\f[R], \f[B]T\f[R], and \f[B]X\f[R] or \f[B]E\f[R]
+are short for force\-stop, force\-reload, and force\-shutdown, see
+below.
+No other abbreviation or longer form of a \f[I]command\f[R] is accepted.
 .SS Commands compatible to LSB init script actions
 .TP
 \f[B]status\f[R]

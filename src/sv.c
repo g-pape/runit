@@ -49,6 +49,37 @@ struct tai tstatus;
 int (*act)(char*) =0;
 int (*cbk)(char*) =0;
 
+/* name, single character aliases, control characters,
+   wait for the command to take effect: 1, and kill on timeout: 2 */
+struct { char name[15]; char c; char c2; char acts[4]; char wait; } cmds[] ={
+  { "up", 'u', 0, "u", 0 },
+  { "down", 'd', 0, "d", 0 },
+  { "status", 's', 0, "s", 0 },
+  { "once", 'o', 0, "o", 0 },
+  { "pause", 'p', 0, "p", 0 },
+  { "cont", 'c', 0, "c", 0 },
+  { "hup", 'h', 0, "h", 0 },
+  { "alarm", 'a', 0, "a", 0 },
+  { "interrupt", 'i', 0, "i", 0 },
+  { "quit", 'q', 0, "q", 0 },
+  { "1", '1', 0, "1", 0 },
+  { "2", '2', 0, "2", 0 },
+  { "term", 't', 0, "t", 0 },
+  { "kill", 'k', 0, "k", 0 },
+  { "exit", 'x', 'e', "x", 0 },
+  { "start", 0, 0, "u", 1 },
+  { "stop", 0, 0, "d", 1 },
+  { "reload", 0, 0, "h", 1 },
+  { "restart", 0, 0, "tcu", 1 },
+  { "shutdown", 0, 0, "x", 1 },
+  { "force-stop", 'D', 0, "d", 2 },
+  { "force-reload", 'T', 0, "tc", 2 },
+  { "force-restart", 0, 0, "tcu", 2 },
+  { "force-shutdown", 'X', 'E', "x", 2 },
+  { "try-restart", 0, 0, "tc", 1 },
+  { "check", 0, 0, "C", 1 }
+};
+
 int curdir, fd, r;
 char svstatus[20];
 char sulong[FMT_ULONG];
@@ -286,6 +317,7 @@ void sleep_microseconds(unsigned int microseconds) {
 int main(int argc, char **argv) {
   unsigned int i, done;
   char *x;
+  char c;
 
   progname =*argv;
   for (i =str_len(*argv); i; --i) if ((*argv)[i -1] == '/') break;
@@ -314,46 +346,17 @@ int main(int argc, char **argv) {
   if ((curdir =open_read(".")) == -1)
     fatal("unable to open current directory");
 
-  act =&control; acts ="s";
-  if (verbose) cbk =&check;
-  switch (*action) {
-  case 'x': case 'e':
-    acts ="x"; break;
-  case 'X': case 'E':
-    acts ="x"; kll =1; cbk =&check; break;
-  case 'D':
-    acts ="d"; kll =1; cbk =&check; break;
-  case 'T':
-    acts ="tc"; kll =1; cbk =&check; break;
-  case 't':
-    if (!str_diff(action, "try-restart")) { acts ="tc"; cbk =&check; break; }
-  case 'c':
-    if (!str_diff(action, "check")) { act =0; acts ="C"; cbk =&check; break; }
-  case 'u': case 'd': case 'o': case 'p': case 'h':
-  case 'a': case 'i': case 'k': case 'q': case '1': case '2':
-    action[1] =0; acts =action; break;
-  case 's':
-    if (!str_diff(action, "shutdown")) { acts ="x"; cbk =&check; break; }
-    if (!str_diff(action, "start")) { acts ="u"; cbk =&check; break; }
-    if (!str_diff(action, "stop")) { acts ="d"; cbk =&check; break; }
-    if (lsb && str_diff(action, "status")) usage();
-    act =&status; cbk =0; break;
-  case 'r':
-    if (!str_diff(action, "restart")) { acts ="tcu"; cbk =&check; break; }
-    if (!str_diff(action, "reload")) { acts ="h"; cbk =&check; break; }
-    usage();
-  case 'f':
-    if (!str_diff(action, "force-reload"))
-      { acts ="tc"; kll =1; cbk =&check; break; }
-    if (!str_diff(action, "force-restart"))
-      { acts ="tcu"; kll =1; cbk =&check; break; }
-    if (!str_diff(action, "force-shutdown"))
-      { acts ="x"; kll =1; cbk =&check; break; }
-    if (!str_diff(action, "force-stop"))
-      { acts ="d"; kll =1; cbk =&check; break; }
-  default:
-    usage();
-  }
+  for (c =*action, i =0; i < sizeof(cmds) / sizeof(*cmds); ++i)
+    if ((c && !action[1]) ? (c == cmds[i].c) || (c == cmds[i].c2)
+                          : (c == *cmds[i].name)
+                            && !str_diff(action, cmds[i].name)) break;
+  if (i == sizeof(cmds) / sizeof(*cmds)) usage();
+  acts =cmds[i].acts;
+  act =&control;
+  if (verbose || cmds[i].wait) cbk =&check;
+  kll =(cmds[i].wait == 2);
+  if (*acts == 's') { act =&status; cbk =0; }
+  if (*acts == 'C') act =0;
 
   servicex =service;
   for (i =0; i < services; ++i) {

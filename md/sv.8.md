@@ -61,7 +61,10 @@ by the base name of the "init script".
     down, **runsv**(8) exits. This command is ignored if it is given to
     an appendant log service.
 
-**sv** actually looks only at the first character of these *command*s.
+Each of these *command*s can be abbreviated to its first character, and
+*exit* also to **x**. The characters **D**, **T**, and **X** or **E**
+are short for force-stop, force-reload, and force-shutdown, see below.
+No other abbreviation or longer form of a *command* is accepted.
 
 ## Commands compatible to LSB init script actions
 

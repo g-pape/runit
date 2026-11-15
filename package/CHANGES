@@ -1,3 +1,9 @@
+  * sv.c, man/sv.8: resolve the command once; accept exact command names
+    and single character abbreviations only.  sv no longer looks only at
+    the first character of the command: e.g. "sv do", "sv stat", "sv Down"
+    or "sv enable" now are a usage error instead of acting as down, status,
+    force-stop, and exit; LSB mode accepts "s" for status.
+  * sv.check, sv.dist: test command resolution.
   * chpst.c: -F, -I: establish signal handlers after fork.
   * svlogd.c: zero-initialize allocated logdir array (thx github/ungerade);
     pick up processor outside SIGCHLD handler.
