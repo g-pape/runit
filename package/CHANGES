@@ -1,8 +1,12 @@
+  * sv.c, man/sv.8: run the program <service>/command/<name> instead of
+    the command <name> if it exists, so that a service can replace
+    commands, and provide custom ones (github #55).
+  * sv.check, sv.dist: test command programs.
   * sv.c, man/sv.8: resolve the command once; accept exact command names
     and single character abbreviations only.  sv no longer looks only at
     the first character of the command: e.g. "sv do", "sv stat", "sv Down"
-    or "sv enable" now are a usage error instead of acting as down, status,
-    force-stop, and exit; LSB mode accepts "s" for status.
+    or "sv enable" now are custom commands (see above) instead of acting
+    as down, status, force-stop, and exit; LSB mode accepts "s" for status.
   * sv.check, sv.dist: test command resolution.
   * chpst.c: -F, -I: establish signal handlers after fork.
   * svlogd.c: zero-initialize allocated logdir array (thx github/ungerade);

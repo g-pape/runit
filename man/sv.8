@@ -22,7 +22,8 @@ directory.
 .PP
 \f[I]command\f[R] is one of up, down, status, once, pause, cont, hup,
 alarm, interrupt, 1, 2, term, kill, or exit, or start, stop, restart,
-shutdown, force\-stop, force\-reload, force\-restart, force\-shutdown.
+shutdown, force\-stop, force\-reload, force\-restart, force\-shutdown,
+or a custom command, see CUSTOMIZE COMMANDS below.
 .PP
 The \f[B]sv\f[R] program can be sym\-linked to \f[I]/etc/init.d/\f[R] to
 provide an LSB init script interface.
@@ -67,7 +68,8 @@ character, and \f[I]exit\f[R] also to \f[B]x\f[R].
 The characters \f[B]D\f[R], \f[B]T\f[R], and \f[B]X\f[R] or \f[B]E\f[R]
 are short for force\-stop, force\-reload, and force\-shutdown, see
 below.
-No other abbreviation or longer form of a \f[I]command\f[R] is accepted.
+Any other abbreviation or longer form is not one of these
+\f[I]command\f[R]s, but a custom command, see CUSTOMIZE COMMANDS below.
 .SS Commands compatible to LSB init script actions
 .TP
 \f[B]status\f[R]
@@ -147,6 +149,45 @@ If the requested state of the service is \f[I]up\f[R], and the program
 \f[I]./check\f[R] exists in the service directory, \f[B]sv\f[R] runs
 this program to check whether the service is up and running; it\[aq]s
 considered to be up if \f[I]./check\f[R] exits with 0.
+.SH CUSTOMIZE COMMANDS
+If the program \f[I]service\f[R]/command/\f[I]command\f[R] exists,
+\f[B]sv\f[R] runs it in the service directory instead of doing the
+\f[I]command\f[R] for this \f[I]service\f[R]; an abbreviated
+\f[I]command\f[R] is looked up by its full name,
+\[lq]\f[CR]sv d\f[R]\[rq] runs \f[I]service\f[R]/command/down.
+This way a service can replace the commands described above, and provide
+custom ones.
+The name of a custom command consists of up to 255 letters, digits,
+underscores, and hyphens, and starts with a letter or digit.
+A custom command fails for a \f[I]service\f[R] without the program, and
+doesn\[aq]t need a running \f[B]runsv\f[R](8).
+.PP
+If the program cannot be run, or exits non zero, the \f[I]command\f[R]
+fails for this \f[I]service\f[R]; \f[B]sv\f[R] doesn\[aq]t fall back to
+the \f[I]command\f[R] described above.
+If \f[B]sv\f[R] may not search \f[I]service\f[R]/command/, it does the
+commands described above, and custom commands fail.
+.PP
+If the program runs \f[B]sv\f[R] with the same \f[I]command\f[R] on its
+own service directory, \f[B]sv\f[R] does the \f[I]command\f[R] described
+above instead of running the program again, see $SVCOMMAND.
+With \-w, \f[B]sv\f[R] passes \f[I]sec\f[R] to the program in $SVWAIT.
+.PP
+For example, the executable file \f[I]/service/mysql/command/stop\f[R]
+with the lines \[lq]\f[CR]#!/bin/sh\f[R]\[rq] and
+\[lq]\f[CR]exec sv \-w 60 stop \[dq]$PWD\[dq]\f[R]\[rq] makes
+\[lq]\f[CR]sv stop mysql\f[R]\[rq] wait up to 60 seconds;
+\f[I]/service/nginx/command/rotate\f[R] with
+\[lq]\f[CR]exec sv 1 \[dq]$PWD\[dq]\f[R]\[rq] makes
+\[lq]\f[CR]sv rotate nginx\f[R]\[rq] send the service the USR1 signal.
+.PP
+The programs for several \f[I]services\f[R] run at the same time.
+\f[B]sv\f[R] doesn\[aq]t time out a program: if a program for
+\f[I]force\-stop\f[R] or \f[I]exit\f[R] hangs, so does stage 3 of
+\f[B]runit\f[R](8) on shutdown.
+The programs run with the privileges of the caller of \f[B]sv\f[R], as
+\f[I]./check\f[R] does; keep \f[I]service\f[R]/command/ writable by
+trusted users only.
 .SH OPTIONS
 .TP
 \f[B]\-v\f[R]
@@ -167,6 +208,15 @@ The environment variable $SVDIR overrides the default services directory
 The environment variable $SVWAIT overrides the default 7 seconds to wait
 for a command to take effect.
 It is overridden by the \-w option.
+.TP
+\f[B]SVCOMMAND\f[R]
+Set by \f[B]sv\f[R] for the programs in \f[I]service\f[R]/command/, see
+CUSTOMIZE COMMANDS.
+.TP
+\f[B]SVLSB\f[R]
+Set to 1 by \f[B]sv\f[R] for the programs in \f[I]service\f[R]/command/
+if it is called with a base name other than \f[B]sv\f[R], see EXIT
+CODES.
 .SH EXIT CODES
 \f[B]sv\f[R] exits 0, if the \f[I]command\f[R] was successfully sent to
 all \f[I]services\f[R], and, if it was told to wait, the
@@ -184,6 +234,16 @@ exits 1 on timeout or trouble sending the command; if the
 \f[I]command\f[R] is \f[B]status\f[R], it exits 3 if the service is
 down, and 4 if the status is unknown; it exits 2 on wrong usage, and 151
 on error.
+.PP
+If \f[B]sv\f[R] is called with a base name other than \f[B]sv\f[R] and
+runs a program \f[I]service\f[R]/command/\f[I]command\f[R], it exits
+with the exit code of this program, or 1 if the program cannot be run,
+exits 127, or is killed by a signal; a custom command without program is
+wrong usage.
+.PP
+If $SVLSB is set and not empty, \f[B]sv\f[R] takes its arguments as
+usual, but exits as if called with a base name other than \f[B]sv\f[R];
+\f[B]status\f[R] then deals with the first \f[I]service\f[R] only.
 .SH SEE ALSO
 runsv(8), chpst(8), svlogd(8), runsvdir(8), runsvchdir(8), runit(8),
 runit\-init(8)

@@ -3,6 +3,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "str.h"
+#include "byte.h"
 #include "strerr.h"
 #include "error.h"
 #include "sgetopt.h"
@@ -14,6 +15,9 @@
 #include "tai.h"
 #include "taia.h"
 #include "wait.h"
+#include "sig.h"
+#include "stralloc.h"
+#include "pathexec.h"
 
 #define USAGE " [-v] [-w sec] command service ..."
 #define USAGELSB " [-w sec] command"
@@ -32,13 +36,21 @@
 
 char *progname;
 char *action;
-char *acts;
+char *name;
+char *acts =0; /* 0: custom command */
+/* "unable to run command/<name>", doubles as path of the command script */
+char unable[14 +8 +256 +8] ="unable to run command/";
+#define cmd (unable +14)
+char *chain =""; /* $SVCOMMAND: dev:inode:name, of the scripts calling us */
+const char *waitarg =0; /* -w sec, passed on as $SVWAIT */
 char *varservice ="/service/";
 char **service;
 char **servicex;
 unsigned int services;
 unsigned int rc =0;
-unsigned int lsb;
+unsigned int lsbrc =0; /* LSB: exit code of the first failing command script */
+unsigned int lsb; /* LSB exit codes */
+unsigned int initd; /* LSB init script interface */
 unsigned int verbose =0;
 unsigned long wait =7;
 unsigned int kll =0;
@@ -85,8 +97,8 @@ char svstatus[20];
 char sulong[FMT_ULONG];
 
 void usage() {
-  if (!lsb) strerr_die4x(100, "usage: ", progname, USAGE, "\n");
-  strerr_die4x(2, "usage: ", progname, USAGELSB, "\n");
+  strerr_die4x(lsb ? 2 : 100, "usage: ", progname,
+               initd ? USAGELSB : USAGE, "\n");
 }
 void done(unsigned int e) { if (curdir != -1) fchdir(curdir); _exit(e); }
 void fatal(char *m1) {
@@ -303,6 +315,91 @@ int control(char *a) {
   return(1);
 }
 
+unsigned int fmt_hex(char *s, const unsigned char *b, unsigned int n) {
+  unsigned int i;
+
+  for (i =0; i < n; ++i) {
+    *s++ ="0123456789abcdef"[b[i] >> 4];
+    *s++ ="0123456789abcdef"[b[i] & 15];
+  }
+  return(2 * n);
+}
+/* start ./command/<name>: its pid, 0 if it's up to the built-in command,
+   -1 on failure */
+int command() {
+  struct stat s;
+  /* device:inode:name of the script, all bytes of device and inode in hex */
+  char id[2 * (sizeof s.st_dev +sizeof s.st_ino) +2 +256];
+  char *prog[2];
+  char *x;
+  unsigned int i, n;
+  int pid;
+
+  if (lstat(cmd, &s) == -1) {
+    if ((errno == error_noent) || (errno == error_notdir)) {
+      if (acts) return(0);
+      if (lsb) usage();
+    }
+    /* command/ is not accessible: there still are the built-in commands */
+    else if (acts && (errno == error_acces)) return(0);
+    fail(unable); return(-1);
+  }
+  if (stat(".", &s) == -1) {
+    fail("unable to stat service directory"); return(-1);
+  }
+  n =fmt_hex(id, (unsigned char*)&s.st_dev, sizeof s.st_dev);
+  id[n++] =':';
+  n +=fmt_hex(id +n, (unsigned char*)&s.st_ino, sizeof s.st_ino);
+  id[n++] =':';
+  i =str_len(name); byte_copy(id +n, i +1, name); n +=i;
+  /* called by a command script: don't run the very same script again */
+  for (x =chain; *x; ) {
+    i =str_chr(x, ',');
+    if ((i == n) && !byte_diff(x, n, id)) {
+      if (acts) return(0);
+      failx("command calls itself"); return(-1);
+    }
+    x +=i; if (*x) ++x;
+  }
+  buffer_flush(buffer_1);
+  if ((pid =fork()) == -1) { fail("unable to fork"); return(-1); }
+  if (!pid) {
+    stralloc sa ={0};
+
+    close(curdir);
+    if (stralloc_copys(&sa, chain) && (!*chain || stralloc_cats(&sa, ","))
+        && stralloc_catb(&sa, id, n) && stralloc_0(&sa)
+        && pathexec_env("SVCOMMAND", sa.s)
+        && (!waitarg || pathexec_env("SVWAIT", waitarg))
+        && (!initd || pathexec_env("SVLSB", "1"))) {
+      prog[0] =cmd; prog[1] =0;
+      pathexec(prog);
+    }
+    fail(unable);
+    _exit(127);
+  }
+  return(pid);
+}
+/* wait for ./command/<name> to finish */
+void commandwait(int pid) {
+  char *x;
+  int w, e;
+
+  if (wait_pid(&w, pid) == -1) { fail("unable to wait for command"); return; }
+  if (w) {
+    e =wait_crashed(w) ? 1 : wait_exitcode(w);
+    /* 127: the child has told already that it's unable to run the script */
+    if (e == 127) { ++rc; e =1; }
+    else {
+      /* init script: the script's exit code is the answer, e.g. 3 = down */
+      if (initd && !wait_crashed(w)) done(e);
+      x =cmd +8 +str_len(name);
+      byte_copy(x, 8, " failed"); failx(cmd); *x =0;
+    }
+    if (!lsbrc) lsbrc =e;
+  }
+}
+
 void sleep_microseconds(unsigned int microseconds) {
 #if _POSIX_C_SOURCE >= 199309L
   struct timespec sleeptime;
@@ -318,19 +415,24 @@ int main(int argc, char **argv) {
   unsigned int i, done;
   char *x;
   char c;
+  int pid[argc]; /* of the command script of each service */
 
   progname =*argv;
   for (i =str_len(*argv); i; --i) if ((*argv)[i -1] == '/') break;
   *argv +=i;
   optprogname =progname =*argv;
+  sig_uncatch(sig_child); /* ignored by the caller: no child to wait for */
   service =argv;
   services =1;
-  lsb =(str_diff(progname, "sv"));
+  lsb =initd =(str_diff(progname, "sv"));
   if ((x =env_get("SVDIR"))) varservice =x;
   if ((x =env_get("SVWAIT"))) scan_ulong(x, &wait);
+  if ((x =env_get("SVCOMMAND"))) chain =x;
+  /* a command script of an init script: LSB exit codes, but sv's arguments */
+  if ((x =env_get("SVLSB")) && *x) lsb =1;
   while ((i =getopt(argc, (char* const*)argv, "w:vV")) != opteof) {
     switch(i) {
-    case 'w': scan_ulong(optarg, &wait);
+    case 'w': scan_ulong(optarg, &wait); waitarg =optarg;
     case 'v': verbose =1; break;
     case 'V': strerr_warn1(VERSION, 0);
     case '?': usage();
@@ -339,7 +441,7 @@ int main(int argc, char **argv) {
   argv +=optind; argc -=optind;
   if (!(action =*argv++)) usage();
   --argc;
-  if (!lsb) { service =argv; services =argc; }
+  if (!initd) { service =argv; services =argc; }
   if (!*service) usage();
 
   taia_now(&tnow); tstart =tnow;
@@ -350,13 +452,25 @@ int main(int argc, char **argv) {
     if ((c && !action[1]) ? (c == cmds[i].c) || (c == cmds[i].c2)
                           : (c == *cmds[i].name)
                             && !str_diff(action, cmds[i].name)) break;
-  if (i == sizeof(cmds) / sizeof(*cmds)) usage();
-  acts =cmds[i].acts;
-  act =&control;
-  if (verbose || cmds[i].wait) cbk =&check;
-  kll =(cmds[i].wait == 2);
-  if (*acts == 's') { act =&status; cbk =0; }
-  if (*acts == 'C') act =0;
+  if (i < sizeof(cmds) / sizeof(*cmds)) {
+    name =cmds[i].name;
+    acts =cmds[i].acts;
+    act =&control;
+    if (verbose || cmds[i].wait) cbk =&check;
+    kll =(cmds[i].wait == 2);
+    /* LSB status is the status of the first service */
+    if (*acts == 's') { act =&status; cbk =0; if (lsb) services =1; }
+    if (*acts == 'C') act =0;
+  }
+  else {
+    /* custom command: [A-Za-z0-9][A-Za-z0-9_-]*, a file name */
+    for (name =action, i =0; (c =name[i]); ++i)
+      if (((c < 'a') || (c > 'z')) && ((c < 'A') || (c > 'Z'))
+          && ((c < '0') || (c > '9'))
+          && (!i || ((c != '_') && (c != '-')))) usage();
+    if (!i || (i > 255)) usage();
+  }
+  byte_copy(cmd +8, str_len(name) +1, name);
 
   servicex =service;
   for (i =0; i < services; ++i) {
@@ -372,7 +486,9 @@ int main(int argc, char **argv) {
         fail("unable to change to service directory");
         *service =0;
       }
-    if (*service) if (act && (act(acts) == -1)) *service =0;
+    pid[i] =0;
+    if (*service && !(pid[i] =command()))
+      if (act && (act(acts) == -1)) *service =0;
     if (fchdir(curdir) == -1) fatal("unable to change to original directory");
     service++;
   }
@@ -382,7 +498,7 @@ int main(int argc, char **argv) {
       taia_sub(&tdiff, &tnow, &tstart);
       service =servicex; done =1;
       for (i =0; i < services; ++i, ++service) {
-        if (!*service) continue;
+        if (!*service || pid[i]) continue;
         if ((**service != '/') && (**service != '.')) {
           if ((chdir(varservice) == -1) || (chdir(*service) == -1)) {
             fail("unable to change to service directory");
@@ -409,5 +525,10 @@ int main(int argc, char **argv) {
       sleep_microseconds(420000);
       taia_now(&tnow);
     }
+  /* the command scripts have run at the same time as the other services */
+  for (service =servicex, i =0; i < services; ++i, ++service)
+    if (pid[i] > 0) commandwait(pid[i]);
+    else if ((pid[i] == -1) && !lsbrc) lsbrc =1;
+  if (lsb) return(lsbrc ? lsbrc : rc > 0);
   return(rc > 99 ? 99 : rc);
 }

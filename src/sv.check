@@ -26,6 +26,30 @@ echo $?
 wait
 echo $?
 
+# -w 0: sv looks once more whether the command has taken effect
+runsv "${ctmp}" &
+sleep 1
+sv -w 0 stop "${ctmp}" |sed 's/:.*//'
+# the services without a script don't wait for the scripts: the one that
+# ignores TERM is killed on time, while the script of slow waits for that
+printf '#!/bin/sh\ntrap "" TERM\nexec sleep 14\n' >"${ctmp}"/run
+sv -w 5 up "${ctmp}" |sed 's/:.*//'
+mkdir -p "${ctmp}"/slow/command
+cat >"${ctmp}"/slow/command/force-stop <<-\EOT
+	#!/bin/sh
+	i=0
+	until grep -qx down ../supervise/stat; do
+	  test $((i +=1)) -gt 5 && { echo slow timed out; exit 1; }
+	  sleep 1
+	done
+	echo slow
+	EOT
+chmod 700 "${ctmp}"/slow/command/force-stop
+sv -w 1 force-stop "${ctmp}"/slow "${ctmp}" |sed 's/:.*//'
+sv exit "${ctmp}"
+wait
+rm -rf "${ctmp}"/slow
+
 # command resolution: exact names and single characters only
 rm -rf "${ctmp}"/supervise
 mkdir "${ctmp}"/supervise "${ctmp}"/init.d
@@ -56,3 +80,148 @@ for i in d s stat; do
   SVDIR="${ctmp}"/.. "${ctmp}"/init.d/"${ctmp##*/}" $i >/dev/null 2>&1
   echo "lsb $i $? `cat "${ctmp}"/supervise/control`"
 done
+
+# command scripts: <service>/command/<name>
+script() {
+  mkdir -p "${ctmp}/${1%/*}"
+  { echo '#!/bin/sh'; cat; } >"${ctmp}/$1"
+  chmod 700 "${ctmp}/$1"
+}
+run() {
+  : >"${ctmp}"/supervise/control
+  ( cd "${ctmp}" && "$@" 2>&1 )
+  echo "$? `cat "${ctmp}"/supervise/control`"
+}
+echo 'test -x command/hello && echo hello && : >seen' |script command/hello
+# the scripts run at the same time: the one of b waits for the other one
+echo 'for i in 1 2 3 4 5; do test -e ../seen && break; sleep 1; done
+echo hello b' |script b/command/hello
+echo 'echo only b' |script b/command/only
+echo 'echo both; exec sv both ./b' |script command/both
+echo 'echo both b' |script b/command/both
+echo 'exit 3' |script command/failing
+echo 'env |grep "^SVWAIT="' |script command/showwait
+echo 'echo override' |script command/down
+ln -s down "${ctmp}"/command/force-stop
+echo 'echo not executable' |script command/once
+chmod 600 "${ctmp}"/command/once
+echo 'echo wrapper; exec sv up .' |script command/up
+echo 'echo stop; exec sv stop .' |script command/stop
+echo 'echo restart; sv stop .; echo $?; exec sv up .' |script command/restart
+echo 'echo ping; exec sv pong .' |script command/ping
+echo 'echo pong; exec sv ping .' |script command/pong
+echo 'echo status; exit 3' |script command/status
+run sv hello . ./b
+run sv -v hello .
+run sv only . ./b
+run sv both .
+run sv failing . ./b
+run sv once .
+run sv -w 60 showwait .
+run env SVWAIT=5 sv showwait .
+run env SVWAIT=5 sv -w 60 showwait .
+run sv down .
+run sv d .
+run sv D .
+run sv hup .
+run sv up .
+run sv restart .
+run sv ping .
+# the caller ignores SIGCHLD, if this sh passes that on: sv still waits
+run sh -c 'trap "" CHLD; exec sv hello .'
+for i in ../x a/b _x x.y; do
+  run sv "$i" .
+done
+for i in hello failing status nosuch once; do
+  run env SVDIR="${ctmp}"/.. "${ctmp}"/init.d/"${ctmp##*/}" $i
+done
+
+# a script that fails, is killed, or cannot be run is a failure of the service;
+# exit code 127 is "cannot be run", sv doesn't add a message
+echo 'kill -9 $$' |script command/killed
+echo 'exit 127' |script command/e127
+ln -s nosuch "${ctmp}"/command/term
+mkdir "${ctmp}"/command/dir
+run sv killed .
+run sv term .
+run sv dir .
+run sv e127 .
+for i in killed term e127; do
+  run env SVDIR="${ctmp}"/.. "${ctmp}"/init.d/"${ctmp##*/}" $i
+done
+# the name of a command is 255 characters at most
+i=`printf %0255d 0 |tr 0 a`
+echo 'echo long' |script command/$i
+run sv $i .
+run sv a$i .
+
+# no command/ to look into: built-in commands work, custom ones fail
+mv "${ctmp}"/command "${ctmp}"/command.d
+: >"${ctmp}"/command
+run sv down .
+run sv hello .
+rm "${ctmp}"/command
+mv "${ctmp}"/command.d "${ctmp}"/command
+chmod 000 "${ctmp}"/command
+if test -e "${ctmp}"/command/hello; then
+  # root is not denied access
+  echo '0 d'
+  echo 'fail: .: unable to run command/hello: access denied'
+  echo '1 '
+else
+  run sv down .
+  run sv hello .
+fi
+chmod 700 "${ctmp}"/command
+
+# $SVCOMMAND: inherited, and not from sv
+echo 'echo "$SVCOMMAND" |sed "s/[0-9a-f]*:[0-9a-f]*:/dev:ino:/g"' |
+  script command/chain
+run sv chain .
+run env SVCOMMAND=x sv chain .
+run env SVCOMMAND=,x:y,:,, sv ping .
+
+# $SVLSB: LSB exit codes for the scripts of an init script
+echo 'env |grep "^SVLSB=" || echo no SVLSB' |script command/showlsb
+echo 'echo status b' |script b/command/status
+: >"${ctmp}"/supervise/ok
+printf '\177\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0d\0\0' >"${ctmp}"/supervise/status
+run sv showlsb .
+run env SVLSB=1 sv
+# a custom command without program is wrong usage
+run env SVLSB=1 sv nosuch . ./b
+# the exit code of the first script is the one of sv, the messages remain
+echo 'exit 4' |script b/command/failing
+run env SVLSB=1 sv failing . ./b
+echo 'exit 3' |script b/command/killed
+run env SVLSB=1 sv killed . ./b
+# status: the first service only
+run env SVLSB=1 sv status . ./b
+run env SVLSB=1 sv status ./b .
+echo 'exec sv status .' |script command/status
+run sv status .
+run env SVLSB=1 sv status . ./b
+run env SVLSB= SVDIR="${ctmp}"/.. "${ctmp}"/init.d/"${ctmp##*/}" showlsb
+run env SVDIR="${ctmp}"/.. "${ctmp}"/init.d/"${ctmp##*/}" status
+# a script run by the script of an init script
+echo 'echo helper; exit 3' |script command/helper
+echo 'exec sv helper .' |script command/status
+run env SVDIR="${ctmp}"/.. "${ctmp}"/init.d/"${ctmp##*/}" status
+
+# the command scripts run at the same time, and the other services get the
+# command right away: the script of t0 waits for the one of t1, and for t2
+for i in t0 t1 t2; do
+  mkdir -p "${ctmp}"/$i/supervise
+  : >"${ctmp}"/$i/supervise/control
+done
+script t0/command/down <<-\EOT
+	i=0
+	until test -e ../t1/seen && grep -q d ../t2/supervise/control; do
+	  test $((i +=1)) -gt 5 && { echo t0 timed out; exit 1; }
+	  sleep 1
+	done
+	echo t0
+	EOT
+echo 'echo t1; : >seen' |script t1/command/down
+( cd "${ctmp}" && sv down ./t0 ./t1 ./t2 2>&1; echo $? )
+for i in t0 t1 t2; do cat "${ctmp}"/$i/supervise/control; done; echo

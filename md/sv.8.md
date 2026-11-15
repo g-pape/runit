@@ -23,7 +23,8 @@ current directory.
 
 *command* is one of up, down, status, once, pause, cont, hup, alarm,
 interrupt, 1, 2, term, kill, or exit, or start, stop, restart, shutdown,
-force-stop, force-reload, force-restart, force-shutdown.
+force-stop, force-reload, force-restart, force-shutdown, or a custom
+command, see CUSTOMIZE COMMANDS below.
 
 The **sv** program can be sym-linked to */etc/init.d/* to provide an LSB
 init script interface. The *service* to be controlled then is specified
@@ -64,7 +65,8 @@ by the base name of the "init script".
 Each of these *command*s can be abbreviated to its first character, and
 *exit* also to **x**. The characters **D**, **T**, and **X** or **E**
 are short for force-stop, force-reload, and force-shutdown, see below.
-No other abbreviation or longer form of a *command* is accepted.
+Any other abbreviation or longer form is not one of these *command*s,
+but a custom command, see CUSTOMIZE COMMANDS below.
 
 ## Commands compatible to LSB init script actions
 
@@ -136,6 +138,39 @@ No other abbreviation or longer form of a *command* is accepted.
     service is up and running; it\'s considered to be up if *./check*
     exits with 0.
 
+# CUSTOMIZE COMMANDS
+
+If the program *service*/command/*command* exists, **sv** runs it in the
+service directory instead of doing the *command* for this *service*; an
+abbreviated *command* is looked up by its full name, "`sv d`" runs
+*service*/command/down. This way a service can replace the commands
+described above, and provide custom ones. The name of a custom command
+consists of up to 255 letters, digits, underscores, and hyphens, and
+starts with a letter or digit. A custom command fails for a *service*
+without the program, and doesn\'t need a running **runsv**(8).
+
+If the program cannot be run, or exits non zero, the *command* fails for
+this *service*; **sv** doesn\'t fall back to the *command* described
+above. If **sv** may not search *service*/command/, it does the commands
+described above, and custom commands fail.
+
+If the program runs **sv** with the same *command* on its own service
+directory, **sv** does the *command* described above instead of running
+the program again, see \$SVCOMMAND. With -w, **sv** passes *sec* to the
+program in \$SVWAIT.
+
+For example, the executable file */service/mysql/command/stop* with the
+lines "`#!/bin/sh`" and "`exec sv -w 60 stop "$PWD"`" makes
+"`sv stop mysql`" wait up to 60 seconds; */service/nginx/command/rotate*
+with "`exec sv 1 "$PWD"`" makes "`sv rotate nginx`" send the service the
+USR1 signal.
+
+The programs for several *services* run at the same time. **sv**
+doesn\'t time out a program: if a program for *force-stop* or
+*exit* hangs, so does stage 3 of **runit**(8) on shutdown. The programs
+run with the privileges of the caller of **sv**, as *./check* does; keep
+*service*/command/ writable by trusted users only.
+
 # OPTIONS
 
 **-v**
@@ -158,6 +193,14 @@ No other abbreviation or longer form of a *command* is accepted.
     wait for a command to take effect. It is overridden by the -w
     option.
 
+**SVCOMMAND**
+:   Set by **sv** for the programs in *service*/command/, see CUSTOMIZE
+    COMMANDS.
+
+**SVLSB**
+:   Set to 1 by **sv** for the programs in *service*/command/ if it is
+    called with a base name other than **sv**, see EXIT CODES.
+
 # EXIT CODES
 
 **sv** exits 0, if the *command* was successfully sent to all
@@ -173,6 +216,15 @@ If **sv** is called with a base name other than **sv**: it exits 1 on
 timeout or trouble sending the command; if the *command* is **status**,
 it exits 3 if the service is down, and 4 if the status is unknown; it
 exits 2 on wrong usage, and 151 on error.
+
+If **sv** is called with a base name other than **sv** and runs a
+program *service*/command/*command*, it exits with the exit code of this
+program, or 1 if the program cannot be run, exits 127, or is killed by a
+signal; a custom command without program is wrong usage.
+
+If \$SVLSB is set and not empty, **sv** takes its arguments as usual,
+but exits as if called with a base name other than **sv**; **status**
+then deals with the first *service* only.
 
 # SEE ALSO
 

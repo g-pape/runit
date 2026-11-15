@@ -1,7 +1,7 @@
 usage: sv [-v] [-w sec] command service ...
 
 100
-$Id: 1ad643e278e9bbc9c34af206bd2af29ef38c9950 $
+$Id: e39c4994a86c44eb31601017e6628baea6b5bca2 $
 usage: sv [-v] [-w sec] command service ...
 
 100
@@ -10,6 +10,11 @@ starting
 down
 0
 0
+starting
+ok
+ok
+kill
+slow
 u 0 u
 up 0 u
 d 0 d
@@ -55,18 +60,18 @@ force-shutdown 1 x
 try-restart 1 tc
 check 1
  100
-do 100
-stat 100
-continue 100
-Down 100
-U 100
-C 100
-r 100
-f 100
-ex 100
-11 100
-statusx 100
-force 100
+do 1
+stat 1
+continue 1
+Down 1
+U 1
+C 1
+r 1
+f 1
+ex 1
+11 1
+statusx 1
+force 1
 stop 1 d
 D 1 k
 force-stop 1 k
@@ -79,3 +84,139 @@ force-shutdown 1 k
 lsb d 0 d
 lsb s 4
 lsb stat 2
+hello
+hello b
+0
+hello
+0
+fail: .: unable to run command/only: file does not exist
+only b
+1
+both
+both b
+0
+fail: ./b: unable to run command/failing: file does not exist
+fail: .: command/failing failed
+2
+fail: .: unable to run command/once: access denied
+1
+SVWAIT=60
+0
+SVWAIT=5
+0
+SVWAIT=60
+0
+override
+0
+override
+0
+override
+0
+0 h
+wrapper
+0 u
+restart
+stop
+warning: .: unable to open supervise/ok: file does not exist
+fail: .: command/stop failed
+1
+wrapper
+0 u
+ping
+pong
+fail: .: command calls itself
+fail: .: command/pong failed
+fail: .: command/ping failed
+1
+hello
+0
+usage: sv [-v] [-w sec] command service ...
+
+100
+usage: sv [-v] [-w sec] command service ...
+
+100
+usage: sv [-v] [-w sec] command service ...
+
+100
+usage: sv [-v] [-w sec] command service ...
+
+100
+hello
+0
+3
+status
+3
+usage: check-tmp [-w sec] command
+
+2
+fail: check-tmp: unable to run command/once: access denied
+1
+fail: .: command/killed failed
+1
+fail: .: unable to run command/term: file does not exist
+1
+fail: .: unable to run command/dir: access denied
+1
+1
+fail: check-tmp: command/killed failed
+1
+fail: check-tmp: unable to run command/term: file does not exist
+1
+1
+long
+0
+usage: sv [-v] [-w sec] command service ...
+
+100
+0 d
+fail: .: unable to run command/hello: not a directory
+1
+0 d
+fail: .: unable to run command/hello: access denied
+1
+dev:ino:chain
+0
+x,dev:ino:chain
+0
+ping
+pong
+fail: .: command calls itself
+fail: .: command/pong failed
+fail: .: command/ping failed
+1
+no SVLSB
+0
+usage: sv [-v] [-w sec] command service ...
+
+2
+usage: sv [-v] [-w sec] command service ...
+
+2
+fail: .: command/failing failed
+fail: ./b: command/failing failed
+3
+fail: .: command/killed failed
+fail: ./b: command/killed failed
+1
+status
+fail: .: command/status failed
+3
+status b
+0
+down: .: 0s, normally up
+0
+down: .: 0s, normally up
+fail: .: command/status failed
+3
+SVLSB=1
+0
+down: .: 0s, normally up
+3
+helper
+fail: .: command/helper failed
+3
+t1
+t0
+0
+d
