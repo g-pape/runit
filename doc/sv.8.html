@@ -30,7 +30,8 @@ with a slash, it is searched in the default services directory
 <em>/service/</em>, otherwise relative to the current directory.</p>
 <p><em>command</em> is one of up, down, status, once, pause, cont, hup,
 alarm, interrupt, 1, 2, term, kill, or exit, or start, stop, restart,
-shutdown, force-stop, force-reload, force-restart, force-shutdown.</p>
+shutdown, force-stop, force-reload, force-restart, force-shutdown, or a
+custom command, see CUSTOMIZE COMMANDS below.</p>
 <p>The <strong>sv</strong> program can be sym-linked to
 <em>/etc/init.d/</em> to provide an LSB init script interface. The
 <em>service</em> to be controlled then is specified by the base name of
@@ -74,8 +75,13 @@ down, <strong>runsv</strong>(8) exits. This command is ignored if it is
 given to an appendant log service.
 </dd>
 </dl>
-<p><strong>sv</strong> actually looks only at the first character of
-these <em>command</em>s.</p>
+<p>Each of these <em>command</em>s can be abbreviated to its first
+character, and <em>exit</em> also to <strong>x</strong>. The characters
+<strong>D</strong>, <strong>T</strong>, and <strong>X</strong> or
+<strong>E</strong> are short for force-stop, force-reload, and
+force-shutdown, see below. Any other abbreviation or longer form is not
+one of these <em>command</em>s, but a custom command, see CUSTOMIZE
+COMMANDS below.</p>
 <h4 id="commands-compatible-to-lsb-init-script-actions">Commands
 compatible to LSB init script actions</h4>
 <dl>
@@ -163,6 +169,40 @@ whether the service is up and running; it's considered to be up if
 <em>./check</em> exits with 0.
 </dd>
 </dl>
+<h3 id="customize-commands">CUSTOMIZE COMMANDS</h3>
+<p>If the program <em>service</em>/command/<em>command</em> exists,
+<strong>sv</strong> runs it in the service directory instead of doing
+the <em>command</em> for this <em>service</em>; an abbreviated
+<em>command</em> is looked up by its full name, “<code>sv d</code>” runs
+<em>service</em>/command/down. This way a service can replace the
+commands described above, and provide custom ones. The name of a custom
+command consists of up to 255 letters, digits, underscores, and hyphens,
+and starts with a letter or digit. A custom command fails for a
+<em>service</em> without the program, and doesn't need a running
+<strong>runsv</strong>(8).</p>
+<p>If the program cannot be run, or exits non zero, the <em>command</em>
+fails for this <em>service</em>; <strong>sv</strong> doesn't fall back
+to the <em>command</em> described above. If <strong>sv</strong> may not
+search <em>service</em>/command/, it does the commands described above,
+and custom commands fail.</p>
+<p>If the program runs <strong>sv</strong> with the same
+<em>command</em> on its own service directory, <strong>sv</strong> does
+the <em>command</em> described above instead of running the program
+again, see $SVCOMMAND. With -w, <strong>sv</strong> passes <em>sec</em>
+to the program in $SVWAIT.</p>
+<p>For example, the executable file <em>/service/mysql/command/stop</em>
+with the lines “<code>#!/bin/sh</code>” and
+“<code>exec sv -w 60 stop "$PWD"</code>” makes
+“<code>sv stop mysql</code>” wait up to 60 seconds;
+<em>/service/nginx/command/rotate</em> with
+“<code>exec sv 1 "$PWD"</code>” makes “<code>sv rotate nginx</code>”
+send the service the USR1 signal.</p>
+<p>The programs for several <em>services</em> run at the same time.
+<strong>sv</strong> doesn't time out a program: if a program for
+<em>force-stop</em> or <em>exit</em> hangs, so does stage 3 of
+<strong>runit</strong>(8) on shutdown. The programs run with the
+privileges of the caller of <strong>sv</strong>, as <em>./check</em>
+does; keep <em>service</em>/command/ writable by trusted users only.</p>
 <h3 id="options">OPTIONS</h3>
 <dl>
 <dt><strong>-v</strong></dt>
@@ -189,6 +229,17 @@ The environment variable $SVDIR overrides the default services directory
 The environment variable $SVWAIT overrides the default 7 seconds to wait
 for a command to take effect. It is overridden by the -w option.
 </dd>
+<dt><strong>SVCOMMAND</strong></dt>
+<dd>
+Set by <strong>sv</strong> for the programs in
+<em>service</em>/command/, see CUSTOMIZE COMMANDS.
+</dd>
+<dt><strong>SVLSB</strong></dt>
+<dd>
+Set to 1 by <strong>sv</strong> for the programs in
+<em>service</em>/command/ if it is called with a base name other than
+<strong>sv</strong>, see EXIT CODES.
+</dd>
 </dl>
 <h3 id="exit-codes">EXIT CODES</h3>
 <p><strong>sv</strong> exits 0, if the <em>command</em> was successfully
@@ -204,6 +255,15 @@ increases the exit code by one and exits non zero. The maximum is 99.
 command; if the <em>command</em> is <strong>status</strong>, it exits 3
 if the service is down, and 4 if the status is unknown; it exits 2 on
 wrong usage, and 151 on error.</p>
+<p>If <strong>sv</strong> is called with a base name other than
+<strong>sv</strong> and runs a program
+<em>service</em>/command/<em>command</em>, it exits with the exit code
+of this program, or 1 if the program cannot be run, exits 127, or is
+killed by a signal; a custom command without program is wrong usage.</p>
+<p>If $SVLSB is set and not empty, <strong>sv</strong> takes its
+arguments as usual, but exits as if called with a base name other than
+<strong>sv</strong>; <strong>status</strong> then deals with the first
+<em>service</em> only.</p>
 <h3 id="see-also">SEE ALSO</h3>
 <p>runsv(8), chpst(8), svlogd(8), runsvdir(8), runsvchdir(8), runit(8),
 runit-init(8)</p>
